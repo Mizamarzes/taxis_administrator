@@ -1,0 +1,21 @@
+src/
+├── app.module.ts
+├── config
+│   └── .gitkeep
+├── controllers
+│   └── .gitkeep
+├── main.ts
+├── middlewares
+│   └── .gitkeep
+├── models
+│   └── .gitkeep
+├── repositories
+│   └── .gitkeep
+├── routes
+│   └── .gitkeep
+├── services
+│   └── .gitkeep
+├── utils
+│   └── .gitkeep
+└── validators
+    └── .gitkeep
