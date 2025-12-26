@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, OneToMany } from "typeorm";
+import { UserRole } from "./userRole.entity";
 
 @Entity('users')
 export class User {
@@ -14,6 +15,9 @@ export class User {
 
     @Column({ type: 'varchar', length: 255 })
     password: string;
+
+    @OneToMany(() => UserRole, (userRole) => userRole.user)
+    userRoles: UserRole[];
 
     @Column({ default: true })
     isActive: boolean
