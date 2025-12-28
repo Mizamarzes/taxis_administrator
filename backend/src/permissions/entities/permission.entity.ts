@@ -1,4 +1,4 @@
-import { RolePermission } from 'src/roles/entities/rolePermission.entity';
+import { RolePermission } from '../../roles/entities/rolePermission.entity';
 import {
     Column,
     Entity,

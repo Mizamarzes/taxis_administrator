@@ -5,10 +5,8 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
     OneToMany,
-    ManyToMany,
-    JoinTable,
 } from 'typeorm';
-import { UserRole } from 'src/users/entities/userRole.entity';
+import { UserRole } from '../../users/entities/userRole.entity';
 import { RolePermission } from './rolePermission.entity';
 
 @Entity('roles')

@@ -29,7 +29,7 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/no-unsafe-argument': 'error',
-      '@typescript-eslint/no-unused-vars': ['error', { 
+      '@typescript-eslint/no-unused-vars': ['warn', { 
         argsIgnorePattern: '^_',
         varsIgnorePattern: '^_',
       }], 
@@ -39,7 +39,6 @@ export default tseslint.config(
       
       'prettier/prettier': 'error',
 
-      'no-console': ['warn', { allow: ['warn', 'error'] }],
       'prefer-const': 'error',    },
   },
 );

@@ -1,9 +1,11 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
-import { AuthGuard } from './guard/auth.guard';
-import type { RequestWithUser } from './interfaces/auth.interface';
 import { ApiTags } from '@nestjs/swagger';
+import { Role } from '../common/enums/rol.enum';
+import { Auth } from './decorators/auth.decorator';
+import { ActiveUser } from 'src/common/decorators/activeUser.decorator';
+import type { RequestWithUserInterface } from '../common/interfaces/requestWithUser.interface';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -19,8 +21,8 @@ export class AuthController {
     }
 
     @Get('profile')
-    @UseGuards(AuthGuard)
-    async profile(@Req() req: RequestWithUser) {
-        return req.user;
+    @Auth(Role.USER, Role.ADMIN)
+    async profile(@ActiveUser() user: RequestWithUserInterface) {
+        return await this.authService.profile(user);
     }
 }
