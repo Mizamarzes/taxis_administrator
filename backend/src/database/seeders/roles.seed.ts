@@ -12,7 +12,7 @@ export async function seedRoles(dataSource: DataSource) {
 
     for (const roleData of roles) {
         const existingRole = await roleRepository.findOne({
-            where: { name: roleData.name }
+            where: { name: roleData.name },
         });
 
         if (!existingRole) {

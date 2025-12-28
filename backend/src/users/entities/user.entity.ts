@@ -1,9 +1,16 @@
-import { Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, OneToMany } from "typeorm";
-import { UserRole } from "./userRole.entity";
+import {
+    Column,
+    Entity,
+    PrimaryGeneratedColumn,
+    CreateDateColumn,
+    UpdateDateColumn,
+    DeleteDateColumn,
+    OneToMany,
+} from 'typeorm';
+import { UserRole } from './userRole.entity';
 
 @Entity('users')
 export class User {
-
     @PrimaryGeneratedColumn()
     id: number;
 
@@ -20,14 +27,14 @@ export class User {
     userRoles: UserRole[];
 
     @Column({ default: true })
-    isActive: boolean
+    isActive: boolean;
 
     @Column({ type: 'timestamp', nullable: true })
     lastLogin: Date;
 
     @CreateDateColumn({ type: 'timestamp' })
     createdAt: Date;
-    
+
     @UpdateDateColumn({ type: 'timestamp' })
     updatedAt: Date;
 

@@ -1,8 +1,15 @@
 import { Transform } from 'class-transformer';
-import { ArrayMinSize, IsArray, IsEmail, IsIn, IsOptional, IsString, MinLength } from 'class-validator';
+import {
+    ArrayMinSize,
+    IsArray,
+    IsEmail,
+    IsIn,
+    IsOptional,
+    IsString,
+    MinLength,
+} from 'class-validator';
 
 export class CreateUserDto {
-
     @Transform(({ value }) => value?.trim().toLowerCase())
     @IsEmail()
     email: string;
@@ -21,9 +28,9 @@ export class CreateUserDto {
     @IsArray()
     @ArrayMinSize(1, { message: 'At least one role is required' })
     @IsString({ each: true })
-    @IsIn(['SUPERADMIN', 'ADMIN', 'USER'], { 
-        each: true, 
-        message: 'Role must be SUPERADMIN, ADMIN or USER' 
+    @IsIn(['SUPERADMIN', 'ADMIN', 'USER'], {
+        each: true,
+        message: 'Role must be SUPERADMIN, ADMIN or USER',
     })
     roleNames?: string[];
 }

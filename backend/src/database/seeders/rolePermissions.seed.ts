@@ -20,13 +20,13 @@ export async function seedRolePermissions(dataSource: DataSource) {
     if (superAdmin) {
         for (const permission of allPermissions) {
             const exists = await rolePermissionRepository.findOne({
-                where: { roleId: superAdmin.id, permissionId: permission.id }
+                where: { roleId: superAdmin.id, permissionId: permission.id },
             });
 
             if (!exists) {
                 await rolePermissionRepository.save({
                     roleId: superAdmin.id,
-                    permissionId: permission.id
+                    permissionId: permission.id,
                 });
             }
         }
@@ -35,8 +35,11 @@ export async function seedRolePermissions(dataSource: DataSource) {
     // ADMIN: permisos específicos (excepto eliminar usuarios y roles)
     if (admin) {
         const adminPermissionActions = [
-            'users.read', 'users.update', 'users.create', `users.delete`,
-            'roles.read', 
+            'users.read',
+            'users.update',
+            'users.create',
+            `users.delete`,
+            'roles.read',
             'permissions.read',
         ];
 
@@ -44,13 +47,13 @@ export async function seedRolePermissions(dataSource: DataSource) {
             const permission = await permissionRepository.findOne({ where: { action } });
             if (permission) {
                 const exists = await rolePermissionRepository.findOne({
-                    where: { roleId: admin.id, permissionId: permission.id }
+                    where: { roleId: admin.id, permissionId: permission.id },
                 });
 
                 if (!exists) {
                     await rolePermissionRepository.save({
                         roleId: admin.id,
-                        permissionId: permission.id
+                        permissionId: permission.id,
                     });
                 }
             }
@@ -59,23 +62,19 @@ export async function seedRolePermissions(dataSource: DataSource) {
 
     // USER: solo lectura básica
     if (user) {
-        const userPermissionActions = [
-            'users.read',
-            'roles.read',
-            'permissions.read',
-        ];
+        const userPermissionActions = ['users.read', 'roles.read', 'permissions.read'];
 
         for (const action of userPermissionActions) {
             const permission = await permissionRepository.findOne({ where: { action } });
             if (permission) {
                 const exists = await rolePermissionRepository.findOne({
-                    where: { roleId: user.id, permissionId: permission.id }
+                    where: { roleId: user.id, permissionId: permission.id },
                 });
 
                 if (!exists) {
                     await rolePermissionRepository.save({
                         roleId: user.id,
-                        permissionId: permission.id
+                        permissionId: permission.id,
                     });
                 }
             }

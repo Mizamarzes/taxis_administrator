@@ -1,10 +1,17 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn } from "typeorm";
-import { User } from "./user.entity";
-import { Role } from "src/roles/entities/role.entity";
+import {
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    ManyToOne,
+    JoinColumn,
+    CreateDateColumn,
+    UpdateDateColumn,
+} from 'typeorm';
+import { User } from './user.entity';
+import { Role } from 'src/roles/entities/role.entity';
 
 @Entity('user_roles')
 export class UserRole {
-
     @PrimaryGeneratedColumn()
     id: number;
 
@@ -24,7 +31,7 @@ export class UserRole {
 
     @CreateDateColumn({ type: 'timestamp' })
     createdAt: Date;
-    
+
     @UpdateDateColumn({ type: 'timestamp' })
     updatedAt: Date;
 }

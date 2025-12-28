@@ -1,9 +1,15 @@
-import { RolePermission } from "src/roles/entities/rolePermission.entity";
-import { Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from "typeorm";
+import { RolePermission } from 'src/roles/entities/rolePermission.entity';
+import {
+    Column,
+    Entity,
+    PrimaryGeneratedColumn,
+    CreateDateColumn,
+    UpdateDateColumn,
+    OneToMany,
+} from 'typeorm';
 
 @Entity('permissions')
 export class Permission {
-
     @PrimaryGeneratedColumn()
     id: number;
 
@@ -15,7 +21,7 @@ export class Permission {
 
     @CreateDateColumn({ type: 'timestamp' })
     createdAt: Date;
-    
+
     @UpdateDateColumn({ type: 'timestamp' })
     updatedAt: Date;
 }

@@ -10,75 +10,72 @@ import { UserRole } from './entities/userRole.entity';
 
 @Injectable()
 export class UsersService {
+    constructor(
+        @InjectRepository(User)
+        private readonly usersRepository: Repository<User>,
+        @InjectRepository(Role)
+        private readonly roleRepository: Repository<Role>,
+        @InjectRepository(UserRole)
+        private readonly userRoleRepository: Repository<UserRole>,
+    ) {}
 
-  constructor(
-    @InjectRepository(User)
-    private readonly usersRepository: Repository<User>,
-    @InjectRepository(Role)
-    private readonly roleRepository: Repository<Role>,
-    @InjectRepository(UserRole)
-    private readonly userRoleRepository: Repository<UserRole>,
-  ) {}
- 
-  async create(data: CreateUserDto): Promise<User | null> {
+    async create(data: CreateUserDto): Promise<User | null> {
+        const existingUser = await this.findOneByEmail(data.email);
 
-    const existingUser = await this.findOneByEmail(data.email);
+        if (existingUser) {
+            throw new BadRequestException('Email already exists');
+        }
 
-    if (existingUser) {
-      throw new BadRequestException('Email already exists');
+        const passwordEncripted = await bcrypt.hash(data.password, 10);
+
+        const user = await this.usersRepository.save({
+            name: data.name,
+            email: data.email,
+            password: passwordEncripted,
+        });
+
+        const roleNames = data.roleNames && data.roleNames.length > 0 ? data.roleNames : ['USER'];
+
+        const roles = await this.roleRepository
+            .createQueryBuilder('role')
+            .where('role.name IN (:...names)', { names: roleNames })
+            .getMany();
+
+        if (roles.length !== roleNames.length) {
+            throw new BadRequestException('One or more roles not found');
+        }
+
+        await this.userRoleRepository.save(
+            roles.map((role) => ({
+                userId: user.id,
+                roleId: role.id,
+            })),
+        );
+
+        return user;
     }
 
-    const passwordEncripted = await bcrypt.hash(data.password, 10);
-
-    const user = await this.usersRepository.save({
-      name: data.name,
-      email: data.email,
-      password: passwordEncripted
-    });    
-
-    const roleNames = data.roleNames && data.roleNames.length > 0 
-      ? data.roleNames 
-      : ['USER']; 
-
-    const roles = await this.roleRepository
-      .createQueryBuilder('role')
-      .where('role.name IN (:...names)', { names: roleNames })
-      .getMany();
-
-    if (roles.length !== roleNames.length) {
-      throw new BadRequestException('One or more roles not found');
+    async findOneByEmail(email: string): Promise<User | null> {
+        return await this.usersRepository.findOne({
+            where: { email },
+            relations: ['userRoles', 'userRoles.role'],
+        });
     }
 
-    await this.userRoleRepository.save(
-      roles.map(role => ({
-        userId: user.id,
-        roleId: role.id,
-      }))
-    );
+    findAll() {
+        return `This action returns all users`;
+    }
 
-    return user;
-  }
+    findOne(id: number) {
+        return `This action returns a #${id} user`;
+    }
 
-  async findOneByEmail(email: string): Promise<User | null> {
-    return await this.usersRepository.findOne({ 
-      where: { email },
-      relations: ['userRoles', 'userRoles.role'],
-    });
-  }
+    update(id: number, updateUserDto: UpdateUserDto) {
+        console.warn(updateUserDto);
+        return `This action updates a #${id} user`;
+    }
 
-  async findAll() {
-    return `This action returns all users`;
-  }
-
-  async findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
-
-  async update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
-
-  async remove(id: number) {
-    return `This action removes a #${id} user`;
-  }
+    remove(id: number) {
+        return `This action removes a #${id} user`;
+    }
 }

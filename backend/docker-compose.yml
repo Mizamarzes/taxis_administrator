@@ -12,16 +12,4 @@ services:
     volumes:
       - ./postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
-
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: pgadmin_container
-    restart: always
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com  # Tu "usuario" para entrar a la web
-      PGADMIN_DEFAULT_PASSWORD: root          # Tu contraseña para entrar a la web
-    ports:
-      - "8085:80"  # Lo verás en http://localhost:8085
-    depends_on:
-      - postgres
+      - "5433:5432"

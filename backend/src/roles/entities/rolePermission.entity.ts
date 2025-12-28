@@ -1,10 +1,17 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn } from "typeorm";
-import { Role } from "./role.entity";
-import { Permission } from "src/permissions/entities/permission.entity";
+import {
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    ManyToOne,
+    JoinColumn,
+    CreateDateColumn,
+    UpdateDateColumn,
+} from 'typeorm';
+import { Role } from './role.entity';
+import { Permission } from 'src/permissions/entities/permission.entity';
 
 @Entity('role_permissions')
 export class RolePermission {
-
     @PrimaryGeneratedColumn()
     id: number;
 
@@ -18,13 +25,15 @@ export class RolePermission {
     @JoinColumn({ name: 'role_id' })
     role: Role;
 
-    @ManyToOne(() => Permission, (permission) => permission.rolePermissions, { onDelete: 'CASCADE' })
+    @ManyToOne(() => Permission, (permission) => permission.rolePermissions, {
+        onDelete: 'CASCADE',
+    })
     @JoinColumn({ name: 'permission_id' })
     permission: Permission;
 
     @CreateDateColumn({ type: 'timestamp' })
     createdAt: Date;
-    
+
     @UpdateDateColumn({ type: 'timestamp' })
     updatedAt: Date;
 }
