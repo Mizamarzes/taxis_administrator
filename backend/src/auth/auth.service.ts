@@ -4,6 +4,7 @@ import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { Role } from '../common/enums/rol.enum';
+import { JwtPayload } from './interfaces/jwt-payload.interface';
 
 @Injectable()
 export class AuthService {
@@ -13,21 +14,21 @@ export class AuthService {
     ) {}
 
     async login(data: LoginDto) {
-        const user = await this.usersService.findOneByEmail(data.email);
+        const user = await this.usersService.findOneByEmailForAuth(data.email);
 
         if (!user) {
-            throw new UnauthorizedException('Email not found');
+            throw new UnauthorizedException('Invalid credentials');
         }
 
         const isPasswordValid = await bcrypt.compare(data.password, user.password);
 
         if (!isPasswordValid) {
-            throw new UnauthorizedException('Invalid password');
+            throw new UnauthorizedException('Invalid credentials');
         }
 
         const roles = user.userRoles.map((ur) => ur.role.name);
 
-        const payload = { email: user.email, roles: roles };
+        const payload: JwtPayload = { email: user.email, roles: roles };
 
         const token = await this.jwtService.signAsync(payload);
 
@@ -37,7 +38,13 @@ export class AuthService {
         };
     }
 
-    async profile({ email, roles }: { email: string; roles: Role[] }) {
-        return await this.usersService.findOneByEmail(email);
+    async profile({ email }: { email: string; roles: Role[] }) {
+        const user = await this.usersService.findOneByEmail(email);
+
+        if (!user) {
+            throw new UnauthorizedException('User not found');
+        }
+
+        return user;
     }
 }

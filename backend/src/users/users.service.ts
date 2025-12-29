@@ -21,7 +21,7 @@ export class UsersService {
         private readonly userRoleRepository: Repository<UserRole>,
     ) {}
 
-    async create(data: CreateUserDto): Promise<User | null> {
+    async create(data: CreateUserDto): Promise<UserResponseDto | null> {
         const existingUser = await this.findOneByEmail(data.email);
 
         if (existingUser) {
@@ -54,14 +54,30 @@ export class UsersService {
             })),
         );
 
-        return user;
+        return mapUserToUserResponseDto(user);
     }
 
-    async findOneByEmail(email: string): Promise<User | null> {
-        return await this.usersRepository.findOne({
+    async findOneByEmail(email: string): Promise<UserResponseDto | null> {
+        const user = await this.usersRepository.findOne({
             where: { email },
             relations: ['userRoles', 'userRoles.role'],
         });
+
+        if (!user) {
+            return null;
+        }
+
+        return mapUserToUserResponseDto(user);
+    }
+
+    async findOneByEmailForAuth(email: string): Promise<User | null> {
+        return await this.usersRepository
+            .createQueryBuilder('user')
+            .leftJoinAndSelect('user.userRoles', 'userRoles')
+            .leftJoinAndSelect('userRoles.role', 'role')
+            .addSelect('user.password') // ← Incluye explícitamente el password
+            .where('user.email = :email', { email })
+            .getOne();
     }
 
     async findAll(): Promise<UserResponseDto[]> {

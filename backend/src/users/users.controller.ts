@@ -16,6 +16,7 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Auth } from '../auth/decorators/auth.decorator';
 import { Role } from '../common/enums/rol.enum';
 import { UserResponseDto } from './dto/user-response.dto';
+import { ApiResponseInterface } from '../common/interfaces/api-response.interface';
 
 @ApiTags('users')
 @Controller('users')
@@ -30,7 +31,7 @@ export class UsersController {
     async create(
         @Body()
         createUserDto: CreateUserDto,
-    ) {
+    ): Promise<ApiResponseInterface<UserResponseDto>> {
         const user = await this.usersService.create(createUserDto);
         return {
             message: 'User created successfully',
@@ -42,7 +43,7 @@ export class UsersController {
     @Auth(Role.ADMIN)
     @ApiOperation({ summary: 'Get all users' })
     @ApiResponse({ status: 200, type: [UserResponseDto] })
-    async findAll() {
+    async findAll(): Promise<ApiResponseInterface<UserResponseDto[]>> {
         const users = await this.usersService.findAll();
         return {
             message: 'Users retrieved successfully',
