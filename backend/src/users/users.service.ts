@@ -62,20 +62,39 @@ export class UsersService {
         });
     }
 
-    findAll() {
-        return `This action returns all users`;
+    async findAll(): Promise<User[]> {
+        return await this.usersRepository.find({
+            relations: ['userRoles', 'userRoles.role'],
+            order: { createdAt: 'DESC' },
+        });
     }
 
-    findOne(id: number) {
-        return `This action returns a #${id} user`;
+    async findOne(id: number): Promise<User | null> {
+        const user = await this.usersRepository.findOne({
+            where: { id },
+            relations: ['userRoles', 'userRoles.role'],
+        });
+
+        if (!user) {
+            throw new BadRequestException('User not found');
+        }
+
+        return user;
     }
 
-    update(id: number, updateUserDto: UpdateUserDto) {
-        console.warn(updateUserDto);
-        return `This action updates a #${id} user`;
+    async update(id: number, updateUserDto: UpdateUserDto): Promise<User | null> {
+        const user = await this.findOne(id);
+
+        console.log(updateUserDto);
+        console.log(user);
+        return await this.findOne(id);
     }
 
-    remove(id: number) {
-        return `This action removes a #${id} user`;
+    async remove(id: number): Promise<{ message: string }> {
+        const user = await this.findOne(id);
+
+        await this.usersRepository.softDelete(id);
+
+        return { message: `User ${user?.name} has been removed successfully` };
     }
 }

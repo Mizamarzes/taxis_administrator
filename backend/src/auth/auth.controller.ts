@@ -17,7 +17,7 @@ export class AuthController {
         @Body()
         loginDto: LoginDto,
     ) {
-        return this.authService.login(loginDto);
+        return await this.authService.login(loginDto);
     }
 
     @Get('profile')

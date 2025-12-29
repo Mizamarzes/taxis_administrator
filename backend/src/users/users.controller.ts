@@ -13,34 +13,34 @@ export class UsersController {
 
     @Post('create')
     @Auth(Role.ADMIN)
-    create(
+    async create(
         @Body()
         createUserDto: CreateUserDto,
     ) {
-        return this.usersService.create(createUserDto);
+        return await this.usersService.create(createUserDto);
     }
 
     @Get()
     @Auth(Role.ADMIN)
-    findAll() {
-        return this.usersService.findAll();
+    async findAll() {
+        return await this.usersService.findAll();
     }
 
     @Get(':id')
     @Auth(Role.ADMIN)
-    findOne(@Param('id') id: string) {
-        return this.usersService.findOne(+id);
+    async findOne(@Param('id') id: string) {
+        return await this.usersService.findOne(+id);
     }
 
     @Patch(':id')
     @Auth(Role.ADMIN)
-    update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-        return this.usersService.update(+id, updateUserDto);
+    async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+        return await this.usersService.update(+id, updateUserDto);
     }
 
     @Delete(':id')
     @Auth(Role.ADMIN)
-    remove(@Param('id') id: string) {
-        return this.usersService.remove(+id);
+    async remove(@Param('id') id: string) {
+        return await this.usersService.remove(+id);
     }
 }
