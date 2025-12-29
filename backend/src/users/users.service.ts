@@ -7,6 +7,8 @@ import * as bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
 import { Role } from '../roles/entities/role.entity';
 import { UserRole } from './entities/userRole.entity';
+import { UserResponseDto } from './dto/user-response.dto';
+import { mapUsersToUserResponseDtos, mapUserToUserResponseDto } from './mappers/user.mappers';
 
 @Injectable()
 export class UsersService {
@@ -62,14 +64,16 @@ export class UsersService {
         });
     }
 
-    async findAll(): Promise<User[]> {
-        return await this.usersRepository.find({
+    async findAll(): Promise<UserResponseDto[]> {
+        const users = await this.usersRepository.find({
             relations: ['userRoles', 'userRoles.role'],
             order: { createdAt: 'DESC' },
         });
+
+        return mapUsersToUserResponseDtos(users);
     }
 
-    async findOne(id: number): Promise<User | null> {
+    async findOne(id: number): Promise<UserResponseDto | null> {
         const user = await this.usersRepository.findOne({
             where: { id },
             relations: ['userRoles', 'userRoles.role'],
@@ -79,10 +83,10 @@ export class UsersService {
             throw new BadRequestException('User not found');
         }
 
-        return user;
+        return mapUserToUserResponseDto(user);
     }
 
-    async update(id: number, updateUserDto: UpdateUserDto): Promise<User | null> {
+    async update(id: number, updateUserDto: UpdateUserDto): Promise<UserResponseDto | null> {
         const user = await this.findOne(id);
 
         console.log(updateUserDto);

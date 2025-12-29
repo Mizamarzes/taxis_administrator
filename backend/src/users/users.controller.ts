@@ -1,10 +1,21 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+    Controller,
+    Get,
+    Post,
+    Body,
+    Patch,
+    Param,
+    Delete,
+    HttpCode,
+    HttpStatus,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Auth } from '../auth/decorators/auth.decorator';
 import { Role } from '../common/enums/rol.enum';
+import { UserResponseDto } from './dto/user-response.dto';
 
 @ApiTags('users')
 @Controller('users')
@@ -13,22 +24,35 @@ export class UsersController {
 
     @Post('create')
     @Auth(Role.ADMIN)
+    @HttpCode(HttpStatus.CREATED)
+    @ApiOperation({ summary: 'Create a new user' })
+    @ApiResponse({ status: 201, type: UserResponseDto })
     async create(
         @Body()
         createUserDto: CreateUserDto,
     ) {
-        return await this.usersService.create(createUserDto);
+        const user = await this.usersService.create(createUserDto);
+        return {
+            message: 'User created successfully',
+            data: user,
+        };
     }
 
-    @Get()
+    @Get('get-all')
     @Auth(Role.ADMIN)
+    @ApiOperation({ summary: 'Get all users' })
+    @ApiResponse({ status: 200, type: [UserResponseDto] })
     async findAll() {
-        return await this.usersService.findAll();
+        const users = await this.usersService.findAll();
+        return {
+            message: 'Users retrieved successfully',
+            data: users,
+        };
     }
 
     @Get(':id')
     @Auth(Role.ADMIN)
-    async findOne(@Param('id') id: string) {
+    async findOne(@Param('id') id: string): Promise<UserResponseDto | null> {
         return await this.usersService.findOne(+id);
     }
 

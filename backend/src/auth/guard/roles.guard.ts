@@ -21,7 +21,6 @@ export class RolesGuard implements CanActivate {
         const { user } = context.switchToHttp().getRequest();
 
         if (user.roles?.includes(Role.SUPER_ADMIN)) {
-            console.log('User is SUPER_ADMIN, access granted.');
             return true;
         }
 
