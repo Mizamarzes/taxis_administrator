@@ -8,6 +8,7 @@ import {
     Delete,
     HttpCode,
     HttpStatus,
+    Query,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -17,6 +18,7 @@ import { Auth } from '../auth/decorators/auth.decorator';
 import { Role } from '../common/enums/rol.enum';
 import { UserResponseDto } from './dto/user-response.dto';
 import { ApiResponseInterface } from '../common/interfaces/api-response.interface';
+import { PaginationDTO, PaginationResponseDto } from '../common/dto/pagination.dto';
 
 @ApiTags('users')
 @Controller('users')
@@ -41,20 +43,30 @@ export class UsersController {
 
     @Get('get-all')
     @Auth(Role.ADMIN)
-    @ApiOperation({ summary: 'Get all users' })
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Get all users with pagination' })
     @ApiResponse({ status: 200, type: [UserResponseDto] })
-    async findAll(): Promise<ApiResponseInterface<UserResponseDto[]>> {
-        const users = await this.usersService.findAll();
+    async findAll(
+        @Query() paginationDto: PaginationDTO,
+    ): Promise<ApiResponseInterface<PaginationResponseDto<UserResponseDto>>> {
+        const users = await this.usersService.findAll(paginationDto);
         return {
             message: 'Users retrieved successfully',
             data: users,
         };
     }
 
-    @Get(':id')
+    @Get('get-user/:id')
     @Auth(Role.ADMIN)
-    async findOne(@Param('id') id: string): Promise<UserResponseDto | null> {
-        return await this.usersService.findOne(+id);
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Get a user by ID' })
+    @ApiResponse({ status: 200, type: UserResponseDto })
+    async findOne(@Param('id') id: string): Promise<ApiResponseInterface<UserResponseDto>> {
+        const user = await this.usersService.findOne(+id);
+        return {
+            message: 'User retrieved successfully',
+            data: user,
+        };
     }
 
     @Patch(':id')
