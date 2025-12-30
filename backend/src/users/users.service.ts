@@ -268,7 +268,6 @@ export class UsersService {
             });
         } catch (error) {
             this.logger.error(`Error updating last login: ${error.message}`, error.stack);
-            // No lanzar excepción - no debe bloquear el login
         }
     }
 }

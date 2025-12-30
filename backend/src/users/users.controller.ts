@@ -73,7 +73,10 @@ export class UsersController {
     @Auth(Role.ADMIN)
     @ApiOperation({ summary: 'Update a user by ID' })
     @ApiResponse({ status: 200, type: UserResponseDto })
-    async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+    async update(
+        @Param('id') id: string,
+        @Body() updateUserDto: UpdateUserDto,
+    ): Promise<ApiResponseInterface<UserResponseDto>> {
         const user = await this.usersService.update(+id, updateUserDto);
         return {
             message: 'User updated successfully',
@@ -85,7 +88,7 @@ export class UsersController {
     @Auth(Role.ADMIN)
     @ApiOperation({ summary: 'Remove a user by ID' })
     @ApiResponse({ status: 200, type: UserResponseDto })
-    async remove(@Param('id') id: string) {
+    async remove(@Param('id') id: string): Promise<ApiResponseInterface> {
         const user = await this.usersService.remove(+id);
         return {
             message: 'User removed successfully',
