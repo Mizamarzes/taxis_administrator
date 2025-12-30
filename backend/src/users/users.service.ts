@@ -171,18 +171,64 @@ export class UsersService {
 
     async update(id: number, updateUserDto: UpdateUserDto): Promise<UserResponseDto | null> {
         try {
-            const user = await this.findOne(id);
+            const existingUser = await this.usersRepository.findOne({
+                where: { id },
+                relations: ['userRoles'],
+            });
 
-            if (!user) {
+            if (!existingUser) {
                 throw new NotFoundException(`User with ID ${id} not found`);
             }
 
-            console.log(updateUserDto);
-            console.log(user);
+            // Update name if provided
+            if (updateUserDto.name) {
+                existingUser.name = updateUserDto.name;
+            }
+
+            // Update password if provided
+            if (updateUserDto.password) {
+                existingUser.password = await bcrypt.hash(updateUserDto.password, 10);
+            }
+
+            // Update isActive if provided
+            if (updateUserDto.isActive !== undefined) {
+                existingUser.isActive = updateUserDto.isActive;
+            }
+
+            // Save user changes
+            await this.usersRepository.save(existingUser);
+
+            // Update roles if provided
+            if (updateUserDto.roleNames && updateUserDto.roleNames.length > 0) {
+                const roles = await this.roleRepository
+                    .createQueryBuilder('role')
+                    .where('role.name IN (:...names)', { names: updateUserDto.roleNames })
+                    .getMany();
+
+                if (roles.length !== updateUserDto.roleNames.length) {
+                    throw new BadRequestException('One or more roles not found');
+                }
+
+                // Delete existing roles
+                await this.userRoleRepository.delete({ userId: id });
+
+                // Assign new roles
+                await this.userRoleRepository.save(
+                    roles.map((role) => ({
+                        userId: id,
+                        roleId: role.id,
+                    })),
+                );
+            }
+
             return await this.findOne(id);
         } catch (error) {
             this.logger.error(`Error updating user: ${error.message}`, error.stack);
-            if (error instanceof BadRequestException || error instanceof NotFoundException) {
+            if (
+                error instanceof BadRequestException ||
+                error instanceof NotFoundException ||
+                error instanceof ConflictException
+            ) {
                 throw error;
             }
             throw new BadRequestException('Error updating user');
@@ -206,6 +252,23 @@ export class UsersService {
                 throw error;
             }
             throw new BadRequestException('Error removing user');
+        }
+    }
+
+    async updateLastLogin(id: number): Promise<void> {
+        try {
+            const user = await this.usersRepository.findOne({ where: { id } });
+
+            if (!user) {
+                throw new NotFoundException(`User with ID ${id} not found`);
+            }
+
+            await this.usersRepository.update(id, {
+                lastLogin: new Date(),
+            });
+        } catch (error) {
+            this.logger.error(`Error updating last login: ${error.message}`, error.stack);
+            // No lanzar excepción - no debe bloquear el login
         }
     }
 }

@@ -20,11 +20,17 @@ export class AuthService {
             throw new UnauthorizedException('Invalid credentials');
         }
 
+        if (!user.isActive) {
+            throw new UnauthorizedException('Account is inactive');
+        }
+
         const isPasswordValid = await bcrypt.compare(data.password, user.password);
 
         if (!isPasswordValid) {
             throw new UnauthorizedException('Invalid credentials');
         }
+
+        await this.usersService.updateLastLogin(user.id);
 
         const roles = user.userRoles.map((ur) => ur.role.name);
 

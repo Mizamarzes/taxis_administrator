@@ -56,7 +56,7 @@ export class UsersController {
         };
     }
 
-    @Get('get-user/:id')
+    @Get('get/:id')
     @Auth(Role.ADMIN)
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Get a user by ID' })
@@ -69,15 +69,27 @@ export class UsersController {
         };
     }
 
-    @Patch(':id')
+    @Patch('update/:id')
     @Auth(Role.ADMIN)
+    @ApiOperation({ summary: 'Update a user by ID' })
+    @ApiResponse({ status: 200, type: UserResponseDto })
     async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-        return await this.usersService.update(+id, updateUserDto);
+        const user = await this.usersService.update(+id, updateUserDto);
+        return {
+            message: 'User updated successfully',
+            data: user,
+        };
     }
 
-    @Delete(':id')
+    @Delete('remove/:id')
     @Auth(Role.ADMIN)
+    @ApiOperation({ summary: 'Remove a user by ID' })
+    @ApiResponse({ status: 200, type: UserResponseDto })
     async remove(@Param('id') id: string) {
-        return await this.usersService.remove(+id);
+        const user = await this.usersService.remove(+id);
+        return {
+            message: 'User removed successfully',
+            data: user,
+        };
     }
 }
