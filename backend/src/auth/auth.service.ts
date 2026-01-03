@@ -5,6 +5,7 @@ import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { Role } from '../common/enums/rol.enum';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
+import { Response } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -13,7 +14,7 @@ export class AuthService {
         private readonly jwtService: JwtService,
     ) {}
 
-    async login(data: LoginDto) {
+    async login(data: LoginDto, response: Response) {
         const user = await this.usersService.findOneByEmailForAuth(data.email);
 
         if (!user) {
@@ -38,9 +39,17 @@ export class AuthService {
 
         const token = await this.jwtService.signAsync(payload);
 
+        response.cookie('access_token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 60 * 60 * 1000,
+        });
+
         return {
-            access_token: token,
+            message: 'Login successful',
             email: user.email,
+            roles: roles,
         };
     }
 
@@ -52,5 +61,17 @@ export class AuthService {
         }
 
         return user;
+    }
+
+    async logout(response: Response) {
+        response.clearCookie('access_token', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+        });
+
+        return {
+            message: 'Logout successful',
+        };
     }
 }

@@ -6,8 +6,10 @@ import { runSeeds } from './database/seeders';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
+    // Create the NestJS application
     const app = await NestFactory.create(AppModule);
 
     // Global prefix
@@ -21,6 +23,17 @@ async function bootstrap() {
             transform: true,
         }),
     );
+
+    // Cookie parser middleware
+    app.use(cookieParser());
+
+    // CORS configuration
+    app.enableCors({
+        origin: process.env.FRONTEND_URL || 'http://localhost:3001',
+        credentials: true,
+        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
+    });
 
     // Global interceptors
     app.useGlobalInterceptors(new ResponseInterceptor());
