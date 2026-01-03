@@ -49,7 +49,6 @@ export class AuthService {
         return {
             message: 'Login successful',
             email: user.email,
-            roles: roles,
         };
     }
 

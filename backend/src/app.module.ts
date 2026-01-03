@@ -4,17 +4,26 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { RolesModule } from './roles/roles.module';
 import { PermissionsModule } from './permissions/permissions.module';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 @Module({
     imports: [
-        TypeOrmModule.forRoot({
-            type: 'postgres',
-            host: '127.0.0.1',
-            port: 5433,
-            username: 'user_crud',
-            password: 'root',
-            database: 'db_crud',
-            autoLoadEntities: true,
-            synchronize: true,
+        ConfigModule.forRoot({
+            isGlobal: true,
+            envFilePath: '.env',
+            cache: true,
+        }),
+        TypeOrmModule.forRootAsync({
+            useFactory: (configService: ConfigService) => ({
+                type: 'postgres',
+                host: configService.get('DB_HOST'),
+                port: configService.get<number>('DB_PORT'),
+                username: configService.get('DB_USERNAME'),
+                password: configService.get('DB_PASSWORD'),
+                database: configService.get('DB_NAME'),
+                entities: [__dirname + '/**/*.entity{.ts,.js}'],
+                synchronize: configService.get('NODE_ENV') === 'development',
+            }),
+            inject: [ConfigService],
         }),
         UsersModule,
         AuthModule,

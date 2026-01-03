@@ -1,16 +1,22 @@
-import axios from "axios";
+import api from "../../../lib/axios";
 import type { ILogin } from "../types/login";
 
 export async function loginService(payload: ILogin) {
   try {
-    const response = await axios.post("login", payload, {
-      withCredentials: true,
-    });
-    if (response.data.data.accessToken) {
-      return true;
-    }
-    throw new Error("No se recibió token de acceso");
+    const response = await api.post("auth/login", payload);
+    console.log(" monda ",response.data); 
+
   } catch (error) {
     throw new Error("Error al iniciar sesión");
   }
+}
+
+export async function logoutService() {
+    try {
+        const response =await api.post("auth/logout");
+        console.log(response.data);
+
+    } catch (error) {
+        throw new Error("Logout failed");
+    }
 }
