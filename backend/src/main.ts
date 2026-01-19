@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { runSeeds } from './database/seeders';
+import { runSeeds } from './config/database/seeders';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
@@ -29,11 +29,11 @@ async function bootstrap() {
     );
 
     // Cookie parser middleware
-    app.use(cookieParser(configService.get('COOKIE_SECRET')));
+    app.use(cookieParser(configService.get('cookies.secret')));
 
     // CORS configuration
     app.enableCors({
-        origin: configService.get('FRONTEND_URL') || 'http://localhost:5173',
+        origin: configService.get<string>('frontend.url') || 'http://localhost:5173',
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
         allowedHeaders: ['Content-Type', 'Authorization'],
@@ -60,10 +60,11 @@ async function bootstrap() {
     SwaggerModule.setup('docs', app, document);
 
     // Start the application
-    const port = configService.get<number>('PORT') || 3000;
+    const port = configService.get<number>('server.port') || 3000;
     await app.listen(port);
 
     console.log(`🚀 Application is running on: http://localhost:${port}`);
     console.log(`📚 Swagger docs: http://localhost:${port}/docs`);
 }
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
 bootstrap();

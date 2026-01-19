@@ -5,21 +5,23 @@ import { AuthModule } from './auth/auth.module';
 import { RolesModule } from './roles/roles.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { config } from './config/config';
 @Module({
     imports: [
         ConfigModule.forRoot({
             isGlobal: true,
             envFilePath: '.env',
             cache: true,
+            load: [config],
         }),
         TypeOrmModule.forRootAsync({
             useFactory: (configService: ConfigService) => ({
                 type: 'postgres',
-                host: configService.get('DB_HOST'),
-                port: configService.get<number>('DB_PORT'),
-                username: configService.get('DB_USERNAME'),
-                password: configService.get('DB_PASSWORD'),
-                database: configService.get('DB_NAME'),
+                host: configService.get('database.host'),
+                port: configService.get<number>('database.port'),
+                username: configService.get('database.username'),
+                password: configService.get('database.password'),
+                database: configService.get('database.database'),
                 entities: [__dirname + '/**/*.entity{.ts,.js}'],
                 synchronize: configService.get('NODE_ENV') === 'development',
             }),

@@ -1,5 +1,5 @@
 import { DataSource } from 'typeorm';
-import { Permission } from '../../permissions/entities/permission.entity';
+import { Permission } from '../../../permissions/entities/permission.entity';
 
 export async function seedPermissions(dataSource: DataSource) {
     const permissionRepository = dataSource.getRepository(Permission);
