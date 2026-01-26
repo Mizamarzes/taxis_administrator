@@ -15,7 +15,7 @@ const Login = () => {
     setError("");
 
     try {
-      await loginService({ correo: email, password });
+      await loginService({ email: email, password: password });
 
       navigate("/dashboard");
     } catch (error) {
