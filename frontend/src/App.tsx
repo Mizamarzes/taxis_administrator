@@ -11,6 +11,10 @@ const App = () => {
             <AppSideBar />
             <SidebarInset>
                 <Header />
+
+                <main>
+                    
+                </main>
             </SidebarInset>
         </SidebarProvider>
     </ThemeProvider>
