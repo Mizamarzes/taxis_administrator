@@ -1,7 +1,6 @@
 import { Logo } from "@/assets/Logo";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "./ui/sidebar";
 import { APP_SIDEBAR } from "@/constants";
-import { useEffect } from "react";
 import { cn } from "@/lib/utils";
 import Avatar from "react-avatar"
 import { Button } from "./ui/button";
@@ -9,10 +8,7 @@ import { LogOutIcon } from "lucide-react";
 import { UserMenu } from "./UserMenu";
 
 export const AppSideBar = () => {
-    const { isMobile, toggleSidebar } = useSidebar();
-
-    useEffect(() => toggleSidebar(),
-    [toggleSidebar]);
+    const { isMobile } = useSidebar();
 
     return (
         <Sidebar
@@ -22,7 +18,7 @@ export const AppSideBar = () => {
             {/* SideBar Header */}
             <SidebarHeader>
                 <SidebarMenu>
-                    <SidebarMenuItem>
+                    <SidebarMenuItem className="px-0.5 max-lg:p-2">
                         <Logo variant={isMobile ? "default" : "icon"} />
                     </SidebarMenuItem>
                 </SidebarMenu>
