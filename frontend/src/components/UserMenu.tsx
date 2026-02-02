@@ -1,11 +1,17 @@
-import React from 'react'
 import { DropdownMenu, DropdownMenuGroup, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuShortcut, DropdownMenuSeparator, DropdownMenuRadioGroup, DropdownMenuLabel, DropdownMenuRadioItem } from './ui/dropdown-menu'
 import { APP_SIDEBAR } from '@/constants'
 import Avatar from 'react-avatar'
 import { Button } from './ui/button'
 import { PlusIcon } from 'lucide-react'
+import { useAuth } from '@/contexts/AuthContext'
 
 export const UserMenu = () => {
+  const { logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+  };
+
   return (
     <DropdownMenu>
         <DropdownMenuTrigger>
@@ -99,7 +105,11 @@ export const UserMenu = () => {
 
             <DropdownMenuGroup>
                 {APP_SIDEBAR.userMenu.itemsSecondary.map((item) => (
-                    <DropdownMenuItem key={item.title}>
+                    <DropdownMenuItem 
+                        key={item.title}
+                        onClick={item.title === 'Sign out' ? handleLogout : undefined}
+                        className="cursor-pointer"
+                    >
                         <item.Icon />
 
                         <span>{item.title}</span>

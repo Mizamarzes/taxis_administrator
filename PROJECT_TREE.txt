@@ -1,0 +1,169 @@
+Estructura del Proyecto
+Generado: 2/2/2026, 16:35:46
+
+taxis_administrator/
+├── .gitignore
+├── .vscode/
+│   ├── launch.json
+│   └── settings.json
+├── README.md
+├── backend/
+│   ├── .env.example
+│   ├── .gitignore
+│   ├── .prettierrc
+│   ├── README.md
+│   ├── docker-compose.yml
+│   ├── eslint.config.mjs
+│   ├── nest-cli.json
+│   ├── package.json
+│   ├── project-tree.txt
+│   ├── scripts/
+│   │   └── tree.js
+│   ├── src/
+│   │   ├── app.module.ts
+│   │   ├── auth/
+│   │   │   ├── auth.controller.ts
+│   │   │   ├── auth.module.ts
+│   │   │   ├── auth.service.ts
+│   │   │   ├── constants/
+│   │   │   │   └── jwt.constant.ts
+│   │   │   ├── decorators/
+│   │   │   │   ├── auth.decorator.ts
+│   │   │   │   └── roles.decorator.ts
+│   │   │   ├── dto/
+│   │   │   │   └── login.dto.ts
+│   │   │   ├── guard/
+│   │   │   │   ├── auth.guard.ts
+│   │   │   │   └── roles.guard.ts
+│   │   │   └── interfaces/
+│   │   │       └── jwt-payload.interface.ts
+│   │   ├── common/
+│   │   │   ├── decorators/
+│   │   │   │   └── activeUser.decorator.ts
+│   │   │   ├── dto/
+│   │   │   │   └── pagination.dto.ts
+│   │   │   ├── enums/
+│   │   │   │   └── rol.enum.ts
+│   │   │   ├── filters/
+│   │   │   │   └── http-exception.filter.ts
+│   │   │   ├── helpers/
+│   │   │   │   └── pagination.helper.ts
+│   │   │   ├── interceptors/
+│   │   │   │   └── response.interceptor.ts
+│   │   │   ├── interfaces/
+│   │   │   │   ├── api-response.interface.ts
+│   │   │   │   └── requestWithUser.interface.ts
+│   │   │   └── subscribers/
+│   │   ├── config/
+│   │   │   ├── config.ts
+│   │   │   └── database/
+│   │   │       └── seeders/
+│   │   │           ├── index.ts
+│   │   │           ├── permissions.seed.ts
+│   │   │           ├── rolePermissions.seed.ts
+│   │   │           └── roles.seed.ts
+│   │   ├── main.ts
+│   │   ├── permissions/
+│   │   │   ├── dto/
+│   │   │   │   ├── create-permission.dto.ts
+│   │   │   │   └── update-permission.dto.ts
+│   │   │   ├── entities/
+│   │   │   │   └── permission.entity.ts
+│   │   │   ├── permissions.controller.ts
+│   │   │   ├── permissions.module.ts
+│   │   │   └── permissions.service.ts
+│   │   ├── roles/
+│   │   │   ├── dto/
+│   │   │   │   ├── create-role.dto.ts
+│   │   │   │   └── update-role.dto.ts
+│   │   │   ├── entities/
+│   │   │   │   ├── role.entity.ts
+│   │   │   │   └── rolePermission.entity.ts
+│   │   │   ├── roles.controller.ts
+│   │   │   ├── roles.module.ts
+│   │   │   └── roles.service.ts
+│   │   └── users/
+│   │       ├── dto/
+│   │       │   ├── create-user.dto.ts
+│   │       │   ├── update-user.dto.ts
+│   │       │   └── user-response.dto.ts
+│   │       ├── entities/
+│   │       │   ├── user.entity.ts
+│   │       │   └── userRole.entity.ts
+│   │       ├── mappers/
+│   │       │   └── user.mappers.ts
+│   │       ├── users.controller.ts
+│   │       ├── users.module.ts
+│   │       └── users.service.ts
+│   ├── test/
+│   │   ├── app.e2e-spec.ts
+│   │   └── jest-e2e.json
+│   ├── tsconfig.build.json
+│   └── tsconfig.json
+├── frontend/
+│   ├── .gitignore
+│   ├── .vscode/
+│   │   └── settings.json
+│   ├── README.md
+│   ├── components.json
+│   ├── eslint.config.js
+│   ├── index.html
+│   ├── package.json
+│   ├── public/
+│   │   └── favicon.svg
+│   ├── scripts/
+│   ├── src/
+│   │   ├── App.tsx
+│   │   ├── assets/
+│   │   │   └── Logo.tsx
+│   │   ├── components/
+│   │   │   ├── AppSideBar.tsx
+│   │   │   ├── DashboardCard.tsx
+│   │   │   ├── Header.tsx
+│   │   │   ├── Page.tsx
+│   │   │   ├── ThemeProvider.tsx
+│   │   │   ├── ThemeToggle.tsx
+│   │   │   ├── UserMenu.tsx
+│   │   │   └── ui/
+│   │   │       ├── button.tsx
+│   │   │       ├── card.tsx
+│   │   │       ├── dropdown-menu.tsx
+│   │   │       ├── input.tsx
+│   │   │       ├── separator.tsx
+│   │   │       ├── sheet.tsx
+│   │   │       ├── sidebar.tsx
+│   │   │       ├── skeleton.tsx
+│   │   │       └── tooltip.tsx
+│   │   ├── constants/
+│   │   │   └── index.ts
+│   │   ├── hooks/
+│   │   │   └── use-mobile.ts
+│   │   ├── index.css
+│   │   ├── lib/
+│   │   │   ├── axios.ts
+│   │   │   └── utils.ts
+│   │   ├── main.tsx
+│   │   ├── modules/
+│   │   │   ├── auth/
+│   │   │   │   ├── Login.tsx
+│   │   │   │   ├── services/
+│   │   │   │   │   └── login.service.ts
+│   │   │   │   └── types/
+│   │   │   │       └── login.ts
+│   │   │   ├── dashboard/
+│   │   │   │   └── Dashboard.tsx
+│   │   │   └── users/
+│   │   │       └── Users.tsx
+│   │   └── routes/
+│   │       ├── AppRouter.tsx
+│   │       ├── PermissionRoute.tsx
+│   │       ├── PrivateRouter.tsx
+│   │       └── PublicRoute.tsx
+│   ├── tsconfig.app.json
+│   ├── tsconfig.json
+│   ├── tsconfig.node.json
+│   └── vite.config.ts
+└── scripts/
+    ├── README.md
+    ├── analyze-project.js
+    └── generate-tree.js

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { loginService } from "./services/login.service";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -8,6 +9,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -16,7 +18,10 @@ const Login = () => {
 
     try {
       await loginService({ email: email, password: password });
-
+      
+      // Actualizar el estado de autenticación
+      login();
+      
       navigate("/dashboard");
     } catch (error) {
       console.error("Login error:", error);

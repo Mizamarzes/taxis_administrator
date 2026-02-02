@@ -6,9 +6,12 @@ import Avatar from "react-avatar"
 import { Button } from "./ui/button";
 import { LogOutIcon } from "lucide-react";
 import { UserMenu } from "./UserMenu";
+import { useAuth } from "@/contexts/AuthContext";
+import { Link } from "react-router-dom";
 
 export const AppSideBar = () => {
     const { isMobile } = useSidebar();
+    const { logout } = useAuth();
 
     return (
         <Sidebar
@@ -33,11 +36,17 @@ export const AppSideBar = () => {
                             {APP_SIDEBAR.primaryNav.map((item) => (
                                 <SidebarMenuItem key={item.title}>
                                     <SidebarMenuButton tooltip={item.title} asChild>
-                                        <a href={item.url}>
-                                            <item.Icon />
-
-                                            <span>{item.title}</span>
-                                        </a>
+                                        {item.url.startsWith('#') ? (
+                                            <a href={item.url}>
+                                                <item.Icon />
+                                                <span>{item.title}</span>
+                                            </a>
+                                        ) : (
+                                            <Link to={item.url}>
+                                                <item.Icon />
+                                                <span>{item.title}</span>
+                                            </Link>
+                                        )}
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                             ))}
@@ -53,11 +62,17 @@ export const AppSideBar = () => {
                                 {APP_SIDEBAR.secondaryNav.map((item) => (
                                     <SidebarMenuItem key={item.title}>
                                         <SidebarMenuButton tooltip={item.title} asChild>
-                                            <a href={item.url}>
-                                                <item.Icon />
-
-                                                <span>{item.title}</span>
-                                            </a>
+                                            {item.url.startsWith('#') ? (
+                                                <a href={item.url}>
+                                                    <item.Icon />
+                                                    <span>{item.title}</span>
+                                                </a>
+                                            ) : (
+                                                <Link to={item.url}>
+                                                    <item.Icon />
+                                                    <span>{item.title}</span>
+                                                </Link>
+                                            )}
                                         </SidebarMenuButton>
                                     </SidebarMenuItem>
                                 ))}
@@ -100,6 +115,7 @@ export const AppSideBar = () => {
                                     variant="ghost"
                                     size="icon-sm"
                                     aria-label="Logout"
+                                    onClick={logout}
                                 >
                                     <LogOutIcon />
                                 </Button>

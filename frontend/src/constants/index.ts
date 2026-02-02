@@ -54,7 +54,7 @@ export const APP_SIDEBAR = {
     },
     {
       title: 'Dashboard',
-      url: '#',
+      url: '/dashboard',
       Icon: LayoutDashboardIcon,
     },
     {
@@ -74,7 +74,7 @@ export const APP_SIDEBAR = {
     },
     {
       title: 'Users',
-      url: '#',
+      url: '/users',
       Icon: UsersIcon,
     },
   ],
