@@ -1,6 +1,6 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState } from 'react';
 import type { ReactNode } from 'react';
-import api from '@/lib/axios';
+import { logoutService } from '@/modules/auth/services/login.service';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -15,30 +15,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Verificar el estado de autenticación al cargar la app
-  useEffect(() => {
-    checkAuthStatus();
-  }, []);
-
-  const checkAuthStatus = async () => {
-    try {
-      // Intentar obtener el perfil del usuario o hacer un endpoint de verificación
-      await api.get('auth/profile');
-      setIsAuthenticated(true);
-    } catch (error) {
-      setIsAuthenticated(false);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const login = () => {
     setIsAuthenticated(true);
+    setIsLoading(false);
   };
 
   const logout = async () => {
     try {
-      await api.post('auth/logout');
+      await logoutService();
     } catch (error) {
       console.error('Logout error:', error);
     } finally {

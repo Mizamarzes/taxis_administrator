@@ -14,6 +14,16 @@
             "cwd": "${workspaceFolder}/backend", 
             "console": "integratedTerminal",
             "skipFiles": ["<node_internals>/**"]
+        },
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Launch Chrome React Vite",
+            "url": "http://localhost:5173",
+            "webRoot": "${workspaceFolder}/frontend",
+            "sourceMapPathOverrides": {
+                "/*": "${webRoot}/*"
+            }
         }
     ]
 }
