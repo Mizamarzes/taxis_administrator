@@ -23,7 +23,7 @@ import { config } from './config/config';
                 password: configService.get('database.password'),
                 database: configService.get('database.database'),
                 entities: [__dirname + '/**/*.entity{.ts,.js}'],
-                synchronize: configService.get('NODE_ENV') === 'development',
+                synchronize: configService.get('app.nodeEnv') === 'development',
             }),
             inject: [ConfigService],
         }),

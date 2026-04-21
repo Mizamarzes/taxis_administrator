@@ -15,8 +15,9 @@ export const AppSideBar = () => {
 
     return (
         <Sidebar
-            variant="floating"
+            variant="sidebar"
             collapsible="icon"
+            className="rounded-none border-r"
         >
             {/* SideBar Header */}
             <SidebarHeader>

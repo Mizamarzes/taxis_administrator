@@ -10,11 +10,10 @@ export const Layout = () => {
       <AppSideBar />
       <SidebarInset>
         <Header />
+        <PageHeader />
 
         <main>
           <Page>
-            <PageHeader />
-
             <div className="flex-1">
               <Outlet />
             </div>
