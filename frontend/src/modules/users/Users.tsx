@@ -63,7 +63,7 @@ const Users = () => {
   )
 
   return (
-    <div className="container mx-auto py-10">
+    <div className="w-full py-4">
       <div className="flex items-center justify-between gap-4 mb-6">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
