@@ -1,14 +1,7 @@
 /**
- * @copyright 2025 codewithsadee
- * @license Apache-2.0
- */
-
-/**
  * Assets
  */
 import {
-  FolderKanbanIcon,
-  HomeIcon,
   LayoutDashboardIcon,
   LifeBuoyIcon,
   LogOutIcon,
@@ -16,29 +9,36 @@ import {
   SettingsIcon,
   UserIcon,
   UsersIcon,
+  WalletIcon,
+  IdCardIcon
 } from 'lucide-react';
 
 export const APP_SIDEBAR = {
   primaryNav: [
-    {
-      title: 'Home',
-      url: '#',
-      Icon: HomeIcon,
-    },
     {
       title: 'Dashboard',
       url: '/dashboard',
       Icon: LayoutDashboardIcon,
     },
     {
-      title: 'Usuarios',
-      url: '/users',
-      Icon: UsersIcon,
+      title: 'Tarifas',
+      url: '/tarifas',
+      Icon: WalletIcon,
     },
     {
       title: 'Autos',
-      url: '/autos',
+      url: '/vehicles',
       Icon: Car,
+    },
+    {
+      title: 'Conductores',
+      url: '/drivers',
+      Icon: IdCardIcon,
+    },
+    {
+      title: 'Usuarios',
+      url: '/users',
+      Icon: UsersIcon,
     },
   ],
   secondaryNav: [
@@ -73,24 +73,24 @@ export const APP_SIDEBAR = {
   userMenu: {
     itemsPrimary: [
       {
-        title: 'View profile',
+        title: 'Ver perfil',
         url: '#',
         Icon: UserIcon,
-        kbd: '⌘K->P',
+        kbd: '',
       },
       {
-        title: 'Account settings',
+        title: 'Configuración',
         url: '#',
         Icon: SettingsIcon,
-        kbd: '⌘S',
+        kbd: '',
       },
     ],
     itemsSecondary: [
       {
-        title: 'Sign out',
+        title: 'Cerrar sesión',
         url: '#',
         Icon: LogOutIcon,
-        kbd: '⌥⇧Q',
+        kbd: '',
       },
     ],
   },

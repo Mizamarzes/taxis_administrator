@@ -10,6 +10,9 @@ import Users from "../modules/users/Users";
 import { Layout } from "../components/Layout";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { useAuth } from "@/contexts/AuthContext";
+import Tarifas from "@/modules/tarifas/Tarifas";
+import Drivers from "@/modules/drivers/Drivers";
+import Vehicles from "@/modules/vehicles/Vehicles";
 
 const AppRouter = () => {
   const { isAuthenticated } = useAuth();
@@ -37,6 +40,9 @@ const AppRouter = () => {
         <Route element={<ProtectedRoute />}>
           <Route element={<Layout />}>
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/tarifas" element={<Tarifas />} />
+            <Route path="/vehicles" element={<Vehicles />} />
+            <Route path="/drivers" element={<Drivers />} />
             <Route path="/users" element={<Users />} />
           </Route>
         </Route>
