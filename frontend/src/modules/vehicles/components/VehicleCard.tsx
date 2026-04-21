@@ -55,11 +55,9 @@ export const VehicleCard = ({ vehicle, onEdit, onDelete }: VehicleCardProps) => 
 
   return (
     <Card className="flex flex-col gap-0 overflow-hidden py-0">
-      {/* Top colored strip */}
       <div className="h-2 bg-primary w-full" />
 
       <CardContent className="flex flex-col gap-3 pt-5 pb-3 px-5">
-        {/* Icon + plate + status */}
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <div className="size-12 rounded-xl bg-muted flex items-center justify-center shrink-0">
@@ -75,13 +73,11 @@ export const VehicleCard = ({ vehicle, onEdit, onDelete }: VehicleCardProps) => 
             </div>
           </div>
 
-          {/* Status dot */}
           <span
             className={`mt-1 size-2.5 rounded-full shrink-0 ${statusDotColor[vehicle.status]}`}
           />
         </div>
 
-        {/* Badge */}
         <Badge
           variant="outline"
           className={`w-fit text-xs font-medium ${status.className}`}
@@ -89,10 +85,8 @@ export const VehicleCard = ({ vehicle, onEdit, onDelete }: VehicleCardProps) => 
           {status.label}
         </Badge>
 
-        {/* Divider */}
         <div className="border-t" />
 
-        {/* Details */}
         <div className="space-y-1.5 text-sm">
           <div className="flex items-center gap-2 text-muted-foreground">
             <span className="font-mono font-semibold text-foreground tracking-wider text-sm">

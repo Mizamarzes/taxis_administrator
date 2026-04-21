@@ -112,7 +112,6 @@ const Vehicles = () => {
 
   return (
     <div className="w-full py-4">
-      {/* Toolbar */}
       <div className="flex items-center justify-between gap-4 mb-6">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -129,7 +128,6 @@ const Vehicles = () => {
         </Button>
       </div>
 
-      {/* Grid de tarjetas */}
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-2">
           <Search className="size-8 opacity-30" />
