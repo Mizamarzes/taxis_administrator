@@ -2,7 +2,7 @@ import Avatar from "react-avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
-import { PencilIcon, TrashIcon, StarIcon, CarIcon, PhoneIcon } from "lucide-react"
+import { PencilIcon, TrashIcon, PhoneIcon } from "lucide-react"
 import type { Driver } from "../types/driver.types"
 
 const statusConfig: Record<Driver["status"], { label: string; className: string }> = {
@@ -31,11 +31,9 @@ export const DriverCard = ({ driver, onEdit, onDelete }: DriverCardProps) => {
 
   return (
     <Card className="flex flex-col gap-0 overflow-hidden py-0">
-      {/* Top colored strip */}
       <div className="h-2 bg-primary w-full" />
 
       <CardContent className="flex flex-col items-center gap-3 pt-6 pb-3 px-5">
-        {/* Avatar + status */}
         <div className="relative">
           <Avatar
             name={driver.name}
@@ -54,7 +52,6 @@ export const DriverCard = ({ driver, onEdit, onDelete }: DriverCardProps) => {
           />
         </div>
 
-        {/* Name + badge */}
         <div className="text-center">
           <h3 className="font-semibold text-base leading-tight">{driver.name}</h3>
           <Badge variant="outline" className={`mt-1 text-xs font-medium ${status.className}`}>
@@ -62,22 +59,7 @@ export const DriverCard = ({ driver, onEdit, onDelete }: DriverCardProps) => {
           </Badge>
         </div>
 
-        {/* Stats */}
-        <div className="flex items-center justify-center gap-4 w-full text-sm text-muted-foreground">
-          <div className="flex items-center gap-1">
-            <StarIcon className="size-3.5 fill-amber-400 text-amber-400" />
-            <span className="font-medium text-foreground">{driver.rating.toFixed(1)}</span>
-          </div>
-          <div className="w-px h-4 bg-border" />
-          <span>{driver.totalTrips} viajes</span>
-        </div>
-
-        {/* Details */}
         <div className="w-full space-y-1.5 text-sm">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <CarIcon className="size-3.5 shrink-0" />
-            <span className="truncate">{driver.vehicleModel} · {driver.vehiclePlate}</span>
-          </div>
           <div className="flex items-center gap-2 text-muted-foreground">
             <PhoneIcon className="size-3.5 shrink-0" />
             <span className="truncate">{driver.phone}</span>
