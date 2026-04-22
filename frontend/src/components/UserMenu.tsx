@@ -52,7 +52,7 @@ export const UserMenu = () => {
                 {APP_SIDEBAR.userMenu.itemsSecondary.map((item) => (
                     <DropdownMenuItem 
                         key={item.title}
-                        onClick={item.title === 'Sign out' ? handleLogout : undefined}
+                        onClick={item.title === 'Cerrar sesión' ? handleLogout : undefined}
                         className="cursor-pointer"
                     >
                         <item.Icon />
