@@ -1,6 +1,7 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { logoutService } from '@/modules/auth/services/login.service';
+import api from '@/lib/axios';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -14,6 +15,18 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    api.get('auth/profile')
+      .then(() => {
+        setIsAuthenticated(true);
+        setIsLoading(false);
+      })
+      .catch(() => {
+        setIsAuthenticated(false);
+        setIsLoading(false);
+      });
+  }, []);
 
   const login = () => {
     setIsAuthenticated(true);

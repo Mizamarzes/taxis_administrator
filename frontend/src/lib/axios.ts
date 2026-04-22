@@ -8,14 +8,18 @@ const api = axios.create({
     },
 });
 
+const AUTH_ENDPOINTS = ['auth/login', 'auth/logout', 'auth/profile'];
+
 api.interceptors.response.use(
     (response) => response,
-    async (error) => {
-        if (error.response?.status === 401) {
-            if (typeof window !== 'undefined') {
-                window.location.href = '/login';
-            }
+    (error) => {
+        const requestUrl: string = error.config?.url ?? '';
+        const isAuthEndpoint = AUTH_ENDPOINTS.some((endpoint) => requestUrl.includes(endpoint));
+
+        if (error.response?.status === 401 && !isAuthEndpoint) {
+            window.location.href = '/login';
         }
+
         return Promise.reject(error);
     }
 );
