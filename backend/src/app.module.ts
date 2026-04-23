@@ -9,6 +9,8 @@ import { config } from './config/config';
 import { DriversModule } from './drivers/drivers.module';
 import { TarifasModule } from './tarifas/tarifas.module';
 import { VehiclesModule } from './vehicles/vehicles.module';
+import { SettingsModule } from './settings/settings.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 @Module({
     imports: [
         ConfigModule.forRoot({
@@ -37,6 +39,8 @@ import { VehiclesModule } from './vehicles/vehicles.module';
         DriversModule,
         TarifasModule,
         VehiclesModule,
+        SettingsModule,
+        DashboardModule,
     ],
 })
 export class AppModule {}
