@@ -7,6 +7,8 @@ import { PermissionsModule } from './permissions/permissions.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { config } from './config/config';
 import { DriversModule } from './drivers/drivers.module';
+import { TarifasModule } from './tarifas/tarifas.module';
+import { VehiclesModule } from './vehicles/vehicles.module';
 @Module({
     imports: [
         ConfigModule.forRoot({
@@ -33,6 +35,8 @@ import { DriversModule } from './drivers/drivers.module';
         RolesModule,
         PermissionsModule,
         DriversModule,
+        TarifasModule,
+        VehiclesModule,
     ],
 })
 export class AppModule {}
