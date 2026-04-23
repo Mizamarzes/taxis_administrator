@@ -74,13 +74,13 @@ export const APP_SIDEBAR = {
     itemsPrimary: [
       {
         title: 'Ver perfil',
-        url: '#',
+        url: '/profile',
         Icon: UserIcon,
         kbd: '',
       },
       {
         title: 'Configuración',
-        url: '#',
+        url: '/settings',
         Icon: SettingsIcon,
         kbd: '',
       },

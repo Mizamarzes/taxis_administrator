@@ -2,6 +2,7 @@ import { DropdownMenu, DropdownMenuGroup, DropdownMenuTrigger, DropdownMenuConte
 import { APP_SIDEBAR } from '@/constants'
 import Avatar from 'react-avatar'
 import { useAuth } from '@/contexts/AuthContext'
+import { Link } from 'react-router-dom'
 
 export const UserMenu = () => {
   const { logout } = useAuth();
@@ -32,16 +33,16 @@ export const UserMenu = () => {
         >
             <DropdownMenuGroup>
                 {APP_SIDEBAR.userMenu.itemsPrimary.map((item) => (
-                    <DropdownMenuItem key={item.title}>
-                        <item.Icon />
-
-                        <span>{item.title}</span>
-
-                        {item.kbd && (
-                            <DropdownMenuShortcut>
-                                {item.kbd}
-                            </DropdownMenuShortcut>
-                        )}
+                    <DropdownMenuItem key={item.title} asChild>
+                        <Link to={item.url} className="flex w-full items-center gap-2">
+                            <item.Icon />
+                            <span>{item.title}</span>
+                            {item.kbd && (
+                                <DropdownMenuShortcut>
+                                    {item.kbd}
+                                </DropdownMenuShortcut>
+                            )}
+                        </Link>
                     </DropdownMenuItem>
                 ))}
             </DropdownMenuGroup>
