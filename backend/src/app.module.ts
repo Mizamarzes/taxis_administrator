@@ -6,6 +6,10 @@ import { RolesModule } from './roles/roles.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { config } from './config/config';
+import { DriversModule } from './drivers/drivers.module';
+import { DriversModule } from './drivers/drivers.module';
+import { DriversModule } from './drivers/drivers.module';
+import { DriversModule } from './drivers/drivers.module';
 @Module({
     imports: [
         ConfigModule.forRoot({
@@ -31,6 +35,7 @@ import { config } from './config/config';
         AuthModule,
         RolesModule,
         PermissionsModule,
+        DriversModule,
     ],
 })
 export class AppModule {}

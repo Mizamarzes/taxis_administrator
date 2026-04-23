@@ -2,15 +2,13 @@ import {
     Column,
     Entity,
     PrimaryGeneratedColumn,
-    CreateDateColumn,
-    UpdateDateColumn,
-    DeleteDateColumn,
     OneToMany,
 } from 'typeorm';
 import { UserRole } from './userRole.entity';
+import { BaseEntity } from '../../common/entities/base.entity';
 
 @Entity('users')
-export class User {
+export class User extends BaseEntity {
     @PrimaryGeneratedColumn()
     id: number;
 
@@ -32,21 +30,4 @@ export class User {
     @Column({ type: 'timestamp', nullable: true })
     lastLogin: Date;
 
-    @CreateDateColumn({ type: 'timestamp' })
-    createdAt: Date;
-
-    @UpdateDateColumn({ type: 'timestamp' })
-    updatedAt: Date;
-
-    @DeleteDateColumn({ type: 'timestamp', nullable: true })
-    deletedAt: Date;
-
-    @Column({ type: 'int', nullable: true })
-    createdBy: number;
-
-    @Column({ type: 'int', nullable: true })
-    updatedBy: number;
-
-    @Column({ type: 'int', nullable: true })
-    deletedBy: number;
 }
