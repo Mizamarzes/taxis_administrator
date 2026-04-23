@@ -50,17 +50,17 @@ export function EditUserModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Edit User</DialogTitle>
+          <DialogTitle>Editar usuario</DialogTitle>
           <DialogDescription>
-            Make changes to the user information. Click save when you're done.
+            Modifica la información del usuario. Haz clic en guardar cuando termines.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="edit-name">Name</Label>
+              <Label htmlFor="edit-name">Nombre</Label>
               <Input
                 id="edit-name"
                 value={formData.name}
@@ -71,7 +71,7 @@ export function EditUserModal({
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="edit-email">Email</Label>
+              <Label htmlFor="edit-email">Correo electrónico</Label>
               <Input
                 id="edit-email"
                 type="email"
@@ -83,7 +83,7 @@ export function EditUserModal({
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="edit-role">Role</Label>
+              <Label htmlFor="edit-role">Rol</Label>
               <Input
                 id="edit-role"
                 value={formData.role}
@@ -100,9 +100,9 @@ export function EditUserModal({
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              Cancel
+              Cancelar
             </Button>
-            <Button type="submit">Save Changes</Button>
+            <Button type="submit">Guardar cambios</Button>
           </DialogFooter>
         </form>
       </DialogContent>

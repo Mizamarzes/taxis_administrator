@@ -34,29 +34,29 @@ export function CreateUserModal({ open, onOpenChange }: CreateUserModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Create New User</DialogTitle>
+          <DialogTitle>Crear nuevo usuario</DialogTitle>
           <DialogDescription>
-            Add a new user to the system. Fill in all the required fields.
+            Agrega un nuevo usuario al sistema. Completa todos los campos requeridos.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="name">Nombre</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
                 }
-                placeholder="John Doe"
+                placeholder="Juan Pérez"
                 required
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Correo electrónico</Label>
               <Input
                 id="email"
                 type="email"
@@ -64,24 +64,24 @@ export function CreateUserModal({ open, onOpenChange }: CreateUserModalProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
                 }
-                placeholder="john@example.com"
+                placeholder="juan@ejemplo.com"
                 required
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="role">Role</Label>
+              <Label htmlFor="role">Rol</Label>
               <Input
                 id="role"
                 value={formData.role}
                 onChange={(e) =>
                   setFormData({ ...formData, role: e.target.value })
                 }
-                placeholder="Admin, Driver, User"
+                placeholder="Admin, Conductor, Usuario"
                 required
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">Contraseña</Label>
               <Input
                 id="password"
                 type="password"
@@ -100,9 +100,9 @@ export function CreateUserModal({ open, onOpenChange }: CreateUserModalProps) {
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              Cancel
+              Cancelar
             </Button>
-            <Button type="submit">Create User</Button>
+            <Button type="submit">Crear usuario</Button>
           </DialogFooter>
         </form>
       </DialogContent>

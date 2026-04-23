@@ -3,7 +3,10 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Search, UserPlusIcon } from "lucide-react"
 import { DriverCard } from "./components/DriverCard"
-import type { Driver } from "./types/driver.types"
+import { CreateDriverModal } from "./components/CreateDriverModal"
+import { EditDriverModal } from "./components/EditDriverModal"
+import { DeleteDriverModal } from "./components/DeleteDriverModal"
+import type { Driver, ICreateDriverPayload, IUpdateDriverPayload } from "./types/driver.types"
 
 const mockDrivers: Driver[] = [
   {
@@ -75,25 +78,57 @@ const mockDrivers: Driver[] = [
 
 const Drivers = () => {
   const [searchQuery, setSearchQuery] = useState("")
+  const [drivers, setDrivers] = useState<Driver[]>(mockDrivers)
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null)
+  const [createOpen, setCreateOpen] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
 
   const filtered = useMemo(() => {
     const q = searchQuery.toLowerCase()
-    return mockDrivers.filter(
+    return drivers.filter(
       (d) =>
         d.name.toLowerCase().includes(q) ||
         d.vehiclePlate.toLowerCase().includes(q) ||
         d.vehicleModel.toLowerCase().includes(q) ||
         d.phone.includes(q)
     )
-  }, [searchQuery])
+  }, [searchQuery, drivers])
 
   const handleEdit = (driver: Driver) => {
     setSelectedDriver(driver)
+    setEditOpen(true)
   }
 
   const handleDelete = (driver: Driver) => {
     setSelectedDriver(driver)
+    setDeleteOpen(true)
+  }
+
+  const handleCreate = (payload: ICreateDriverPayload) => {
+    const newDriver: Driver = {
+      ...payload,
+      id: Date.now().toString(),
+      status: "active",
+      rating: 0,
+      totalTrips: 0,
+      createdAt: new Date().toISOString().split("T")[0],
+    }
+    setDrivers((prev) => [newDriver, ...prev])
+    setCreateOpen(false)
+  }
+
+  const handleUpdate = (id: string, payload: IUpdateDriverPayload) => {
+    setDrivers((prev) =>
+      prev.map((d) => (d.id === id ? { ...d, ...payload } : d))
+    )
+    setEditOpen(false)
+    setSelectedDriver(null)
+  }
+
+  const handleConfirmDelete = (id: string) => {
+    setDrivers((prev) => prev.filter((d) => d.id !== id))
+    setSelectedDriver(null)
   }
 
   return (
@@ -108,7 +143,7 @@ const Drivers = () => {
             className="pl-9"
           />
         </div>
-        <Button>
+        <Button onClick={() => setCreateOpen(true)}>
           <UserPlusIcon className="size-4 mr-2" />
           Agregar conductor
         </Button>
@@ -131,6 +166,26 @@ const Drivers = () => {
           ))}
         </div>
       )}
+
+      <CreateDriverModal
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        onConfirm={handleCreate}
+      />
+
+      <EditDriverModal
+        open={editOpen}
+        driver={selectedDriver}
+        onClose={() => { setEditOpen(false); setSelectedDriver(null) }}
+        onConfirm={handleUpdate}
+      />
+
+      <DeleteDriverModal
+        open={deleteOpen}
+        driver={selectedDriver}
+        onClose={() => { setDeleteOpen(false); setSelectedDriver(null) }}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   )
 }

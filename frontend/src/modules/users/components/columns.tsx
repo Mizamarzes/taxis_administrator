@@ -32,7 +32,7 @@ export const getColumns = ({
   },
   {
     accessorKey: "status",
-    header: "Status",
+    header: "Estado",
     cell: ({ row }) => {
       const status = row.getValue("status") as string
       return (
@@ -43,30 +43,30 @@ export const getColumns = ({
               : "bg-gray-100 text-gray-800"
           }`}
         >
-          {status}
+          {status === "active" ? "Activo" : "Inactivo"}
         </span>
       )
     },
   },
   {
     accessorKey: "lastLogin",
-    header: "LastLogin",
+    header: "Último acceso",
     cell: ({ row }) => {
       const date = new Date(row.getValue("lastLogin"))
-      return date.toLocaleDateString()
+      return date.toLocaleDateString("es-ES")
     },
   },
   {
     accessorKey: "createdAt",
-    header: "Created At",
+    header: "Fecha de creación",
     cell: ({ row }) => {
       const date = new Date(row.getValue("createdAt"))
-      return date.toLocaleDateString()
+      return date.toLocaleDateString("es-ES")
     },
   },
   {
     id: "actions",
-    header: "Actions",
+    header: "Acciones",
     cell: ({ row }) => {
       const user = row.original
 
@@ -74,7 +74,7 @@ export const getColumns = ({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
+              <span className="sr-only">Abrir menú</span>
               <MoreVertical className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>

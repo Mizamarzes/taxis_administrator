@@ -3,7 +3,10 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Search, PlusIcon } from "lucide-react"
 import { VehicleCard } from "./components/VehicleCard"
-import type { Vehicle } from "./types/vehicle.types"
+import { CreateVehicleModal } from "./components/CreateVehicleModal"
+import { EditVehicleModal } from "./components/EditVehicleModal"
+import { DeleteVehicleModal } from "./components/DeleteVehicleModal"
+import type { Vehicle, ICreateVehiclePayload, IUpdateVehiclePayload } from "./types/vehicle.types"
 
 const mockVehicles: Vehicle[] = [
   {
@@ -86,11 +89,15 @@ const mockVehicles: Vehicle[] = [
 
 const Vehicles = () => {
   const [searchQuery, setSearchQuery] = useState("")
+  const [vehicles, setVehicles] = useState<Vehicle[]>(mockVehicles)
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null)
+  const [createOpen, setCreateOpen] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
 
   const filtered = useMemo(() => {
     const q = searchQuery.toLowerCase()
-    return mockVehicles.filter(
+    return vehicles.filter(
       (v) =>
         v.plate.toLowerCase().includes(q) ||
         v.brand.toLowerCase().includes(q) ||
@@ -98,16 +105,41 @@ const Vehicles = () => {
         v.color.toLowerCase().includes(q) ||
         (v.assignedDriver?.toLowerCase().includes(q) ?? false)
     )
-  }, [searchQuery])
+  }, [searchQuery, vehicles])
 
   const handleEdit = (vehicle: Vehicle) => {
     setSelectedVehicle(vehicle)
-    // TODO: abrir modal de edición
+    setEditOpen(true)
   }
 
   const handleDelete = (vehicle: Vehicle) => {
     setSelectedVehicle(vehicle)
-    // TODO: abrir modal de eliminación
+    setDeleteOpen(true)
+  }
+
+  const handleCreate = (payload: ICreateVehiclePayload) => {
+    const newVehicle: Vehicle = {
+      ...payload,
+      id: Date.now().toString(),
+      status: "available",
+      mileage: 0,
+      createdAt: new Date().toISOString().split("T")[0],
+    }
+    setVehicles((prev) => [newVehicle, ...prev])
+    setCreateOpen(false)
+  }
+
+  const handleUpdate = (id: string, payload: IUpdateVehiclePayload) => {
+    setVehicles((prev) =>
+      prev.map((v) => (v.id === id ? { ...v, ...payload } : v))
+    )
+    setEditOpen(false)
+    setSelectedVehicle(null)
+  }
+
+  const handleConfirmDelete = (id: string) => {
+    setVehicles((prev) => prev.filter((v) => v.id !== id))
+    setSelectedVehicle(null)
   }
 
   return (
@@ -122,7 +154,7 @@ const Vehicles = () => {
             className="pl-9"
           />
         </div>
-        <Button>
+        <Button onClick={() => setCreateOpen(true)}>
           <PlusIcon className="size-4 mr-2" />
           Agregar vehículo
         </Button>
@@ -145,6 +177,26 @@ const Vehicles = () => {
           ))}
         </div>
       )}
+
+      <CreateVehicleModal
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        onConfirm={handleCreate}
+      />
+
+      <EditVehicleModal
+        open={editOpen}
+        vehicle={selectedVehicle}
+        onClose={() => { setEditOpen(false); setSelectedVehicle(null) }}
+        onConfirm={handleUpdate}
+      />
+
+      <DeleteVehicleModal
+        open={deleteOpen}
+        vehicle={selectedVehicle}
+        onClose={() => { setDeleteOpen(false); setSelectedVehicle(null) }}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   )
 }

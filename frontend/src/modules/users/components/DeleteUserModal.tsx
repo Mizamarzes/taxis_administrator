@@ -7,6 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { TriangleAlertIcon } from "lucide-react"
 import type { User } from "../types/user.types"
 
 interface DeleteUserModalProps {
@@ -30,27 +31,30 @@ export function DeleteUserModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Delete User</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <TriangleAlertIcon className="h-5 w-5 text-destructive" />
+            Eliminar usuario
+          </DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete this user? This action cannot be
-            undone.
+            ¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.
           </DialogDescription>
         </DialogHeader>
-        <div className="py-4">
+        <div className="py-2">
           <p className="text-sm text-muted-foreground">
-            You are about to delete the user:{" "}
-            <span className="font-semibold text-foreground">{user.name}</span> (
+            Estás a punto de eliminar al usuario:{" "}
+            <span className="font-semibold text-foreground">{user.name}</span>{" "}(
             {user.email})
           </p>
+          <p className="mt-2 text-sm text-destructive">Esta acción no se puede deshacer.</p>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            Cancelar
           </Button>
           <Button variant="destructive" onClick={handleDelete}>
-            Delete User
+            Eliminar usuario
           </Button>
         </DialogFooter>
       </DialogContent>

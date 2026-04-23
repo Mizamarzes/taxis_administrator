@@ -7,7 +7,7 @@ import { DeleteUserModal } from "./components/DeleteUserModal"
 import type { User } from "./types/user.types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Search } from "lucide-react"
+import { Search, PlusIcon } from "lucide-react"
 
 // Datos de ejemplo - reemplaza esto con una llamada a tu API
 const mockUsers: User[] = [
@@ -68,13 +68,16 @@ const Users = () => {
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search"
+            placeholder="Buscar usuario..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
           />
         </div>
-        <Button onClick={() => setIsCreateModalOpen(true)}>add</Button>
+        <Button onClick={() => setIsCreateModalOpen(true)}>
+          <PlusIcon className="size-4 mr-2" />
+          Agregar usuario
+        </Button>
       </div>
 
       <DataTable columns={columns} data={mockUsers} />
