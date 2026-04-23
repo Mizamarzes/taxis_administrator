@@ -7,9 +7,6 @@ import { PermissionsModule } from './permissions/permissions.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { config } from './config/config';
 import { DriversModule } from './drivers/drivers.module';
-import { DriversModule } from './drivers/drivers.module';
-import { DriversModule } from './drivers/drivers.module';
-import { DriversModule } from './drivers/drivers.module';
 @Module({
     imports: [
         ConfigModule.forRoot({

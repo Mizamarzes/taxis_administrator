@@ -6,31 +6,31 @@ import { DriverStatus } from '../enums/driverStatus.enum';
 @Entity('drivers')
 export class Driver extends BaseEntity {
     @PrimaryGeneratedColumn()
-    id: number;
+    id!: number;
 
     @OneToOne(() => User, { eager: false, nullable: false })
     @JoinColumn({ name: 'user_id' })
-    user: User;
+    user!: User;
 
     @Column({ name: 'user_id', unique: true })
-    userId: number;
+    userId!: number;
 
     @Column({
         type: 'enum',
         enum: DriverStatus,
         default: DriverStatus.ACTIVE,
     })
-    status: DriverStatus;
+    status!: DriverStatus;
 
     @Column({ name: 'hire_date', type: 'date', nullable: true })
-    hireDate: Date;
+    hireDate!: Date;
 
     @Column({ name: 'vehicle_id', type: 'int', nullable: true })
-    vehicleId: number;
+    vehicleId!: number;
 
     @Column({ name: 'photo_url', type: 'text', nullable: true })
-    photoUrl: string;
+    photoUrl!: string;
 
     @Column({ type: 'varchar', length: 50, nullable: true })
-    phone: string;
+    phone!: string;
 }

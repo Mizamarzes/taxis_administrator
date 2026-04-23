@@ -180,25 +180,20 @@ export class UsersService {
                 throw new NotFoundException(`User with ID ${id} not found`);
             }
 
-            // Update name if provided
             if (updateUserDto.name) {
                 existingUser.name = updateUserDto.name;
             }
 
-            // Update password if provided
             if (updateUserDto.password) {
                 existingUser.password = await bcrypt.hash(updateUserDto.password, 10);
             }
 
-            // Update isActive if provided
             if (updateUserDto.isActive !== undefined) {
                 existingUser.isActive = updateUserDto.isActive;
             }
 
-            // Save user changes
             await this.usersRepository.save(existingUser);
 
-            // Update roles if provided
             if (updateUserDto.roleNames && updateUserDto.roleNames.length > 0) {
                 const roles = await this.roleRepository
                     .createQueryBuilder('role')
@@ -209,10 +204,8 @@ export class UsersService {
                     throw new BadRequestException('One or more roles not found');
                 }
 
-                // Delete existing roles
                 await this.userRoleRepository.delete({ userId: id });
 
-                // Assign new roles
                 await this.userRoleRepository.save(
                     roles.map((role) => ({
                         userId: id,
