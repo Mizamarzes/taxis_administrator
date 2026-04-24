@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from "react"
+import { format } from "date-fns"
 import type { DateRange } from "react-day-picker"
 import { DataTable } from "./components/DataTable"
 import { getColumns } from "./components/columns"
@@ -11,92 +12,113 @@ import { getTarifasService } from "./services/tarifa.service"
 import { Button } from "@/components/ui/button"
 import { PlusIcon } from "lucide-react"
 
+const LIMIT = 20
+
 const Tarifas = () => {
-  const [tarifas, setTarifas] = useState<Tarifa[]>([])
-  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined)
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
-  const [selectedTarifa, setSelectedTarifa] = useState<Tarifa | null>(null)
+    const [tarifas, setTarifas] = useState<Tarifa[]>([])
+    const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined)
+    const [search, setSearch] = useState("")
+    const [debouncedSearch, setDebouncedSearch] = useState("")
+    const [page, setPage] = useState(1)
+    const [totalPages, setTotalPages] = useState(1)
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+    const [selectedTarifa, setSelectedTarifa] = useState<Tarifa | null>(null)
 
-  const fetchTarifas = useCallback(async () => {
-    try {
-      const response = await getTarifasService({ page: 1, limit: 100 })
-      setTarifas(response.data.items)
-    } catch {
-    }
-  }, [])
+    useEffect(() => {
+        const timer = setTimeout(() => setDebouncedSearch(search), 400)
+        return () => clearTimeout(timer)
+    }, [search])
 
-  useEffect(() => {
-    fetchTarifas()
-  }, [fetchTarifas])
+    useEffect(() => {
+        setPage(1)
+    }, [debouncedSearch, dateRange])
 
-  const handleEdit = (tarifa: Tarifa) => {
-    setSelectedTarifa(tarifa)
-    setIsEditModalOpen(true)
-  }
+    const fetchTarifas = useCallback(async () => {
+        try {
+            const params: {
+                page: number
+                limit: number
+                search?: string
+                tarifaDateFrom?: string
+                tarifaDateTo?: string
+            } = { page, limit: LIMIT }
 
-  const handleDelete = (tarifa: Tarifa) => {
-    setSelectedTarifa(tarifa)
-    setIsDeleteModalOpen(true)
-  }
+            if (debouncedSearch) params.search = debouncedSearch
+            if (dateRange?.from) params.tarifaDateFrom = format(dateRange.from, "yyyy-MM-dd")
+            if (dateRange?.to) params.tarifaDateTo = format(dateRange.to, "yyyy-MM-dd")
 
-  const filteredByDate = useMemo(() => {
-    if (!dateRange?.from && !dateRange?.to) return tarifas
-    return tarifas.filter((t) => {
-      if (!t.tarifaDate) return false
-      const date = new Date(t.tarifaDate)
-      const from = dateRange.from ? new Date(dateRange.from.setHours(0, 0, 0, 0)) : null
-      const to = dateRange.to ? new Date(dateRange.to.setHours(23, 59, 59, 999)) : null
-      if (from && date < from) return false
-      if (to && date > to) return false
-      return true
-    })
-  }, [tarifas, dateRange])
-
-  const columns = useMemo(
-    () => getColumns({ onEdit: handleEdit, onDelete: handleDelete }),
-    []
-  )
-
-  return (
-    <div className="w-full py-4">
-      <DataTable
-        columns={columns}
-        data={filteredByDate}
-        filterPlaceholder="Buscar por conductor, vehículo o método..."
-        toolbarRight={
-          <div className="flex items-center gap-2">
-            <DateRangeFilter value={dateRange} onChange={setDateRange} />
-            <Button onClick={() => setIsCreateModalOpen(true)}>
-              <PlusIcon className="size-4 mr-2" />
-              Nueva tarifa
-            </Button>
-          </div>
+            const response = await getTarifasService(params)
+            setTarifas(response.data.items)
+            setTotalPages(response.data.totalPages || 1)
+        } catch {
         }
-      />
+    }, [page, debouncedSearch, dateRange])
 
-      <CreateTarifaModal
-        open={isCreateModalOpen}
-        onOpenChange={setIsCreateModalOpen}
-        onSuccess={fetchTarifas}
-      />
+    useEffect(() => {
+        fetchTarifas()
+    }, [fetchTarifas])
 
-      <EditTarifaModal
-        open={isEditModalOpen}
-        onOpenChange={setIsEditModalOpen}
-        tarifa={selectedTarifa}
-        onSuccess={fetchTarifas}
-      />
+    const handleEdit = (tarifa: Tarifa) => {
+        setSelectedTarifa(tarifa)
+        setIsEditModalOpen(true)
+    }
 
-      <DeleteTarifaModal
-        open={isDeleteModalOpen}
-        onOpenChange={setIsDeleteModalOpen}
-        tarifa={selectedTarifa}
-        onSuccess={fetchTarifas}
-      />
-    </div>
-  )
+    const handleDelete = (tarifa: Tarifa) => {
+        setSelectedTarifa(tarifa)
+        setIsDeleteModalOpen(true)
+    }
+
+    const columns = useMemo(
+        () => getColumns({ onEdit: handleEdit, onDelete: handleDelete }),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        []
+    )
+
+    return (
+        <div className="w-full py-4">
+            <DataTable
+                columns={columns}
+                data={tarifas}
+                filterPlaceholder="Buscar por descripción..."
+                searchValue={search}
+                onSearchChange={setSearch}
+                pageCount={totalPages}
+                currentPage={page}
+                onPageChange={setPage}
+                toolbarRight={
+                    <div className="flex items-center gap-2">
+                        <DateRangeFilter value={dateRange} onChange={setDateRange} />
+                        <Button onClick={() => setIsCreateModalOpen(true)}>
+                            <PlusIcon className="size-4 mr-2" />
+                            Nueva tarifa
+                        </Button>
+                    </div>
+                }
+            />
+
+            <CreateTarifaModal
+                open={isCreateModalOpen}
+                onOpenChange={setIsCreateModalOpen}
+                onSuccess={fetchTarifas}
+            />
+
+            <EditTarifaModal
+                open={isEditModalOpen}
+                onOpenChange={setIsEditModalOpen}
+                tarifa={selectedTarifa}
+                onSuccess={fetchTarifas}
+            />
+
+            <DeleteTarifaModal
+                open={isDeleteModalOpen}
+                onOpenChange={setIsDeleteModalOpen}
+                tarifa={selectedTarifa}
+                onSuccess={fetchTarifas}
+            />
+        </div>
+    )
 }
 
 export default Tarifas

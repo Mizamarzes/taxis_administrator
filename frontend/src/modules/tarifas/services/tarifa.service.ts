@@ -25,6 +25,9 @@ export async function createTarifaService(
 export async function getTarifasService(params: {
   page: number
   limit: number
+  search?: string
+  tarifaDateFrom?: string
+  tarifaDateTo?: string
 }): Promise<ApiResponse<ITarifasPaginatedResponse>> {
   try {
     const response = await api.get<ApiResponse<ITarifasPaginatedResponse>>(
