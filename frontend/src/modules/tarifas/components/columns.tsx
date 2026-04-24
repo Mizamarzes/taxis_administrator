@@ -1,5 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table"
-import type { Tarifa } from "../types/tarifa.types"
+import type { PaymentMethod, Tarifa } from "../types/tarifa.types"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -10,17 +10,17 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { MoreVertical, Pencil, Trash2 } from "lucide-react"
 
-const statusConfig: Record<Tarifa["status"], { label: string; className: string }> = {
-  paid: {
-    label: "Pagada",
+const paymentMethodConfig: Record<PaymentMethod, { label: string; className: string }> = {
+  cash: {
+    label: "Efectivo",
     className: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
   },
-  pending: {
-    label: "Pendiente",
-    className: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+  nequi: {
+    label: "Nequi",
+    className: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
   },
-  overdue: {
-    label: "Vencida",
+  daviplata: {
+    label: "Daviplata",
     className: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
   },
 }
@@ -41,18 +41,20 @@ export const getColumns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<Tarifa
     ),
   },
   {
-    accessorKey: "driverName",
-    header: "Conductor",
+    accessorKey: "driverId",
+    header: "Conductor ID",
     cell: ({ row }) => (
-      <span className="font-medium">{row.getValue("driverName")}</span>
+      <span className="font-medium">
+        {row.getValue("driverId") ?? "—"}
+      </span>
     ),
   },
   {
-    accessorKey: "vehiclePlate",
-    header: "Placa",
+    accessorKey: "vehicleId",
+    header: "Vehículo ID",
     cell: ({ row }) => (
       <span className="font-mono font-semibold tracking-wider text-sm">
-        {row.getValue("vehiclePlate")}
+        {row.getValue("vehicleId") ?? "—"}
       </span>
     ),
   },
@@ -63,16 +65,18 @@ export const getColumns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<Tarifa
       const amount = row.getValue("amount") as number
       return (
         <span className="font-semibold">
-          ${amount.toLocaleString("es-CO")}
+          ${Number(amount).toLocaleString("es-CO")}
         </span>
       )
     },
   },
   {
-    accessorKey: "date",
+    accessorKey: "tarifaDate",
     header: "Fecha",
     cell: ({ row }) => {
-      const date = new Date(row.getValue("date"))
+      const val = row.getValue("tarifaDate") as string | null
+      if (!val) return <span className="text-muted-foreground">—</span>
+      const date = new Date(val)
       return date.toLocaleDateString("es-CO", {
         year: "numeric",
         month: "short",
@@ -81,11 +85,12 @@ export const getColumns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<Tarifa
     },
   },
   {
-    accessorKey: "status",
-    header: "Estado",
+    accessorKey: "paymentMethod",
+    header: "Método de pago",
     cell: ({ row }) => {
-      const status = row.getValue("status") as Tarifa["status"]
-      const config = statusConfig[status]
+      const method = row.getValue("paymentMethod") as PaymentMethod | null
+      if (!method) return <span className="text-muted-foreground text-sm">—</span>
+      const config = paymentMethodConfig[method]
       return (
         <Badge variant="outline" className={`text-xs font-medium ${config.className}`}>
           {config.label}
@@ -94,11 +99,11 @@ export const getColumns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<Tarifa
     },
   },
   {
-    accessorKey: "notes",
-    header: "Notas",
+    accessorKey: "description",
+    header: "Descripción",
     cell: ({ row }) => (
-      <span className="text-sm text-muted-foreground truncate max-w-[140px] block">
-        {row.getValue("notes") ?? "—"}
+      <span className="text-sm text-muted-foreground truncate max-w-35 block">
+        {row.getValue("description") ?? "—"}
       </span>
     ),
   },

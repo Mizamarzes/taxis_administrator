@@ -17,68 +17,72 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import type { Tarifa } from "../types/tarifa.types"
+import type { IUpdateTarifaPayload, PaymentMethod, Tarifa } from "../types/tarifa.types"
+import { updateTarifaService } from "../services/tarifa.service"
 
 interface EditTarifaModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   tarifa: Tarifa | null
+  onSuccess?: () => void
 }
 
-export function EditTarifaModal({ open, onOpenChange, tarifa }: EditTarifaModalProps) {
-  const [formData, setFormData] = useState<Partial<Tarifa>>({})
+export function EditTarifaModal({ open, onOpenChange, tarifa, onSuccess }: EditTarifaModalProps) {
+  const [formData, setFormData] = useState<IUpdateTarifaPayload>({})
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    if (tarifa) setFormData(tarifa)
+    if (tarifa) {
+      setFormData({
+        amount: tarifa.amount,
+        description: tarifa.description ?? "",
+        paymentMethod: tarifa.paymentMethod ?? undefined,
+        tarifaDate: tarifa.tarifaDate ?? "",
+        driverId: tarifa.driverId ?? undefined,
+        vehicleId: tarifa.vehicleId ?? undefined,
+      })
+    }
   }, [tarifa])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target
     setFormData((prev) => ({
       ...prev,
-      [id]: id === "amount" ? Number(value) : value,
+      [id]:
+        id === "amount" || id === "driverId" || id === "vehicleId"
+          ? value === "" ? undefined : Number(value)
+          : value,
     }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("Actualizar tarifa:", formData)
-    // TODO: llamada a API
-    onOpenChange(false)
+    if (!tarifa) return
+    setIsLoading(true)
+    try {
+      await updateTarifaService(tarifa.id, formData)
+      onOpenChange(false)
+      onSuccess?.()
+    } catch {
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   if (!tarifa) return null
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[440px]">
+      <DialogContent className="sm:max-w-110">
         <DialogHeader>
           <DialogTitle>Editar Tarifa</DialogTitle>
           <DialogDescription>
-            Actualiza los datos de la remesa #{String(tarifa.id).padStart(3, "0")}.
+            Actualizando tarifa #{String(tarifa.id).padStart(3, "0")}.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="driverName">Conductor</Label>
-              <Input
-                id="driverName"
-                value={formData.driverName ?? ""}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="vehiclePlate">Placa</Label>
-              <Input
-                id="vehiclePlate"
-                value={formData.vehiclePlate ?? ""}
-                onChange={handleChange}
-                required
-              />
-            </div>
             <div className="grid gap-2">
               <Label htmlFor="amount">Monto ($)</Label>
               <Input
@@ -91,38 +95,60 @@ export function EditTarifaModal({ open, onOpenChange, tarifa }: EditTarifaModalP
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="date">Fecha</Label>
+              <Label htmlFor="driverId">ID Conductor</Label>
               <Input
-                id="date"
-                type="date"
-                value={formData.date ?? ""}
+                id="driverId"
+                type="number"
+                min={1}
+                value={formData.driverId ?? ""}
                 onChange={handleChange}
-                required
               />
             </div>
             <div className="grid gap-2">
-              <Label>Estado</Label>
+              <Label htmlFor="vehicleId">ID Vehículo</Label>
+              <Input
+                id="vehicleId"
+                type="number"
+                min={1}
+                value={formData.vehicleId ?? ""}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="tarifaDate">Fecha</Label>
+              <Input
+                id="tarifaDate"
+                type="date"
+                value={formData.tarifaDate ?? ""}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label>Método de pago</Label>
               <Select
-                value={formData.status}
+                value={formData.paymentMethod ?? ""}
                 onValueChange={(val) =>
-                  setFormData((prev) => ({ ...prev, status: val as Tarifa["status"] }))
+                  setFormData((prev) => ({
+                    ...prev,
+                    paymentMethod: val as PaymentMethod,
+                  }))
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar estado" />
+                  <SelectValue placeholder="Seleccionar método" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="paid">Pagada</SelectItem>
-                  <SelectItem value="pending">Pendiente</SelectItem>
-                  <SelectItem value="overdue">Vencida</SelectItem>
+                  <SelectItem value="cash">Efectivo</SelectItem>
+                  <SelectItem value="nequi">Nequi</SelectItem>
+                  <SelectItem value="daviplata">Daviplata</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="notes">Notas (opcional)</Label>
+              <Label htmlFor="description">Descripción (opcional)</Label>
               <Input
-                id="notes"
-                value={formData.notes ?? ""}
+                id="description"
+                value={formData.description ?? ""}
                 onChange={handleChange}
               />
             </div>
@@ -132,7 +158,9 @@ export function EditTarifaModal({ open, onOpenChange, tarifa }: EditTarifaModalP
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit">Guardar cambios</Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Guardando..." : "Guardar cambios"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

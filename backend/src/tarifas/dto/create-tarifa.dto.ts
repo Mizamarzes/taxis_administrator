@@ -1,10 +1,10 @@
 import { Transform, Type } from 'class-transformer';
 import {
     IsDateString,
-    IsDecimal,
     IsEnum,
     IsInt,
     IsNotEmpty,
+    IsNumber,
     IsOptional,
     IsPositive,
     IsString,
@@ -15,7 +15,8 @@ import { PaymentMethod } from '../enums/payment-method.enum';
 export class CreateTarifaDto {
     @ApiProperty({ example: 25000.0, description: 'Monto de la tarifa' })
     @Type(() => Number)
-    @IsDecimal({ decimal_digits: '0,2' })
+    @IsNumber({ maxDecimalPlaces: 2 })
+    @IsPositive()
     @IsNotEmpty()
     amount!: number;
 

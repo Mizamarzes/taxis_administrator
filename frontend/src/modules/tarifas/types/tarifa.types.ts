@@ -1,27 +1,40 @@
+export type PaymentMethod = "cash"  | "nequi" | "daviplata"
+
 export interface Tarifa {
-  id: string
-  driverName: string
-  vehiclePlate: string
+  id: number
   amount: number
-  date: string
-  status: "paid" | "pending" | "overdue"
-  notes?: string
+  description: string | null
+  paymentMethod: PaymentMethod | null
+  tarifaDate: string | null
+  driverId: number | null
+  vehicleId: number | null
   createdAt: string
+  updatedAt: string
 }
 
 export interface ICreateTarifaPayload {
-  driverName: string
-  vehiclePlate: string
   amount: number
-  date: string
-  notes?: string
+  description?: string
+  paymentMethod?: PaymentMethod
+  tarifaDate?: string
+  driverId?: number
+  vehicleId?: number
 }
 
 export interface IUpdateTarifaPayload {
-  driverName?: string
-  vehiclePlate?: string
   amount?: number
-  date?: string
-  status?: Tarifa["status"]
-  notes?: string
+  description?: string
+  paymentMethod?: PaymentMethod
+  tarifaDate?: string
+  driverId?: number
+  vehicleId?: number
+}
+
+export interface ITarifasPaginatedResponse {
+  items: Tarifa[]
+  totalItems: number
+  currentPage: number
+  totalPages: number
+  previousPage: number | null
+  nextPage: number | null
 }

@@ -19,6 +19,8 @@ import { Auth } from '../auth/decorators/auth.decorator';
 import { Role } from '../common/enums/rol.enum';
 import { ApiResponseInterface } from '../common/interfaces/api-response.interface';
 import { PaginationDTO, PaginationResponseDto } from '../common/dto/pagination.dto';
+import { ActiveUser } from '../common/decorators/activeUser.decorator';
+import type { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 
 @ApiTags('tarifas')
 @Controller('tarifas')
@@ -32,8 +34,9 @@ export class TarifasController {
     @ApiResponse({ status: 201, type: TarifaResponseDto })
     async create(
         @Body() createTarifaDto: CreateTarifaDto,
+        @ActiveUser() user: JwtPayload,
     ): Promise<ApiResponseInterface<TarifaResponseDto>> {
-        const tarifa = await this.tarifasService.create(createTarifaDto);
+        const tarifa = await this.tarifasService.create(createTarifaDto, user.sub);
         return {
             message: 'Tarifa created successfully',
             data: tarifa,
@@ -76,8 +79,9 @@ export class TarifasController {
     async update(
         @Param('id') id: string,
         @Body() updateTarifaDto: UpdateTarifaDto,
+        @ActiveUser() user: JwtPayload,
     ): Promise<ApiResponseInterface<TarifaResponseDto>> {
-        const tarifa = await this.tarifasService.update(+id, updateTarifaDto);
+        const tarifa = await this.tarifasService.update(+id, updateTarifaDto, user.sub);
         return {
             message: 'Tarifa updated successfully',
             data: tarifa,
@@ -88,8 +92,11 @@ export class TarifasController {
     @Auth(Role.ADMIN)
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Remove a tarifa by ID' })
-    async remove(@Param('id') id: string): Promise<ApiResponseInterface> {
-        const result = await this.tarifasService.remove(+id);
+    async remove(
+        @Param('id') id: string,
+        @ActiveUser() user: JwtPayload,
+    ): Promise<ApiResponseInterface> {
+        const result = await this.tarifasService.remove(+id, user.sub);
         return {
             message: 'Tarifa removed successfully',
             data: result,

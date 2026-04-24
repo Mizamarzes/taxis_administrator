@@ -10,43 +10,64 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import type { ICreateTarifaPayload } from "../types/tarifa.types"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import type { ICreateTarifaPayload, PaymentMethod } from "../types/tarifa.types"
+import { createTarifaService } from "../services/tarifa.service"
 
 interface CreateTarifaModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  onSuccess?: () => void
 }
 
 const emptyForm: ICreateTarifaPayload = {
-  driverName: "",
-  vehiclePlate: "",
   amount: 0,
-  date: "",
-  notes: "",
+  description: "",
+  paymentMethod: undefined,
+  tarifaDate: "",
+  driverId: undefined,
+  vehicleId: undefined,
 }
 
-export function CreateTarifaModal({ open, onOpenChange }: CreateTarifaModalProps) {
+export function CreateTarifaModal({ open, onOpenChange, onSuccess }: CreateTarifaModalProps) {
   const [formData, setFormData] = useState<ICreateTarifaPayload>(emptyForm)
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target
     setFormData((prev) => ({
       ...prev,
-      [id]: id === "amount" ? Number(value) : value,
+      [id]:
+        id === "amount" || id === "driverId" || id === "vehicleId"
+          ? value === "" ? undefined : Number(value)
+          : value,
     }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("Crear tarifa:", formData)
-    // TODO: llamada a API
-    onOpenChange(false)
-    setFormData(emptyForm)
+    setIsLoading(true)
+    try {
+      await createTarifaService(formData)
+      onOpenChange(false)
+      setFormData(emptyForm)
+      onSuccess?.()
+    } catch {
+      // error handled silently; could add toast here
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[440px]">
+      <DialogContent className="sm:max-w-110">
         <DialogHeader>
           <DialogTitle>Nueva Tarifa</DialogTitle>
           <DialogDescription>
@@ -56,26 +77,6 @@ export function CreateTarifaModal({ open, onOpenChange }: CreateTarifaModalProps
 
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="driverName">Conductor</Label>
-              <Input
-                id="driverName"
-                placeholder="Nombre del conductor"
-                value={formData.driverName}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="vehiclePlate">Placa</Label>
-              <Input
-                id="vehiclePlate"
-                placeholder="ABC-123"
-                value={formData.vehiclePlate}
-                onChange={handleChange}
-                required
-              />
-            </div>
             <div className="grid gap-2">
               <Label htmlFor="amount">Monto ($)</Label>
               <Input
@@ -89,21 +90,63 @@ export function CreateTarifaModal({ open, onOpenChange }: CreateTarifaModalProps
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="date">Fecha</Label>
+              <Label htmlFor="driverId">ID Conductor</Label>
               <Input
-                id="date"
-                type="date"
-                value={formData.date}
+                id="driverId"
+                type="number"
+                min={1}
+                placeholder="1"
+                value={formData.driverId ?? ""}
                 onChange={handleChange}
-                required
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="notes">Notas (opcional)</Label>
+              <Label htmlFor="vehicleId">ID Vehículo</Label>
               <Input
-                id="notes"
+                id="vehicleId"
+                type="number"
+                min={1}
+                placeholder="1"
+                value={formData.vehicleId ?? ""}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="tarifaDate">Fecha</Label>
+              <Input
+                id="tarifaDate"
+                type="date"
+                value={formData.tarifaDate ?? ""}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label>Método de pago</Label>
+              <Select
+                value={formData.paymentMethod ?? ""}
+                onValueChange={(val) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    paymentMethod: val as PaymentMethod,
+                  }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar método" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="cash">Efectivo</SelectItem>
+                  <SelectItem value="nequi">Nequi</SelectItem>
+                  <SelectItem value="daviplata">Daviplata</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="description">Descripción (opcional)</Label>
+              <Input
+                id="description"
                 placeholder="Observaciones..."
-                value={formData.notes}
+                value={formData.description ?? ""}
                 onChange={handleChange}
               />
             </div>
@@ -113,7 +156,9 @@ export function CreateTarifaModal({ open, onOpenChange }: CreateTarifaModalProps
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit">Crear tarifa</Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Creando..." : "Crear tarifa"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

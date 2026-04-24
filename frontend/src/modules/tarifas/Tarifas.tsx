@@ -1,70 +1,34 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect, useCallback } from "react"
 import { DataTable } from "./components/DataTable"
 import { getColumns } from "./components/columns"
 import { CreateTarifaModal } from "./components/CreateTarifaModal"
 import { EditTarifaModal } from "./components/EditTarifaModal"
 import { DeleteTarifaModal } from "./components/DeleteTarifaModal"
 import type { Tarifa } from "./types/tarifa.types"
+import { getTarifasService } from "./services/tarifa.service"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Search, PlusIcon } from "lucide-react"
 
-const mockTarifas: Tarifa[] = [
-  {
-    id: "1",
-    driverName: "Carlos Ramírez",
-    vehiclePlate: "ABC-123",
-    amount: 80000,
-    date: "2026-04-21",
-    status: "paid",
-    createdAt: "2026-04-21",
-  },
-  {
-    id: "2",
-    driverName: "Andrés Torres",
-    vehiclePlate: "XYZ-456",
-    amount: 75000,
-    date: "2026-04-21",
-    status: "pending",
-    notes: "Entrega en efectivo pendiente",
-    createdAt: "2026-04-21",
-  },
-  {
-    id: "3",
-    driverName: "Luis Moreno",
-    vehiclePlate: "DEF-789",
-    amount: 70000,
-    date: "2026-04-20",
-    status: "overdue",
-    notes: "No se presentó",
-    createdAt: "2026-04-20",
-  },
-  {
-    id: "4",
-    driverName: "Miguel Ángel Díaz",
-    vehiclePlate: "GHI-321",
-    amount: 85000,
-    date: "2026-04-21",
-    status: "paid",
-    createdAt: "2026-04-21",
-  },
-  {
-    id: "5",
-    driverName: "Jorge Herrera",
-    vehiclePlate: "JKL-654",
-    amount: 78000,
-    date: "2026-04-20",
-    status: "pending",
-    createdAt: "2026-04-20",
-  },
-]
-
 const Tarifas = () => {
+  const [tarifas, setTarifas] = useState<Tarifa[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [selectedTarifa, setSelectedTarifa] = useState<Tarifa | null>(null)
+
+  const fetchTarifas = useCallback(async () => {
+    try {
+      const response = await getTarifasService({ page: 1, limit: 100 })
+      setTarifas(response.data.items)
+    } catch {
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchTarifas()
+  }, [fetchTarifas])
 
   const handleEdit = (tarifa: Tarifa) => {
     setSelectedTarifa(tarifa)
@@ -78,13 +42,15 @@ const Tarifas = () => {
 
   const filtered = useMemo(() => {
     const q = searchQuery.toLowerCase()
-    return mockTarifas.filter(
+    if (!q) return tarifas
+    return tarifas.filter(
       (t) =>
-        t.driverName.toLowerCase().includes(q) ||
-        t.vehiclePlate.toLowerCase().includes(q) ||
-        t.status.toLowerCase().includes(q)
+        String(t.driverId).includes(q) ||
+        String(t.vehicleId).includes(q) ||
+        (t.description ?? "").toLowerCase().includes(q) ||
+        (t.paymentMethod ?? "").toLowerCase().includes(q)
     )
-  }, [searchQuery])
+  }, [searchQuery, tarifas])
 
   const columns = useMemo(
     () => getColumns({ onEdit: handleEdit, onDelete: handleDelete }),
@@ -97,7 +63,7 @@ const Tarifas = () => {
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Buscar conductor, placa o estado..."
+            placeholder="Buscar por conductor, vehículo o método..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
@@ -114,18 +80,21 @@ const Tarifas = () => {
       <CreateTarifaModal
         open={isCreateModalOpen}
         onOpenChange={setIsCreateModalOpen}
+        onSuccess={fetchTarifas}
       />
 
       <EditTarifaModal
         open={isEditModalOpen}
         onOpenChange={setIsEditModalOpen}
         tarifa={selectedTarifa}
+        onSuccess={fetchTarifas}
       />
 
       <DeleteTarifaModal
         open={isDeleteModalOpen}
         onOpenChange={setIsDeleteModalOpen}
         tarifa={selectedTarifa}
+        onSuccess={fetchTarifas}
       />
     </div>
   )

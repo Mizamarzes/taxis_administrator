@@ -21,7 +21,7 @@ export class TarifasService {
         private readonly mediaRepository: Repository<MediaTarifa>,
     ) {}
 
-    async create(dto: CreateTarifaDto): Promise<TarifaResponseDto> {
+    async create(dto: CreateTarifaDto, userId: number): Promise<TarifaResponseDto> {
         try {
             const tarifa = this.tarifasRepository.create({
                 amount: dto.amount,
@@ -30,6 +30,7 @@ export class TarifasService {
                 tarifaDate: dto.tarifaDate ? new Date(dto.tarifaDate) : undefined,
                 driverId: dto.driverId,
                 vehicleId: dto.vehicleId,
+                createdBy: userId,
             });
 
             const saved = await this.tarifasRepository.save(tarifa);
@@ -103,7 +104,7 @@ export class TarifasService {
         }
     }
 
-    async update(id: number, dto: UpdateTarifaDto): Promise<TarifaResponseDto> {
+    async update(id: number, dto: UpdateTarifaDto, userId: number): Promise<TarifaResponseDto> {
         try {
             const tarifa = await this.tarifasRepository.findOne({
                 where: { id },
@@ -120,6 +121,7 @@ export class TarifasService {
             if (dto.tarifaDate !== undefined) tarifa.tarifaDate = new Date(dto.tarifaDate);
             if (dto.driverId !== undefined) tarifa.driverId = dto.driverId;
             if (dto.vehicleId !== undefined) tarifa.vehicleId = dto.vehicleId;
+            tarifa.updatedBy = userId;
 
             const saved = await this.tarifasRepository.save(tarifa);
 
@@ -134,7 +136,7 @@ export class TarifasService {
         }
     }
 
-    async remove(id: number): Promise<{ message: string }> {
+    async remove(id: number, userId: number): Promise<{ message: string }> {
         try {
             const tarifa = await this.findOne(id);
 
@@ -142,6 +144,7 @@ export class TarifasService {
                 throw new NotFoundException(`Tarifa with ID ${id} not found`);
             }
 
+            await this.tarifasRepository.update(id, { deletedBy: userId });
             await this.tarifasRepository.softDelete(id);
 
             return { message: `Tarifa with ID ${id} has been removed successfully` };
