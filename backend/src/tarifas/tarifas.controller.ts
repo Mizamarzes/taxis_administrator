@@ -15,10 +15,11 @@ import { TarifasService } from './tarifas.service';
 import { CreateTarifaDto } from './dto/create-tarifa.dto';
 import { UpdateTarifaDto } from './dto/update-tarifa.dto';
 import { TarifaResponseDto } from './dto/tarifa-response.dto';
+import { TarifasFilterDto } from './dto/tarifas-filter.dto';
 import { Auth } from '../auth/decorators/auth.decorator';
 import { Role } from '../common/enums/rol.enum';
 import { ApiResponseInterface } from '../common/interfaces/api-response.interface';
-import { PaginationDTO, PaginationResponseDto } from '../common/dto/pagination.dto';
+import { PaginationResponseDto } from '../common/dto/pagination.dto';
 import { ActiveUser } from '../common/decorators/activeUser.decorator';
 import type { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 
@@ -46,12 +47,12 @@ export class TarifasController {
     @Get('get-all')
     @Auth(Role.ADMIN)
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({ summary: 'Get all tarifas with pagination' })
+    @ApiOperation({ summary: 'Get all tarifas with pagination and filters' })
     @ApiResponse({ status: 200, type: [TarifaResponseDto] })
     async findAll(
-        @Query() paginationDto: PaginationDTO,
+        @Query() filterDto: TarifasFilterDto,
     ): Promise<ApiResponseInterface<PaginationResponseDto<TarifaResponseDto>>> {
-        const tarifas = await this.tarifasService.findAll(paginationDto);
+        const tarifas = await this.tarifasService.findAll(filterDto);
         return {
             message: 'Tarifas retrieved successfully',
             data: tarifas,

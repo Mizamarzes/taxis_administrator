@@ -4,10 +4,11 @@ import { Repository } from 'typeorm';
 import { CreateTarifaDto } from './dto/create-tarifa.dto';
 import { UpdateTarifaDto } from './dto/update-tarifa.dto';
 import { TarifaResponseDto } from './dto/tarifa-response.dto';
+import { TarifasFilterDto } from './dto/tarifas-filter.dto';
 import { Tarifa } from './entities/tarifa.entity';
 import { MediaTarifa } from './entities/media-tarifa.entity';
 import { mapTarifaToResponseDto, mapTarifasToResponseDtos } from './mappers/tarifa.mappers';
-import { PaginationDTO, PaginationResponseDto } from '../common/dto/pagination.dto';
+import { PaginationResponseDto } from '../common/dto/pagination.dto';
 import { paginate } from '../common/helpers/pagination.helper';
 
 @Injectable()
@@ -44,17 +45,42 @@ export class TarifasService {
         }
     }
 
-    async findAll(paginationDto: PaginationDTO): Promise<PaginationResponseDto<TarifaResponseDto>> {
+    async findAll(filterDto: TarifasFilterDto): Promise<PaginationResponseDto<TarifaResponseDto>> {
         try {
-            const { page, limit } = paginationDto;
+            const { page, limit, tarifaDateFrom, tarifaDateTo, search } = filterDto;
             const skip = (page - 1) * limit;
 
-            const [tarifas, totalItems] = await this.tarifasRepository.findAndCount({
-                relations: ['media'],
-                order: { createdAt: 'DESC' },
-                skip,
-                take: limit,
-            });
+            let query = this.tarifasRepository
+                .createQueryBuilder('tarifa')
+                .leftJoinAndSelect('tarifa.media', 'media')
+                .orderBy('tarifa.createdAt', 'DESC');
+
+            // Filtro por fecha inicio
+            if (tarifaDateFrom) {
+                const dateFrom = new Date(tarifaDateFrom);
+                dateFrom.setHours(0, 0, 0, 0);
+                query = query.andWhere('tarifa.tarifaDate >= :tarifaDateFrom', {
+                    tarifaDateFrom: dateFrom,
+                });
+            }
+
+            // Filtro por fecha fin
+            if (tarifaDateTo) {
+                const dateTo = new Date(tarifaDateTo);
+                dateTo.setHours(23, 59, 59, 999);
+                query = query.andWhere('tarifa.tarifaDate <= :tarifaDateTo', {
+                    tarifaDateTo: dateTo,
+                });
+            }
+
+            // Filtro por búsqueda (description)
+            if (search) {
+                query = query.andWhere('LOWER(tarifa.description) LIKE LOWER(:search)', {
+                    search: `%${search}%`,
+                });
+            }
+
+            const [tarifas, totalItems] = await query.skip(skip).take(limit).getManyAndCount();
 
             if (tarifas.length === 0) {
                 return new PaginationResponseDto<TarifaResponseDto>({
