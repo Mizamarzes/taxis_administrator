@@ -2,21 +2,24 @@ import Avatar from "react-avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
-import { PencilIcon, TrashIcon, PhoneIcon } from "lucide-react"
-import type { Driver } from "../types/driver.types"
+import { PencilIcon, TrashIcon, PhoneIcon, CarFrontIcon, MailIcon } from "lucide-react"
+import type { Driver, DriverStatus } from "../types/driver.types"
 
-const statusConfig: Record<Driver["status"], { label: string; className: string }> = {
+const statusConfig: Record<DriverStatus, { label: string; className: string; dot: string }> = {
   active: {
     label: "Activo",
     className: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+    dot: "bg-emerald-500",
   },
   inactive: {
     label: "Inactivo",
     className: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
+    dot: "bg-zinc-400",
   },
-  on_trip: {
-    label: "En viaje",
-    className: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+  suspended: {
+    label: "Suspendido",
+    className: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+    dot: "bg-red-500",
   },
 }
 
@@ -36,24 +39,16 @@ export const DriverCard = ({ driver, onEdit, onDelete }: DriverCardProps) => {
       <CardContent className="flex flex-col items-center gap-3 pt-6 pb-3 px-5">
         <div className="relative">
           <Avatar
-            name={driver.name}
-            src={driver.avatarUrl}
+            name={driver.user.name}
+            src={driver.photoUrl ?? undefined}
             size="72px"
             round="12px"
           />
-          <span
-            className={`absolute -bottom-1 -right-1 size-3.5 rounded-full ring-2 ring-card ${
-              driver.status === "active"
-                ? "bg-emerald-500"
-                : driver.status === "on_trip"
-                ? "bg-blue-500"
-                : "bg-zinc-400"
-            }`}
-          />
+          <span className={`absolute -bottom-1 -right-1 size-3.5 rounded-full ring-2 ring-card ${status.dot}`} />
         </div>
 
         <div className="text-center">
-          <h3 className="font-semibold text-base leading-tight">{driver.name}</h3>
+          <h3 className="font-semibold text-base leading-tight">{driver.user.name}</h3>
           <Badge variant="outline" className={`mt-1 text-xs font-medium ${status.className}`}>
             {status.label}
           </Badge>
@@ -61,9 +56,21 @@ export const DriverCard = ({ driver, onEdit, onDelete }: DriverCardProps) => {
 
         <div className="w-full space-y-1.5 text-sm">
           <div className="flex items-center gap-2 text-muted-foreground">
-            <PhoneIcon className="size-3.5 shrink-0" />
-            <span className="truncate">{driver.phone}</span>
+            <MailIcon className="size-3.5 shrink-0" />
+            <span className="truncate">{driver.user.email}</span>
           </div>
+          {driver.phone && (
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <PhoneIcon className="size-3.5 shrink-0" />
+              <span className="truncate">{driver.phone}</span>
+            </div>
+          )}
+          {driver.vehicleId && (
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <CarFrontIcon className="size-3.5 shrink-0" />
+              <span>Vehículo ID: {driver.vehicleId}</span>
+            </div>
+          )}
         </div>
       </CardContent>
 

@@ -1,33 +1,46 @@
-export interface Driver {
-  id: string
+export type DriverStatus = "active" | "inactive" | "suspended"
+
+export interface DriverUser {
+  id: number
   name: string
   email: string
-  phone: string
-  licenseNumber: string
-  vehiclePlate: string
-  vehicleModel: string
-  status: "active" | "inactive" | "on_trip"
-  rating: number
-  totalTrips: number
-  avatarUrl?: string
+}
+
+export interface Driver {
+  id: number
+  userId: number
+  user: DriverUser
+  status: DriverStatus
+  phone: string | null
+  hireDate: string | null
+  vehicleId: number | null
+  photoUrl: string | null
   createdAt: string
+  updatedAt: string
 }
 
 export interface ICreateDriverPayload {
-  name: string
-  email: string
-  phone: string
-  licenseNumber: string
-  vehiclePlate: string
-  vehicleModel: string
+  userId: number
+  phone?: string
+  hireDate?: string
+  vehicleId?: number
+  photoUrl?: string
+  status?: DriverStatus
 }
 
 export interface IUpdateDriverPayload {
-  name?: string
-  email?: string
   phone?: string
-  licenseNumber?: string
-  vehiclePlate?: string
-  vehicleModel?: string
-  status?: Driver["status"]
+  hireDate?: string
+  vehicleId?: number
+  photoUrl?: string
+  status?: DriverStatus
+}
+
+export interface IDriversPaginatedResponse {
+  items: Driver[]
+  totalItems: number
+  currentPage: number
+  totalPages: number
+  previousPage: number | null
+  nextPage: number | null
 }

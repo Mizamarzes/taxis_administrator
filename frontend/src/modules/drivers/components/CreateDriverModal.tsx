@@ -1,134 +1,169 @@
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import type { ICreateDriverPayload } from "../types/driver.types"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import type { ICreateDriverPayload, DriverStatus } from "../types/driver.types"
+import { createDriverService } from "../services/driver.service"
 
 interface CreateDriverModalProps {
   open: boolean
-  onClose: () => void
-  onConfirm: (payload: ICreateDriverPayload) => void
+  onOpenChange: (open: boolean) => void
+  onSuccess?: () => void
 }
 
-const defaultForm: ICreateDriverPayload = {
-  name: "",
-  email: "",
+const emptyForm: ICreateDriverPayload = {
+  userId: 0,
   phone: "",
-  licenseNumber: "",
-  vehiclePlate: "",
-  vehicleModel: "",
+  hireDate: "",
+  vehicleId: undefined,
+  photoUrl: "",
+  status: "active",
 }
 
-export const CreateDriverModal = ({
-  open,
-  onClose,
-  onConfirm,
-}: CreateDriverModalProps) => {
-  const [form, setForm] = useState<ICreateDriverPayload>(defaultForm)
+export function CreateDriverModal({ open, onOpenChange, onSuccess }: CreateDriverModalProps) {
+  const [formData, setFormData] = useState<ICreateDriverPayload>(emptyForm)
+  const [isLoading, setIsLoading] = useState(false)
 
-  const set = (field: keyof ICreateDriverPayload, value: string) =>
-    setForm((prev) => ({ ...prev, [field]: value }))
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onConfirm(form)
-    setForm(defaultForm)
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target
+    setFormData((prev) => ({
+      ...prev,
+      [id]:
+        id === "userId" || id === "vehicleId"
+          ? value === "" ? (id === "userId" ? 0 : undefined) : Number(value)
+          : value,
+    }))
   }
 
-  const handleClose = () => {
-    setForm(defaultForm)
-    onClose()
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+    const payload: ICreateDriverPayload = { userId: formData.userId }
+    if (formData.status) payload.status = formData.status
+    if (formData.phone?.trim()) payload.phone = formData.phone.trim()
+    if (formData.hireDate?.trim()) payload.hireDate = formData.hireDate.trim()
+    if (formData.vehicleId) payload.vehicleId = formData.vehicleId
+    if (formData.photoUrl?.trim()) payload.photoUrl = formData.photoUrl.trim()
+    try {
+      await createDriverService(payload)
+      onOpenChange(false)
+      setFormData(emptyForm)
+      onSuccess?.()
+    } catch {
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Agregar conductor</DialogTitle>
+          <DialogDescription>
+            Registra un nuevo conductor vinculado a un usuario existente.
+          </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="grid gap-4 py-2">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Nombre completo</Label>
+        <form onSubmit={handleSubmit}>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="userId">ID de usuario</Label>
               <Input
-                id="name"
-                placeholder="Carlos Ramírez"
-                value={form.name}
-                onChange={(e) => set("name", e.target.value)}
+                id="userId"
+                type="number"
+                min={1}
+                placeholder="1"
+                value={formData.userId || ""}
+                onChange={handleChange}
                 required
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="phone">Teléfono</Label>
+
+            <div className="grid gap-2">
+              <Label>Estado</Label>
+              <Select
+                value={formData.status ?? "active"}
+                onValueChange={(val) =>
+                  setFormData((prev) => ({ ...prev, status: val as DriverStatus }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar estado" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Activo</SelectItem>
+                  <SelectItem value="inactive">Inactivo</SelectItem>
+                  <SelectItem value="suspended">Suspendido</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="phone">Teléfono (opcional)</Label>
               <Input
                 id="phone"
-                placeholder="+57 312 345 6789"
-                value={form.phone}
-                onChange={(e) => set("phone", e.target.value)}
-                required
+                placeholder="+573001234567"
+                value={formData.phone ?? ""}
+                onChange={handleChange}
               />
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="email">Correo electrónico</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="conductor@example.com"
-              value={form.email}
-              onChange={(e) => set("email", e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="licenseNumber">Número de licencia</Label>
-            <Input
-              id="licenseNumber"
-              placeholder="LIC-001"
-              value={form.licenseNumber}
-              onChange={(e) => set("licenseNumber", e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="vehiclePlate">Placa del vehículo</Label>
+            <div className="grid gap-2">
+              <Label htmlFor="hireDate">Fecha de contratación (opcional)</Label>
               <Input
-                id="vehiclePlate"
-                placeholder="ABC-123"
-                value={form.vehiclePlate}
-                onChange={(e) => set("vehiclePlate", e.target.value)}
-                required
+                id="hireDate"
+                type="date"
+                value={formData.hireDate ?? ""}
+                onChange={handleChange}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="vehicleModel">Modelo del vehículo</Label>
+
+            <div className="grid gap-2">
+              <Label htmlFor="vehicleId">ID vehículo asignado (opcional)</Label>
               <Input
-                id="vehicleModel"
-                placeholder="Toyota Corolla 2022"
-                value={form.vehicleModel}
-                onChange={(e) => set("vehicleModel", e.target.value)}
-                required
+                id="vehicleId"
+                type="number"
+                min={1}
+                placeholder="1"
+                value={formData.vehicleId ?? ""}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="photoUrl">URL de foto (opcional)</Label>
+              <Input
+                id="photoUrl"
+                placeholder="https://ejemplo.com/foto.jpg"
+                value={formData.photoUrl ?? ""}
+                onChange={handleChange}
               />
             </div>
           </div>
 
-          <DialogFooter className="pt-2">
-            <Button type="button" variant="outline" onClick={handleClose}>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit">Agregar conductor</Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Creando..." : "Agregar conductor"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

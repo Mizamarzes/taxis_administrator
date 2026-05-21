@@ -1,134 +1,58 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect, useCallback } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Search, UserPlusIcon } from "lucide-react"
+import { Search, UserPlusIcon, UsersIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
 import { DriverCard } from "./components/DriverCard"
 import { CreateDriverModal } from "./components/CreateDriverModal"
 import { EditDriverModal } from "./components/EditDriverModal"
 import { DeleteDriverModal } from "./components/DeleteDriverModal"
-import type { Driver, ICreateDriverPayload, IUpdateDriverPayload } from "./types/driver.types"
+import type { Driver } from "./types/driver.types"
+import { getDriversService } from "./services/driver.service"
 
-const mockDrivers: Driver[] = [
-  {
-    id: "1",
-    name: "Carlos Ramírez",
-    email: "carlos@example.com",
-    phone: "+57 312 345 6789",
-    licenseNumber: "LIC-001",
-    vehiclePlate: "ABC-123",
-    vehicleModel: "Toyota Corolla 2022",
-    status: "active",
-    rating: 4.8,
-    totalTrips: 312,
-    createdAt: "2024-01-10",
-  },
-  {
-    id: "2",
-    name: "Andrés Torres",
-    email: "andres@example.com",
-    phone: "+57 321 987 6543",
-    licenseNumber: "LIC-002",
-    vehiclePlate: "XYZ-456",
-    vehicleModel: "Chevrolet Spark 2021",
-    status: "on_trip",
-    rating: 4.5,
-    totalTrips: 198,
-    createdAt: "2024-02-05",
-  },
-  {
-    id: "3",
-    name: "Luis Moreno",
-    email: "luis@example.com",
-    phone: "+57 300 111 2233",
-    licenseNumber: "LIC-003",
-    vehiclePlate: "DEF-789",
-    vehicleModel: "Renault Logan 2020",
-    status: "inactive",
-    rating: 3.9,
-    totalTrips: 87,
-    createdAt: "2024-03-18",
-  },
-  {
-    id: "4",
-    name: "Miguel Ángel Díaz",
-    email: "miguel@example.com",
-    phone: "+57 316 555 7788",
-    licenseNumber: "LIC-004",
-    vehiclePlate: "GHI-321",
-    vehicleModel: "Kia Picanto 2023",
-    status: "active",
-    rating: 4.9,
-    totalTrips: 520,
-    createdAt: "2024-04-22",
-  },
-  {
-    id: "5",
-    name: "Jorge Herrera",
-    email: "jorge@example.com",
-    phone: "+57 304 222 9900",
-    licenseNumber: "LIC-005",
-    vehiclePlate: "JKL-654",
-    vehicleModel: "Hyundai i10 2022",
-    status: "active",
-    rating: 4.6,
-    totalTrips: 275,
-    createdAt: "2024-05-30",
-  },
-]
+const LIMIT = 20
 
 const Drivers = () => {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [drivers, setDrivers] = useState<Driver[]>(mockDrivers)
+  const [drivers, setDrivers] = useState<Driver[]>([])
+  const [search, setSearch] = useState("")
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null)
-  const [createOpen, setCreateOpen] = useState(false)
-  const [editOpen, setEditOpen] = useState(false)
-  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const [isEditOpen, setIsEditOpen] = useState(false)
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false)
+
+  const fetchDrivers = useCallback(async () => {
+    try {
+      const response = await getDriversService({ page, limit: LIMIT })
+      setDrivers(response.data.items)
+      setTotalPages(response.data.totalPages || 1)
+    } catch {
+    }
+  }, [page])
+
+  useEffect(() => {
+    fetchDrivers()
+  }, [fetchDrivers])
 
   const filtered = useMemo(() => {
-    const q = searchQuery.toLowerCase()
+    const q = search.toLowerCase()
+    if (!q) return drivers
     return drivers.filter(
       (d) =>
-        d.name.toLowerCase().includes(q) ||
-        d.vehiclePlate.toLowerCase().includes(q) ||
-        d.vehicleModel.toLowerCase().includes(q) ||
-        d.phone.includes(q)
+        d.user.name.toLowerCase().includes(q) ||
+        d.user.email.toLowerCase().includes(q) ||
+        (d.phone?.toLowerCase().includes(q) ?? false)
     )
-  }, [searchQuery, drivers])
+  }, [search, drivers])
 
   const handleEdit = (driver: Driver) => {
     setSelectedDriver(driver)
-    setEditOpen(true)
+    setIsEditOpen(true)
   }
 
   const handleDelete = (driver: Driver) => {
     setSelectedDriver(driver)
-    setDeleteOpen(true)
-  }
-
-  const handleCreate = (payload: ICreateDriverPayload) => {
-    const newDriver: Driver = {
-      ...payload,
-      id: Date.now().toString(),
-      status: "active",
-      rating: 0,
-      totalTrips: 0,
-      createdAt: new Date().toISOString().split("T")[0],
-    }
-    setDrivers((prev) => [newDriver, ...prev])
-    setCreateOpen(false)
-  }
-
-  const handleUpdate = (id: string, payload: IUpdateDriverPayload) => {
-    setDrivers((prev) =>
-      prev.map((d) => (d.id === id ? { ...d, ...payload } : d))
-    )
-    setEditOpen(false)
-    setSelectedDriver(null)
-  }
-
-  const handleConfirmDelete = (id: string) => {
-    setDrivers((prev) => prev.filter((d) => d.id !== id))
-    setSelectedDriver(null)
+    setIsDeleteOpen(true)
   }
 
   return (
@@ -137,13 +61,13 @@ const Drivers = () => {
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Buscar conductor, placa o vehículo..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Buscar por nombre, email o teléfono..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
           />
         </div>
-        <Button onClick={() => setCreateOpen(true)}>
+        <Button onClick={() => setIsCreateOpen(true)}>
           <UserPlusIcon className="size-4 mr-2" />
           Agregar conductor
         </Button>
@@ -151,7 +75,7 @@ const Drivers = () => {
 
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-2">
-          <Search className="size-8 opacity-30" />
+          <UsersIcon className="size-8 opacity-30" />
           <p className="text-sm">No se encontraron conductores</p>
         </div>
       ) : (
@@ -167,28 +91,57 @@ const Drivers = () => {
         </div>
       )}
 
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 mt-6">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+          >
+            <ChevronLeftIcon className="size-4" />
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            Página {page} de {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+          >
+            <ChevronRightIcon className="size-4" />
+          </Button>
+        </div>
+      )}
+
       <CreateDriverModal
-        open={createOpen}
-        onClose={() => setCreateOpen(false)}
-        onConfirm={handleCreate}
+        open={isCreateOpen}
+        onOpenChange={setIsCreateOpen}
+        onSuccess={fetchDrivers}
       />
 
       <EditDriverModal
-        open={editOpen}
+        open={isEditOpen}
+        onOpenChange={(open) => {
+          setIsEditOpen(open)
+          if (!open) setSelectedDriver(null)
+        }}
         driver={selectedDriver}
-        onClose={() => { setEditOpen(false); setSelectedDriver(null) }}
-        onConfirm={handleUpdate}
+        onSuccess={fetchDrivers}
       />
 
       <DeleteDriverModal
-        open={deleteOpen}
+        open={isDeleteOpen}
+        onOpenChange={(open) => {
+          setIsDeleteOpen(open)
+          if (!open) setSelectedDriver(null)
+        }}
         driver={selectedDriver}
-        onClose={() => { setDeleteOpen(false); setSelectedDriver(null) }}
-        onConfirm={handleConfirmDelete}
+        onSuccess={fetchDrivers}
       />
     </div>
   )
 }
 
 export default Drivers
-

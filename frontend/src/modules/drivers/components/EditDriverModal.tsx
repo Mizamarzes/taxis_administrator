@@ -1,12 +1,13 @@
-import { useEffect, useState } from "react"
-import { Button } from "@/components/ui/button"
+import { useState, useEffect } from "react"
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
@@ -16,140 +17,144 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import type { Driver, IUpdateDriverPayload } from "../types/driver.types"
+import type { IUpdateDriverPayload, Driver, DriverStatus } from "../types/driver.types"
+import { updateDriverService } from "../services/driver.service"
 
 interface EditDriverModalProps {
   open: boolean
+  onOpenChange: (open: boolean) => void
   driver: Driver | null
-  onClose: () => void
-  onConfirm: (id: string, payload: IUpdateDriverPayload) => void
+  onSuccess?: () => void
 }
 
-export const EditDriverModal = ({
-  open,
-  driver,
-  onClose,
-  onConfirm,
-}: EditDriverModalProps) => {
-  const [form, setForm] = useState<IUpdateDriverPayload>({})
+export function EditDriverModal({ open, onOpenChange, driver, onSuccess }: EditDriverModalProps) {
+  const [formData, setFormData] = useState<IUpdateDriverPayload>({})
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     if (driver) {
-      setForm({
-        name: driver.name,
-        email: driver.email,
-        phone: driver.phone,
-        licenseNumber: driver.licenseNumber,
-        vehiclePlate: driver.vehiclePlate,
-        vehicleModel: driver.vehicleModel,
+      setFormData({
         status: driver.status,
+        phone: driver.phone ?? "",
+        hireDate: driver.hireDate ?? "",
+        vehicleId: driver.vehicleId ?? undefined,
+        photoUrl: driver.photoUrl ?? "",
       })
     }
   }, [driver])
 
-  const set = (field: keyof IUpdateDriverPayload, value: string) =>
-    setForm((prev) => ({ ...prev, [field]: value }))
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!driver) return
-    onConfirm(driver.id, form)
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target
+    setFormData((prev) => ({
+      ...prev,
+      [id]: id === "vehicleId" ? (value === "" ? undefined : Number(value)) : value,
+    }))
   }
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!driver) return
+    setIsLoading(true)
+    const payload: IUpdateDriverPayload = {}
+    if (formData.status) payload.status = formData.status
+    if (formData.phone?.trim()) payload.phone = formData.phone.trim()
+    if (formData.hireDate?.trim()) payload.hireDate = formData.hireDate.trim()
+    if (formData.vehicleId) payload.vehicleId = formData.vehicleId
+    if (formData.photoUrl?.trim()) payload.photoUrl = formData.photoUrl.trim()
+    try {
+      await updateDriverService(driver.id, payload)
+      onOpenChange(false)
+      onSuccess?.()
+    } catch {
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  if (!driver) return null
+
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Editar conductor</DialogTitle>
+          <DialogDescription>
+            Actualizando a{" "}
+            <span className="font-semibold">{driver.user.name}</span>.
+          </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="grid gap-4 py-2">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-name">Nombre completo</Label>
-              <Input
-                id="edit-name"
-                value={form.name ?? ""}
-                onChange={(e) => set("name", e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-phone">Teléfono</Label>
-              <Input
-                id="edit-phone"
-                value={form.phone ?? ""}
-                onChange={(e) => set("phone", e.target.value)}
-                required
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="edit-email">Correo electrónico</Label>
-            <Input
-              id="edit-email"
-              type="email"
-              value={form.email ?? ""}
-              onChange={(e) => set("email", e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-license">Número de licencia</Label>
-              <Input
-                id="edit-license"
-                value={form.licenseNumber ?? ""}
-                onChange={(e) => set("licenseNumber", e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
+        <form onSubmit={handleSubmit}>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
               <Label>Estado</Label>
               <Select
-                value={form.status ?? "active"}
-                onValueChange={(v) => set("status", v as Driver["status"])}
+                value={formData.status ?? "active"}
+                onValueChange={(val) =>
+                  setFormData((prev) => ({ ...prev, status: val as DriverStatus }))
+                }
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Seleccionar estado" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="active">Activo</SelectItem>
-                  <SelectItem value="on_trip">En viaje</SelectItem>
                   <SelectItem value="inactive">Inactivo</SelectItem>
+                  <SelectItem value="suspended">Suspendido</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-plate">Placa del vehículo</Label>
+            <div className="grid gap-2">
+              <Label htmlFor="phone">Teléfono (opcional)</Label>
               <Input
-                id="edit-plate"
-                value={form.vehiclePlate ?? ""}
-                onChange={(e) => set("vehiclePlate", e.target.value)}
-                required
+                id="phone"
+                placeholder="+573001234567"
+                value={formData.phone ?? ""}
+                onChange={handleChange}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-model">Modelo del vehículo</Label>
+
+            <div className="grid gap-2">
+              <Label htmlFor="hireDate">Fecha de contratación (opcional)</Label>
               <Input
-                id="edit-model"
-                value={form.vehicleModel ?? ""}
-                onChange={(e) => set("vehicleModel", e.target.value)}
-                required
+                id="hireDate"
+                type="date"
+                value={formData.hireDate ?? ""}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="vehicleId">ID vehículo asignado (opcional)</Label>
+              <Input
+                id="vehicleId"
+                type="number"
+                min={1}
+                placeholder="1"
+                value={formData.vehicleId ?? ""}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="photoUrl">URL de foto (opcional)</Label>
+              <Input
+                id="photoUrl"
+                placeholder="https://ejemplo.com/foto.jpg"
+                value={formData.photoUrl ?? ""}
+                onChange={handleChange}
               />
             </div>
           </div>
 
-          <DialogFooter className="pt-2">
-            <Button type="button" variant="outline" onClick={onClose}>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit">Guardar cambios</Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Guardando..." : "Guardar cambios"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

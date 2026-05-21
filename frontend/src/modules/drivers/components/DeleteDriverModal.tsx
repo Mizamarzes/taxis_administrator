@@ -1,63 +1,71 @@
-import { Button } from "@/components/ui/button"
+import { useState } from "react"
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog"
-import { TriangleAlertIcon } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import type { Driver } from "../types/driver.types"
+import { deleteDriverService } from "../services/driver.service"
 
 interface DeleteDriverModalProps {
   open: boolean
+  onOpenChange: (open: boolean) => void
   driver: Driver | null
-  onClose: () => void
-  onConfirm: (id: string) => void
+  onSuccess?: () => void
 }
 
-export const DeleteDriverModal = ({
-  open,
-  driver,
-  onClose,
-  onConfirm,
-}: DeleteDriverModalProps) => {
+export function DeleteDriverModal({ open, onOpenChange, driver, onSuccess }: DeleteDriverModalProps) {
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleDelete = async () => {
+    if (!driver) return
+    setIsLoading(true)
+    try {
+      await deleteDriverService(driver.id)
+      onOpenChange(false)
+      onSuccess?.()
+    } catch {
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   if (!driver) return null
 
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="sm:max-w-md">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <TriangleAlertIcon className="h-5 w-5 text-destructive" />
-            Eliminar conductor
-          </DialogTitle>
+          <DialogTitle>Eliminar conductor</DialogTitle>
+          <DialogDescription>
+            Esta acción no se puede deshacer.
+          </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col gap-3 py-2">
+        <div className="py-4 space-y-1">
           <p className="text-sm text-muted-foreground">
-            ¿Estás seguro de que deseas eliminar al conductor{" "}
-            <span className="font-semibold text-foreground">{driver.name}</span>{" "}
-            con licencia{" "}
-            <span className="font-semibold text-foreground">{driver.licenseNumber}</span>?
-          </p>
-          <p className="text-sm text-destructive">
-            Esta acción no se puede deshacer.
+            Estás eliminando al conductor{" "}
+            <span className="font-semibold text-foreground">{driver.user.name}</span>
+            {driver.user.email && (
+              <>
+                {" "}(
+                <span className="font-mono text-foreground">{driver.user.email}</span>)
+              </>
+            )}
+            .
           </p>
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancelar
           </Button>
-          <Button
-            variant="destructive"
-            onClick={() => {
-              onConfirm(driver.id)
-              onClose()
-            }}
-          >
-            Eliminar conductor
+          <Button variant="destructive" onClick={handleDelete} disabled={isLoading}>
+            {isLoading ? "Eliminando..." : "Eliminar"}
           </Button>
         </DialogFooter>
       </DialogContent>
