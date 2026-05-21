@@ -1,12 +1,13 @@
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
@@ -16,146 +17,132 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import type { ICreateVehiclePayload, Vehicle } from "../types/vehicle.types"
+import type { ICreateVehiclePayload, VehicleStatus } from "../types/vehicle.types"
+import { createVehicleService } from "../services/vehicle.service"
 
 interface CreateVehicleModalProps {
   open: boolean
-  onClose: () => void
-  onConfirm: (payload: ICreateVehiclePayload) => void
+  onOpenChange: (open: boolean) => void
+  onSuccess?: () => void
 }
 
-const defaultForm: ICreateVehiclePayload = {
+const emptyForm: ICreateVehiclePayload = {
   plate: "",
-  brand: "",
-  model: "",
-  year: new Date().getFullYear(),
-  color: "",
-  fuelType: "gasoline",
-  assignedDriver: "",
+  drivingRestrictionDay: "",
+  photoUrl: "",
+  vehicleModelId: undefined,
+  vehicleStatus: "active",
 }
 
-export const CreateVehicleModal = ({
-  open,
-  onClose,
-  onConfirm,
-}: CreateVehicleModalProps) => {
-  const [form, setForm] = useState<ICreateVehiclePayload>(defaultForm)
+export function CreateVehicleModal({ open, onOpenChange, onSuccess }: CreateVehicleModalProps) {
+  const [formData, setFormData] = useState<ICreateVehiclePayload>(emptyForm)
+  const [isLoading, setIsLoading] = useState(false)
 
-  const set = (field: keyof ICreateVehiclePayload, value: string | number) =>
-    setForm((prev) => ({ ...prev, [field]: value }))
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onConfirm(form)
-    setForm(defaultForm)
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target
+    setFormData((prev) => ({
+      ...prev,
+      [id]: id === "vehicleModelId" ? (value === "" ? undefined : Number(value)) : value,
+    }))
   }
 
-  const handleClose = () => {
-    setForm(defaultForm)
-    onClose()
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+    try {
+      await createVehicleService(formData)
+      onOpenChange(false)
+      setFormData(emptyForm)
+      onSuccess?.()
+    } catch {
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && handleClose()}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Agregar vehículo</DialogTitle>
+          <DialogDescription>
+            Registra un nuevo vehículo en la flota.
+          </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="grid gap-4 py-2">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
+        <form onSubmit={handleSubmit}>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
               <Label htmlFor="plate">Placa</Label>
               <Input
                 id="plate"
-                placeholder="ABC-123"
-                value={form.plate}
-                onChange={(e) => set("plate", e.target.value)}
+                placeholder="ABC123"
+                value={formData.plate}
+                onChange={handleChange}
                 required
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="color">Color</Label>
-              <Input
-                id="color"
-                placeholder="Blanco"
-                value={form.color}
-                onChange={(e) => set("color", e.target.value)}
-                required
-              />
-            </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="brand">Marca</Label>
+            <div className="grid gap-2">
+              <Label htmlFor="vehicleModelId">ID Modelo de vehículo</Label>
               <Input
-                id="brand"
-                placeholder="Toyota"
-                value={form.brand}
-                onChange={(e) => set("brand", e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="model">Modelo</Label>
-              <Input
-                id="model"
-                placeholder="Corolla"
-                value={form.model}
-                onChange={(e) => set("model", e.target.value)}
-                required
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="year">Año</Label>
-              <Input
-                id="year"
+                id="vehicleModelId"
                 type="number"
-                min={1990}
-                max={new Date().getFullYear() + 1}
-                value={form.year}
-                onChange={(e) => set("year", Number(e.target.value))}
-                required
+                min={1}
+                placeholder="1"
+                value={formData.vehicleModelId ?? ""}
+                onChange={handleChange}
               />
             </div>
-            <div className="space-y-2">
-              <Label>Combustible</Label>
+
+            <div className="grid gap-2">
+              <Label>Estado</Label>
               <Select
-                value={form.fuelType}
-                onValueChange={(v) => set("fuelType", v as Vehicle["fuelType"])}
+                value={formData.vehicleStatus ?? "active"}
+                onValueChange={(val) =>
+                  setFormData((prev) => ({ ...prev, vehicleStatus: val as VehicleStatus }))
+                }
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Seleccionar estado" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="gasoline">Gasolina</SelectItem>
-                  <SelectItem value="diesel">Diésel</SelectItem>
-                  <SelectItem value="electric">Eléctrico</SelectItem>
-                  <SelectItem value="hybrid">Híbrido</SelectItem>
+                  <SelectItem value="active">Activo</SelectItem>
+                  <SelectItem value="inactive">Inactivo</SelectItem>
+                  <SelectItem value="in_maintenance">En mantenimiento</SelectItem>
+                  <SelectItem value="out_of_service">Fuera de servicio</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="drivingRestrictionDay">Día de restricción (opcional)</Label>
+              <Input
+                id="drivingRestrictionDay"
+                placeholder="Lunes"
+                value={formData.drivingRestrictionDay ?? ""}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="photoUrl">URL de foto (opcional)</Label>
+              <Input
+                id="photoUrl"
+                placeholder="https://ejemplo.com/foto.jpg"
+                value={formData.photoUrl ?? ""}
+                onChange={handleChange}
+              />
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="driver">Conductor asignado (opcional)</Label>
-            <Input
-              id="driver"
-              placeholder="Nombre del conductor"
-              value={form.assignedDriver ?? ""}
-              onChange={(e) => set("assignedDriver", e.target.value)}
-            />
-          </div>
-
-          <DialogFooter className="pt-2">
-            <Button type="button" variant="outline" onClick={handleClose}>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit">Agregar vehículo</Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Creando..." : "Agregar vehículo"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

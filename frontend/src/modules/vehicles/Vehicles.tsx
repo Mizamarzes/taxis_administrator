@@ -1,145 +1,59 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect, useCallback } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Search, PlusIcon } from "lucide-react"
+import { Search, PlusIcon, CarFrontIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
 import { VehicleCard } from "./components/VehicleCard"
 import { CreateVehicleModal } from "./components/CreateVehicleModal"
 import { EditVehicleModal } from "./components/EditVehicleModal"
 import { DeleteVehicleModal } from "./components/DeleteVehicleModal"
-import type { Vehicle, ICreateVehiclePayload, IUpdateVehiclePayload } from "./types/vehicle.types"
+import type { Vehicle } from "./types/vehicle.types"
+import { getVehiclesService } from "./services/vehicle.service"
 
-const mockVehicles: Vehicle[] = [
-  {
-    id: "1",
-    plate: "ABC-123",
-    brand: "Toyota",
-    model: "Corolla",
-    year: 2022,
-    color: "Blanco",
-    status: "available",
-    mileage: 45200,
-    fuelType: "gasoline",
-    assignedDriver: "Carlos Ramírez",
-    createdAt: "2024-01-10",
-  },
-  {
-    id: "2",
-    plate: "XYZ-456",
-    brand: "Chevrolet",
-    model: "Spark",
-    year: 2021,
-    color: "Rojo",
-    status: "on_trip",
-    mileage: 78900,
-    fuelType: "gasoline",
-    assignedDriver: "Andrés Torres",
-    createdAt: "2024-02-05",
-  },
-  {
-    id: "3",
-    plate: "DEF-789",
-    brand: "Renault",
-    model: "Logan",
-    year: 2020,
-    color: "Gris",
-    status: "maintenance",
-    mileage: 112400,
-    fuelType: "diesel",
-    createdAt: "2024-03-18",
-  },
-  {
-    id: "4",
-    plate: "GHI-321",
-    brand: "Kia",
-    model: "Picanto",
-    year: 2023,
-    color: "Negro",
-    status: "available",
-    mileage: 18700,
-    fuelType: "gasoline",
-    assignedDriver: "Miguel Ángel Díaz",
-    createdAt: "2024-04-22",
-  },
-  {
-    id: "5",
-    plate: "JKL-654",
-    brand: "Hyundai",
-    model: "i10",
-    year: 2022,
-    color: "Azul",
-    status: "inactive",
-    mileage: 63000,
-    fuelType: "hybrid",
-    createdAt: "2024-05-30",
-  },
-  {
-    id: "6",
-    plate: "MNO-987",
-    brand: "Nissan",
-    model: "Versa",
-    year: 2023,
-    color: "Plata",
-    status: "available",
-    mileage: 9800,
-    fuelType: "gasoline",
-    assignedDriver: "Jorge Herrera",
-    createdAt: "2024-06-14",
-  },
-]
+const LIMIT = 20
 
 const Vehicles = () => {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [vehicles, setVehicles] = useState<Vehicle[]>(mockVehicles)
+  const [vehicles, setVehicles] = useState<Vehicle[]>([])
+  const [search, setSearch] = useState("")
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null)
-  const [createOpen, setCreateOpen] = useState(false)
-  const [editOpen, setEditOpen] = useState(false)
-  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const [isEditOpen, setIsEditOpen] = useState(false)
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false)
+
+  const fetchVehicles = useCallback(async () => {
+    try {
+      const response = await getVehiclesService({ page, limit: LIMIT })
+      setVehicles(response.data.items)
+      setTotalPages(response.data.totalPages || 1)
+    } catch {
+    }
+  }, [page])
+
+  useEffect(() => {
+    fetchVehicles()
+  }, [fetchVehicles])
 
   const filtered = useMemo(() => {
-    const q = searchQuery.toLowerCase()
+    const q = search.toLowerCase()
+    if (!q) return vehicles
     return vehicles.filter(
       (v) =>
         v.plate.toLowerCase().includes(q) ||
-        v.brand.toLowerCase().includes(q) ||
-        v.model.toLowerCase().includes(q) ||
-        v.color.toLowerCase().includes(q) ||
-        (v.assignedDriver?.toLowerCase().includes(q) ?? false)
+        (v.vehicleModel?.name.toLowerCase().includes(q) ?? false) ||
+        (v.vehicleModel?.brand.name.toLowerCase().includes(q) ?? false) ||
+        (v.drivingRestrictionDay?.toLowerCase().includes(q) ?? false)
     )
-  }, [searchQuery, vehicles])
+  }, [search, vehicles])
 
   const handleEdit = (vehicle: Vehicle) => {
     setSelectedVehicle(vehicle)
-    setEditOpen(true)
+    setIsEditOpen(true)
   }
 
   const handleDelete = (vehicle: Vehicle) => {
     setSelectedVehicle(vehicle)
-    setDeleteOpen(true)
-  }
-
-  const handleCreate = (payload: ICreateVehiclePayload) => {
-    const newVehicle: Vehicle = {
-      ...payload,
-      id: Date.now().toString(),
-      status: "available",
-      mileage: 0,
-      createdAt: new Date().toISOString().split("T")[0],
-    }
-    setVehicles((prev) => [newVehicle, ...prev])
-    setCreateOpen(false)
-  }
-
-  const handleUpdate = (id: string, payload: IUpdateVehiclePayload) => {
-    setVehicles((prev) =>
-      prev.map((v) => (v.id === id ? { ...v, ...payload } : v))
-    )
-    setEditOpen(false)
-    setSelectedVehicle(null)
-  }
-
-  const handleConfirmDelete = (id: string) => {
-    setVehicles((prev) => prev.filter((v) => v.id !== id))
-    setSelectedVehicle(null)
+    setIsDeleteOpen(true)
   }
 
   return (
@@ -149,12 +63,12 @@ const Vehicles = () => {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Buscar placa, marca, modelo..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
           />
         </div>
-        <Button onClick={() => setCreateOpen(true)}>
+        <Button onClick={() => setIsCreateOpen(true)}>
           <PlusIcon className="size-4 mr-2" />
           Agregar vehículo
         </Button>
@@ -162,7 +76,7 @@ const Vehicles = () => {
 
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-2">
-          <Search className="size-8 opacity-30" />
+          <CarFrontIcon className="size-8 opacity-30" />
           <p className="text-sm">No se encontraron vehículos</p>
         </div>
       ) : (
@@ -178,28 +92,57 @@ const Vehicles = () => {
         </div>
       )}
 
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 mt-6">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+          >
+            <ChevronLeftIcon className="size-4" />
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            Página {page} de {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+          >
+            <ChevronRightIcon className="size-4" />
+          </Button>
+        </div>
+      )}
+
       <CreateVehicleModal
-        open={createOpen}
-        onClose={() => setCreateOpen(false)}
-        onConfirm={handleCreate}
+        open={isCreateOpen}
+        onOpenChange={setIsCreateOpen}
+        onSuccess={fetchVehicles}
       />
 
       <EditVehicleModal
-        open={editOpen}
+        open={isEditOpen}
+        onOpenChange={(open) => {
+          setIsEditOpen(open)
+          if (!open) setSelectedVehicle(null)
+        }}
         vehicle={selectedVehicle}
-        onClose={() => { setEditOpen(false); setSelectedVehicle(null) }}
-        onConfirm={handleUpdate}
+        onSuccess={fetchVehicles}
       />
 
       <DeleteVehicleModal
-        open={deleteOpen}
+        open={isDeleteOpen}
+        onOpenChange={(open) => {
+          setIsDeleteOpen(open)
+          if (!open) setSelectedVehicle(null)
+        }}
         vehicle={selectedVehicle}
-        onClose={() => { setDeleteOpen(false); setSelectedVehicle(null) }}
-        onConfirm={handleConfirmDelete}
+        onSuccess={fetchVehicles}
       />
     </div>
   )
 }
 
 export default Vehicles
-

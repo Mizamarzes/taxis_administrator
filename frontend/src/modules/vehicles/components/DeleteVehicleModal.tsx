@@ -1,65 +1,76 @@
-import { Button } from "@/components/ui/button"
+import { useState } from "react"
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog"
-import { TriangleAlertIcon } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import type { Vehicle } from "../types/vehicle.types"
+import { deleteVehicleService } from "../services/vehicle.service"
 
 interface DeleteVehicleModalProps {
   open: boolean
+  onOpenChange: (open: boolean) => void
   vehicle: Vehicle | null
-  onClose: () => void
-  onConfirm: (id: string) => void
+  onSuccess?: () => void
 }
 
-export const DeleteVehicleModal = ({
-  open,
-  vehicle,
-  onClose,
-  onConfirm,
-}: DeleteVehicleModalProps) => {
+export function DeleteVehicleModal({ open, onOpenChange, vehicle, onSuccess }: DeleteVehicleModalProps) {
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleDelete = async () => {
+    if (!vehicle) return
+    setIsLoading(true)
+    try {
+      await deleteVehicleService(vehicle.id)
+      onOpenChange(false)
+      onSuccess?.()
+    } catch {
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   if (!vehicle) return null
 
+  const modelName = vehicle.vehicleModel
+    ? `${vehicle.vehicleModel.brand.name} ${vehicle.vehicleModel.name}`
+    : null
+
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="sm:max-w-md">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <TriangleAlertIcon className="h-5 w-5 text-destructive" />
-            Eliminar vehículo
-          </DialogTitle>
+          <DialogTitle>Eliminar vehículo</DialogTitle>
+          <DialogDescription>
+            Esta acción no se puede deshacer.
+          </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col gap-3 py-2">
+        <div className="py-4 space-y-1">
           <p className="text-sm text-muted-foreground">
-            ¿Estás seguro de que deseas eliminar el vehículo{" "}
-            <span className="font-semibold text-foreground">
-              {vehicle.brand} {vehicle.model}
-            </span>{" "}
-            con placa{" "}
-            <span className="font-semibold text-foreground">{vehicle.plate}</span>?
-          </p>
-          <p className="text-sm text-destructive">
-            Esta acción no se puede deshacer.
+            Estás eliminando el vehículo con placa{" "}
+            <span className="font-mono font-semibold text-foreground">
+              {vehicle.plate}
+            </span>
+            {modelName && (
+              <>
+                {" "}({modelName})
+              </>
+            )}
+            .
           </p>
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancelar
           </Button>
-          <Button
-            variant="destructive"
-            onClick={() => {
-              onConfirm(vehicle.id)
-              onClose()
-            }}
-          >
-            Eliminar vehículo
+          <Button variant="destructive" onClick={handleDelete} disabled={isLoading}>
+            {isLoading ? "Eliminando..." : "Eliminar"}
           </Button>
         </DialogFooter>
       </DialogContent>

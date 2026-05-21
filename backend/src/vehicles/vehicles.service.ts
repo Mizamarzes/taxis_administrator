@@ -138,7 +138,8 @@ export class VehiclesService {
                 }
                 vehicle.plate = dto.plate;
             }
-            if (dto.drivingRestrictionDay !== undefined) vehicle.drivingRestrictionDay = dto.drivingRestrictionDay;
+            if (dto.drivingRestrictionDay !== undefined)
+                vehicle.drivingRestrictionDay = dto.drivingRestrictionDay;
             if (dto.photoUrl !== undefined) vehicle.photoUrl = dto.photoUrl;
             if (dto.vehicleModelId !== undefined) vehicle.vehicleModelId = dto.vehicleModelId;
             if (dto.vehicleStatus !== undefined) vehicle.vehicleStatus = dto.vehicleStatus;

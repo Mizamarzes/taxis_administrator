@@ -1,12 +1,13 @@
-import { useEffect, useState } from "react"
-import { Button } from "@/components/ui/button"
+import { useState, useEffect } from "react"
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
@@ -16,175 +17,139 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import type { IUpdateVehiclePayload, Vehicle } from "../types/vehicle.types"
+import type { IUpdateVehiclePayload, Vehicle, VehicleStatus } from "../types/vehicle.types"
+import { updateVehicleService } from "../services/vehicle.service"
 
 interface EditVehicleModalProps {
   open: boolean
+  onOpenChange: (open: boolean) => void
   vehicle: Vehicle | null
-  onClose: () => void
-  onConfirm: (id: string, payload: IUpdateVehiclePayload) => void
+  onSuccess?: () => void
 }
 
-export const EditVehicleModal = ({
-  open,
-  vehicle,
-  onClose,
-  onConfirm,
-}: EditVehicleModalProps) => {
-  const [form, setForm] = useState<IUpdateVehiclePayload>({})
+export function EditVehicleModal({ open, onOpenChange, vehicle, onSuccess }: EditVehicleModalProps) {
+  const [formData, setFormData] = useState<IUpdateVehiclePayload>({})
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     if (vehicle) {
-      setForm({
+      setFormData({
         plate: vehicle.plate,
-        brand: vehicle.brand,
-        model: vehicle.model,
-        year: vehicle.year,
-        color: vehicle.color,
-        status: vehicle.status,
-        mileage: vehicle.mileage,
-        fuelType: vehicle.fuelType,
-        assignedDriver: vehicle.assignedDriver ?? "",
+        drivingRestrictionDay: vehicle.drivingRestrictionDay ?? "",
+        photoUrl: vehicle.photoUrl ?? "",
+        vehicleModelId: vehicle.vehicleModelId ?? undefined,
+        vehicleStatus: vehicle.vehicleStatus,
       })
     }
   }, [vehicle])
 
-  const set = (field: keyof IUpdateVehiclePayload, value: string | number) =>
-    setForm((prev) => ({ ...prev, [field]: value }))
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!vehicle) return
-    onConfirm(vehicle.id, form)
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target
+    setFormData((prev) => ({
+      ...prev,
+      [id]: id === "vehicleModelId" ? (value === "" ? undefined : Number(value)) : value,
+    }))
   }
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!vehicle) return
+    setIsLoading(true)
+    try {
+      await updateVehicleService(vehicle.id, formData)
+      onOpenChange(false)
+      onSuccess?.()
+    } catch {
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  if (!vehicle) return null
+
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Editar vehículo</DialogTitle>
+          <DialogDescription>
+            Actualizando vehículo con placa{" "}
+            <span className="font-mono font-semibold">{vehicle.plate}</span>.
+          </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="grid gap-4 py-2">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-plate">Placa</Label>
+        <form onSubmit={handleSubmit}>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="plate">Placa</Label>
               <Input
-                id="edit-plate"
-                value={form.plate ?? ""}
-                onChange={(e) => set("plate", e.target.value)}
+                id="plate"
+                value={formData.plate ?? ""}
+                onChange={handleChange}
                 required
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-color">Color</Label>
-              <Input
-                id="edit-color"
-                value={form.color ?? ""}
-                onChange={(e) => set("color", e.target.value)}
-                required
-              />
-            </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-brand">Marca</Label>
+            <div className="grid gap-2">
+              <Label htmlFor="vehicleModelId">ID Modelo de vehículo</Label>
               <Input
-                id="edit-brand"
-                value={form.brand ?? ""}
-                onChange={(e) => set("brand", e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-model">Modelo</Label>
-              <Input
-                id="edit-model"
-                value={form.model ?? ""}
-                onChange={(e) => set("model", e.target.value)}
-                required
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-year">Año</Label>
-              <Input
-                id="edit-year"
+                id="vehicleModelId"
                 type="number"
-                min={1990}
-                max={new Date().getFullYear() + 1}
-                value={form.year ?? ""}
-                onChange={(e) => set("year", Number(e.target.value))}
-                required
+                min={1}
+                placeholder="1"
+                value={formData.vehicleModelId ?? ""}
+                onChange={handleChange}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-mileage">Kilometraje</Label>
-              <Input
-                id="edit-mileage"
-                type="number"
-                min={0}
-                value={form.mileage ?? ""}
-                onChange={(e) => set("mileage", Number(e.target.value))}
-              />
-            </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Combustible</Label>
-              <Select
-                value={form.fuelType ?? "gasoline"}
-                onValueChange={(v) => set("fuelType", v as Vehicle["fuelType"])}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="gasoline">Gasolina</SelectItem>
-                  <SelectItem value="diesel">Diésel</SelectItem>
-                  <SelectItem value="electric">Eléctrico</SelectItem>
-                  <SelectItem value="hybrid">Híbrido</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
+            <div className="grid gap-2">
               <Label>Estado</Label>
               <Select
-                value={form.status ?? "available"}
-                onValueChange={(v) => set("status", v as Vehicle["status"])}
+                value={formData.vehicleStatus ?? "active"}
+                onValueChange={(val) =>
+                  setFormData((prev) => ({ ...prev, vehicleStatus: val as VehicleStatus }))
+                }
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Seleccionar estado" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="available">Disponible</SelectItem>
-                  <SelectItem value="on_trip">En viaje</SelectItem>
-                  <SelectItem value="maintenance">Mantenimiento</SelectItem>
+                  <SelectItem value="active">Activo</SelectItem>
                   <SelectItem value="inactive">Inactivo</SelectItem>
+                  <SelectItem value="in_maintenance">En mantenimiento</SelectItem>
+                  <SelectItem value="out_of_service">Fuera de servicio</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="drivingRestrictionDay">Día de restricción (opcional)</Label>
+              <Input
+                id="drivingRestrictionDay"
+                placeholder="Lunes"
+                value={formData.drivingRestrictionDay ?? ""}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="photoUrl">URL de foto (opcional)</Label>
+              <Input
+                id="photoUrl"
+                placeholder="https://ejemplo.com/foto.jpg"
+                value={formData.photoUrl ?? ""}
+                onChange={handleChange}
+              />
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="edit-driver">Conductor asignado (opcional)</Label>
-            <Input
-              id="edit-driver"
-              placeholder="Nombre del conductor"
-              value={form.assignedDriver ?? ""}
-              onChange={(e) => set("assignedDriver", e.target.value)}
-            />
-          </div>
-
-          <DialogFooter className="pt-2">
-            <Button type="button" variant="outline" onClick={onClose}>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit">Guardar cambios</Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Guardando..." : "Guardar cambios"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

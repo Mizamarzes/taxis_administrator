@@ -1,36 +1,59 @@
-export interface Vehicle {
-  id: string
-  plate: string
-  brand: string
-  model: string
-  year: number
-  color: string
-  status: "available" | "on_trip" | "maintenance" | "inactive"
-  mileage: number
-  fuelType: "gasoline" | "diesel" | "electric" | "hybrid"
-  assignedDriver?: string
-  imageUrl?: string
+export type VehicleStatus = "active" | "inactive" | "in_maintenance" | "out_of_service"
+
+export interface VehicleBrand {
+  id: number
+  name: string
+}
+
+export interface VehicleModel {
+  id: number
+  name: string
+  brand: VehicleBrand
+}
+
+export interface VehicleDocument {
+  id: number
+  issueDate: string | null
+  expiryDate: string | null
+  fileUrl: string | null
+  documentTypeId: number | null
   createdAt: string
+}
+
+export interface Vehicle {
+  id: number
+  plate: string
+  drivingRestrictionDay: string | null
+  photoUrl: string | null
+  vehicleModelId: number | null
+  vehicleModel: VehicleModel | null
+  vehicleStatus: VehicleStatus
+  documents: VehicleDocument[]
+  createdAt: string
+  updatedAt: string
 }
 
 export interface ICreateVehiclePayload {
   plate: string
-  brand: string
-  model: string
-  year: number
-  color: string
-  fuelType: Vehicle["fuelType"]
-  assignedDriver?: string
+  drivingRestrictionDay?: string
+  photoUrl?: string
+  vehicleModelId?: number
+  vehicleStatus?: VehicleStatus
 }
 
 export interface IUpdateVehiclePayload {
   plate?: string
-  brand?: string
-  model?: string
-  year?: number
-  color?: string
-  status?: Vehicle["status"]
-  mileage?: number
-  fuelType?: Vehicle["fuelType"]
-  assignedDriver?: string
+  drivingRestrictionDay?: string
+  photoUrl?: string
+  vehicleModelId?: number
+  vehicleStatus?: VehicleStatus
+}
+
+export interface IVehiclesPaginatedResponse {
+  items: Vehicle[]
+  totalItems: number
+  currentPage: number
+  totalPages: number
+  previousPage: number | null
+  nextPage: number | null
 }
