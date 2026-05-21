@@ -55,8 +55,14 @@ export function EditVehicleModal({ open, onOpenChange, vehicle, onSuccess }: Edi
     e.preventDefault()
     if (!vehicle) return
     setIsLoading(true)
+    const payload: IUpdateVehiclePayload = {}
+    if (formData.plate?.trim()) payload.plate = formData.plate.trim()
+    if (formData.vehicleModelId) payload.vehicleModelId = formData.vehicleModelId
+    if (formData.vehicleStatus) payload.vehicleStatus = formData.vehicleStatus
+    if (formData.drivingRestrictionDay?.trim()) payload.drivingRestrictionDay = formData.drivingRestrictionDay.trim()
+    if (formData.photoUrl?.trim()) payload.photoUrl = formData.photoUrl.trim()
     try {
-      await updateVehicleService(vehicle.id, formData)
+      await updateVehicleService(vehicle.id, payload)
       onOpenChange(false)
       onSuccess?.()
     } catch {

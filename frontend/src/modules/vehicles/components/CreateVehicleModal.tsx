@@ -49,8 +49,13 @@ export function CreateVehicleModal({ open, onOpenChange, onSuccess }: CreateVehi
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    const payload: ICreateVehiclePayload = { plate: formData.plate }
+    if (formData.vehicleModelId) payload.vehicleModelId = formData.vehicleModelId
+    if (formData.vehicleStatus) payload.vehicleStatus = formData.vehicleStatus
+    if (formData.drivingRestrictionDay?.trim()) payload.drivingRestrictionDay = formData.drivingRestrictionDay.trim()
+    if (formData.photoUrl?.trim()) payload.photoUrl = formData.photoUrl.trim()
     try {
-      await createVehicleService(formData)
+      await createVehicleService(payload)
       onOpenChange(false)
       setFormData(emptyForm)
       onSuccess?.()
