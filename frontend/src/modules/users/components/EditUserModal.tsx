@@ -10,40 +10,60 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import type { User } from "../types/user.types"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
+import type { IUpdateUserPayload, User } from "../types/user.types"
+import { updateUserService } from "../services/user.service"
 
 interface EditUserModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   user: User | null
+  onSuccess?: () => void
 }
 
-export function EditUserModal({
-  open,
-  onOpenChange,
-  user,
-}: EditUserModalProps) {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    role: "",
-  })
+export function EditUserModal({ open, onOpenChange, user, onSuccess }: EditUserModalProps) {
+  const [formData, setFormData] = useState<IUpdateUserPayload>({})
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     if (user) {
       setFormData({
         name: user.name,
-        email: user.email,
-        role: user.role,
+        roleNames: user.roles.map((r) => r.name),
+        isActive: user.isActive,
       })
     }
   }, [user])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target
+    setFormData((prev) => ({ ...prev, [id]: value }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("Update user:", { id: user?.id, ...formData })
-    // Aquí harías la llamada a tu API
-    onOpenChange(false)
+    if (!user) return
+    setIsLoading(true)
+    const payload: IUpdateUserPayload = {}
+    if (formData.name?.trim()) payload.name = formData.name.trim()
+    if (formData.roleNames?.length) payload.roleNames = formData.roleNames
+    if (formData.isActive !== undefined) payload.isActive = formData.isActive
+    if (formData.password?.trim()) payload.password = formData.password.trim()
+    try {
+      await updateUserService(user.id, payload)
+      onOpenChange(false)
+      onSuccess?.()
+    } catch {
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   if (!user) return null
@@ -54,55 +74,72 @@ export function EditUserModal({
         <DialogHeader>
           <DialogTitle>Editar usuario</DialogTitle>
           <DialogDescription>
-            Modifica la información del usuario. Haz clic en guardar cuando termines.
+            Modificando a <span className="font-semibold">{user.name}</span>.
           </DialogDescription>
         </DialogHeader>
+
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="edit-name">Nombre</Label>
+              <Label htmlFor="name">Nombre</Label>
               <Input
-                id="edit-name"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
+                id="name"
+                value={formData.name ?? ""}
+                onChange={handleChange}
                 required
               />
             </div>
+
             <div className="grid gap-2">
-              <Label htmlFor="edit-email">Correo electrónico</Label>
-              <Input
-                id="edit-email"
-                type="email"
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
+              <Label>Rol</Label>
+              <Select
+                value={formData.roleNames?.[0] ?? "USER"}
+                onValueChange={(val) =>
+                  setFormData((prev) => ({ ...prev, roleNames: [val] }))
                 }
-                required
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar rol" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="USER">Usuario</SelectItem>
+                  <SelectItem value="ADMIN">Admin</SelectItem>
+                  <SelectItem value="SUPERADMIN">Superadmin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center justify-between gap-4">
+              <Label htmlFor="isActive">Usuario activo</Label>
+              <Switch
+                id="isActive"
+                checked={formData.isActive ?? true}
+                onCheckedChange={(checked) =>
+                  setFormData((prev) => ({ ...prev, isActive: checked }))
+                }
               />
             </div>
+
             <div className="grid gap-2">
-              <Label htmlFor="edit-role">Rol</Label>
+              <Label htmlFor="password">Nueva contraseña (opcional)</Label>
               <Input
-                id="edit-role"
-                value={formData.role}
-                onChange={(e) =>
-                  setFormData({ ...formData, role: e.target.value })
-                }
-                required
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={formData.password ?? ""}
+                onChange={handleChange}
+                minLength={6}
               />
             </div>
           </div>
+
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit">Guardar cambios</Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Guardando..." : "Guardar cambios"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

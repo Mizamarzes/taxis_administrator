@@ -10,26 +10,50 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import type { ICreateUserPayload } from "../types/user.types"
+import { createUserService } from "../services/user.service"
 
 interface CreateUserModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  onSuccess?: () => void
 }
 
-export function CreateUserModal({ open, onOpenChange }: CreateUserModalProps) {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    role: "",
-    password: "",
-  })
+const emptyForm: ICreateUserPayload = {
+  name: "",
+  email: "",
+  password: "",
+  roleNames: ["USER"],
+}
 
-  const handleSubmit = (e: React.FormEvent) => {
+export function CreateUserModal({ open, onOpenChange, onSuccess }: CreateUserModalProps) {
+  const [formData, setFormData] = useState<ICreateUserPayload>(emptyForm)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target
+    setFormData((prev) => ({ ...prev, [id]: value }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("Create user:", formData)
-    // Aquí harías la llamada a tu API
-    onOpenChange(false)
-    setFormData({ name: "", email: "", role: "", password: "" })
+    setIsLoading(true)
+    try {
+      await createUserService(formData)
+      onOpenChange(false)
+      setFormData(emptyForm)
+      onSuccess?.()
+    } catch {
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -38,71 +62,75 @@ export function CreateUserModal({ open, onOpenChange }: CreateUserModalProps) {
         <DialogHeader>
           <DialogTitle>Crear nuevo usuario</DialogTitle>
           <DialogDescription>
-            Agrega un nuevo usuario al sistema. Completa todos los campos requeridos.
+            Agrega un nuevo usuario al sistema.
           </DialogDescription>
         </DialogHeader>
+
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="name">Nombre</Label>
               <Input
                 id="name"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
                 placeholder="Juan Pérez"
+                value={formData.name}
+                onChange={handleChange}
                 required
               />
             </div>
+
             <div className="grid gap-2">
               <Label htmlFor="email">Correo electrónico</Label>
               <Input
                 id="email"
                 type="email"
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
                 placeholder="juan@ejemplo.com"
+                value={formData.email}
+                onChange={handleChange}
                 required
               />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="role">Rol</Label>
-              <Input
-                id="role"
-                value={formData.role}
-                onChange={(e) =>
-                  setFormData({ ...formData, role: e.target.value })
-                }
-                placeholder="Admin, Conductor, Usuario"
-                required
-              />
-            </div>
+
             <div className="grid gap-2">
               <Label htmlFor="password">Contraseña</Label>
               <Input
                 id="password"
                 type="password"
-                value={formData.password}
-                onChange={(e) =>
-                  setFormData({ ...formData, password: e.target.value })
-                }
                 placeholder="••••••••"
+                value={formData.password}
+                onChange={handleChange}
                 required
+                minLength={6}
               />
             </div>
+
+            <div className="grid gap-2">
+              <Label>Rol</Label>
+              <Select
+                value={formData.roleNames?.[0] ?? "USER"}
+                onValueChange={(val) =>
+                  setFormData((prev) => ({ ...prev, roleNames: [val] }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar rol" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="USER">Usuario</SelectItem>
+                  <SelectItem value="ADMIN">Admin</SelectItem>
+                  <SelectItem value="SUPERADMIN">Superadmin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
+
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit">Crear usuario</Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Creando..." : "Crear usuario"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

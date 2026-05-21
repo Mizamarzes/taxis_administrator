@@ -1,51 +1,48 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect, useCallback } from "react"
 import { DataTable } from "./components/DataTable"
 import { getColumns } from "./components/columns"
 import { CreateUserModal } from "./components/CreateUserModal"
 import { EditUserModal } from "./components/EditUserModal"
 import { DeleteUserModal } from "./components/DeleteUserModal"
 import type { User } from "./types/user.types"
+import { getUsersService } from "./services/user.service"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Search, PlusIcon } from "lucide-react"
+import { PlusIcon } from "lucide-react"
 
-// Datos de ejemplo - reemplaza esto con una llamada a tu API
-const mockUsers: User[] = [
-  {
-    id: "1",
-    name: "Paco",
-    email: "paco@example.com",
-    role: "Adm",
-    status: "active",
-    lastLogin: "2025-12-01",
-    createdAt: "2024-01-15",
-  },
-  {
-    id: "2",
-    name: "Cristina",
-    email: "cristina@example.com",
-    role: "Cond",
-    status: "active",
-    lastLogin: "2025-12-01",
-    createdAt: "2024-02-20",
-  },
-  {
-    id: "3",
-    name: "Paco",
-    email: "paco2@example.com",
-    role: "Adm",
-    status: "inactive",
-    lastLogin: "2025-12-01",
-    createdAt: "2024-03-10",
-  },
-]
+const LIMIT = 20
 
 const Users = () => {
-  const [searchQuery, setSearchQuery] = useState("")
+  const [users, setUsers] = useState<User[]>([])
+  const [search, setSearch] = useState("")
+  const [debouncedSearch, setDebouncedSearch] = useState("")
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 400)
+    return () => clearTimeout(timer)
+  }, [search])
+
+  useEffect(() => {
+    setPage(1)
+  }, [debouncedSearch])
+
+  const fetchUsers = useCallback(async () => {
+    try {
+      const response = await getUsersService({ page, limit: LIMIT })
+      setUsers(response.data.items)
+      setTotalPages(response.data.totalPages || 1)
+    } catch {
+    }
+  }, [page])
+
+  useEffect(() => {
+    fetchUsers()
+  }, [fetchUsers])
 
   const handleEdit = (user: User) => {
     setSelectedUser(user)
@@ -59,47 +56,56 @@ const Users = () => {
 
   const columns = useMemo(
     () => getColumns({ onEdit: handleEdit, onDelete: handleDelete }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   )
 
   return (
     <div className="w-full py-4">
-      <div className="flex items-center justify-between gap-4 mb-6">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Buscar usuario..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
-          />
-        </div>
-        <Button onClick={() => setIsCreateModalOpen(true)}>
-          <PlusIcon className="size-4 mr-2" />
-          Agregar usuario
-        </Button>
-      </div>
-
-      <DataTable columns={columns} data={mockUsers} />
+      <DataTable
+        columns={columns}
+        data={users}
+        filterPlaceholder="Buscar por nombre o email..."
+        searchValue={search}
+        onSearchChange={setSearch}
+        pageCount={totalPages}
+        currentPage={page}
+        onPageChange={setPage}
+        toolbarRight={
+          <Button onClick={() => setIsCreateModalOpen(true)}>
+            <PlusIcon className="size-4 mr-2" />
+            Agregar usuario
+          </Button>
+        }
+      />
 
       <CreateUserModal
         open={isCreateModalOpen}
         onOpenChange={setIsCreateModalOpen}
+        onSuccess={fetchUsers}
       />
 
       <EditUserModal
         open={isEditModalOpen}
-        onOpenChange={setIsEditModalOpen}
+        onOpenChange={(open) => {
+          setIsEditModalOpen(open)
+          if (!open) setSelectedUser(null)
+        }}
         user={selectedUser}
+        onSuccess={fetchUsers}
       />
 
       <DeleteUserModal
         open={isDeleteModalOpen}
-        onOpenChange={setIsDeleteModalOpen}
+        onOpenChange={(open) => {
+          setIsDeleteModalOpen(open)
+          if (!open) setSelectedUser(null)
+        }}
         user={selectedUser}
+        onSuccess={fetchUsers}
       />
     </div>
   )
 }
 
-export default Users;
+export default Users

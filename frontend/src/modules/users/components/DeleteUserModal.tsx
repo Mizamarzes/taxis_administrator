@@ -1,3 +1,4 @@
+import { useState } from "react"
 import {
   Dialog,
   DialogContent,
@@ -7,54 +8,58 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { TriangleAlertIcon } from "lucide-react"
 import type { User } from "../types/user.types"
+import { deleteUserService } from "../services/user.service"
 
 interface DeleteUserModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   user: User | null
+  onSuccess?: () => void
 }
 
-export function DeleteUserModal({
-  open,
-  onOpenChange,
-  user,
-}: DeleteUserModalProps) {
-  const handleDelete = () => {
-    console.log("Delete user:", user?.id)
-    // Aquí harías la llamada a tu API para eliminar el usuario
-    onOpenChange(false)
+export function DeleteUserModal({ open, onOpenChange, user, onSuccess }: DeleteUserModalProps) {
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleDelete = async () => {
+    if (!user) return
+    setIsLoading(true)
+    try {
+      await deleteUserService(user.id)
+      onOpenChange(false)
+      onSuccess?.()
+    } catch {
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   if (!user) return null
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <TriangleAlertIcon className="h-5 w-5 text-destructive" />
-            Eliminar usuario
-          </DialogTitle>
+          <DialogTitle>Eliminar usuario</DialogTitle>
           <DialogDescription>
-            ¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.
+            Esta acción no se puede deshacer.
           </DialogDescription>
         </DialogHeader>
-        <div className="py-2">
+
+        <div className="py-4 space-y-1">
           <p className="text-sm text-muted-foreground">
-            Estás a punto de eliminar al usuario:{" "}
+            Estás eliminando al usuario{" "}
             <span className="font-semibold text-foreground">{user.name}</span>{" "}(
-            {user.email})
+            <span className="font-mono text-foreground">{user.email}</span>).
           </p>
-          <p className="mt-2 text-sm text-destructive">Esta acción no se puede deshacer.</p>
         </div>
+
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancelar
           </Button>
-          <Button variant="destructive" onClick={handleDelete}>
-            Eliminar usuario
+          <Button variant="destructive" onClick={handleDelete} disabled={isLoading}>
+            {isLoading ? "Eliminando..." : "Eliminar"}
           </Button>
         </DialogFooter>
       </DialogContent>

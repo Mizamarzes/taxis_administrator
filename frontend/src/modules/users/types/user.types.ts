@@ -1,28 +1,38 @@
+export interface UserRole {
+  id: number
+  name: string
+}
+
 export interface User {
-  id: string
+  id: number
   name: string
   email: string
-  role: string
-  status: "active" | "inactive"
-  lastLogin: string
+  roles: UserRole[]
+  isActive: boolean
+  lastLogin: string | null
   createdAt: string
+  updatedAt: string
 }
 
 export interface ICreateUserPayload {
   name: string
   email: string
   password: string
-  role: string
+  roleNames?: string[]
 }
 
 export interface IUpdateUserPayload {
   name?: string
-  email?: string
-  role?: string
-  status?: string
+  password?: string
+  roleNames?: string[]
+  isActive?: boolean
 }
 
-export interface IUsersResponse {
-  users: User[]
-  total: number
+export interface IUsersPaginatedResponse {
+  items: User[]
+  totalItems: number
+  currentPage: number
+  totalPages: number
+  previousPage: number | null
+  nextPage: number | null
 }
