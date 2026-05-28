@@ -41,22 +41,26 @@ export const getColumns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<Tarifa
     ),
   },
   {
-    accessorKey: "driverId",
-    header: "Conductor ID",
-    cell: ({ row }) => (
-      <span className="font-medium">
-        {row.getValue("driverId") ?? "—"}
-      </span>
-    ),
+    accessorKey: "vehiclePlate",
+    header: "Vehículo",
+    cell: ({ row }) => {
+      const plate = row.getValue("vehiclePlate") as string | null
+      if (!plate) return <span className="text-muted-foreground">—</span>
+      return (
+        <span className="font-mono font-semibold tracking-wider text-sm">
+          {plate}
+        </span>
+      )
+    },
   },
   {
-    accessorKey: "vehicleId",
-    header: "Vehículo ID",
-    cell: ({ row }) => (
-      <span className="font-mono font-semibold tracking-wider text-sm">
-        {row.getValue("vehicleId") ?? "—"}
-      </span>
-    ),
+    accessorKey: "driverName",
+    header: "Conductor",
+    cell: ({ row }) => {
+      const name = row.getValue("driverName") as string | null
+      if (!name) return <span className="text-muted-foreground">—</span>
+      return <span className="font-medium">{name}</span>
+    },
   },
   {
     accessorKey: "amount",

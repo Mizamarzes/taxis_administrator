@@ -1,37 +1,34 @@
 export type DriverStatus = "active" | "inactive" | "suspended"
 
-export interface DriverUser {
-  id: number
-  name: string
-  email: string
-}
-
 export interface Driver {
   id: number
-  userId: number
-  user: DriverUser
+  name: string
   status: DriverStatus
   phone: string | null
+  email: string | null
+  address: string | null
   hireDate: string | null
-  vehicleId: number | null
   photoUrl: string | null
   createdAt: string
   updatedAt: string
 }
 
 export interface ICreateDriverPayload {
-  userId: number
+  name: string
   phone?: string
+  email?: string
+  address?: string
   hireDate?: string
-  vehicleId?: number
   photoUrl?: string
   status?: DriverStatus
 }
 
 export interface IUpdateDriverPayload {
+  name?: string
   phone?: string
+  email?: string
+  address?: string
   hireDate?: string
-  vehicleId?: number
   photoUrl?: string
   status?: DriverStatus
 }

@@ -4,18 +4,12 @@ import { DriverResponseDto } from '../dto/driver-response.dto';
 export const mapDriverToResponseDto = (driver: Driver): DriverResponseDto => {
     return new DriverResponseDto({
         id: driver.id,
-        userId: driver.userId,
-        user: driver.user
-            ? {
-                  id: driver.user.id,
-                  name: driver.user.name,
-                  email: driver.user.email,
-              }
-            : undefined,
+        name: driver.name,
         status: driver.status,
         phone: driver.phone ?? null,
+        email: driver.email ?? null,
+        address: driver.address ?? null,
         hireDate: driver.hireDate ?? null,
-        vehicleId: driver.vehicleId ?? null,
         photoUrl: driver.photoUrl ?? null,
         createdAt: driver.createdAt,
         updatedAt: driver.updatedAt,

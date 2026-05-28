@@ -24,6 +24,9 @@ export class Vehicle extends BaseEntity {
     @Column({ name: 'photo_url', type: 'text', nullable: true })
     photoUrl!: string;
 
+    @Column({ name: 'driver_id', type: 'int', nullable: true, unique: true })
+    driverId!: number | null;
+
     @Column({ name: 'vehicle_model_id', type: 'int', nullable: true })
     vehicleModelId!: number;
 

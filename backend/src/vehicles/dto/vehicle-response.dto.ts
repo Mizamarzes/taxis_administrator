@@ -63,6 +63,9 @@ export class VehicleResponseDto {
     @ApiPropertyOptional({ type: VehicleModelResponseDto })
     vehicleModel!: VehicleModelResponseDto | null;
 
+    @ApiPropertyOptional({ example: 1 })
+    driverId!: number | null;
+
     @ApiProperty({ enum: VehicleStatus })
     vehicleStatus!: VehicleStatus;
 

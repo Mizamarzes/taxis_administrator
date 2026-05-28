@@ -34,10 +34,12 @@ export function EditDriverModal({ open, onOpenChange, driver, onSuccess }: EditD
   useEffect(() => {
     if (driver) {
       setFormData({
+        name: driver.name,
         status: driver.status,
         phone: driver.phone ?? "",
+        email: driver.email ?? "",
+        address: driver.address ?? "",
         hireDate: driver.hireDate ?? "",
-        vehicleId: driver.vehicleId ?? undefined,
         photoUrl: driver.photoUrl ?? "",
       })
     }
@@ -45,10 +47,7 @@ export function EditDriverModal({ open, onOpenChange, driver, onSuccess }: EditD
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [id]: id === "vehicleId" ? (value === "" ? undefined : Number(value)) : value,
-    }))
+    setFormData((prev) => ({ ...prev, [id]: value }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -56,10 +55,12 @@ export function EditDriverModal({ open, onOpenChange, driver, onSuccess }: EditD
     if (!driver) return
     setIsLoading(true)
     const payload: IUpdateDriverPayload = {}
+    if (formData.name?.trim()) payload.name = formData.name.trim()
     if (formData.status) payload.status = formData.status
     if (formData.phone?.trim()) payload.phone = formData.phone.trim()
     if (formData.hireDate?.trim()) payload.hireDate = formData.hireDate.trim()
-    if (formData.vehicleId) payload.vehicleId = formData.vehicleId
+    if (formData.email?.trim()) payload.email = formData.email.trim()
+    if (formData.address?.trim()) payload.address = formData.address.trim()
     if (formData.photoUrl?.trim()) payload.photoUrl = formData.photoUrl.trim()
     try {
       await updateDriverService(driver.id, payload)
@@ -80,12 +81,22 @@ export function EditDriverModal({ open, onOpenChange, driver, onSuccess }: EditD
           <DialogTitle>Editar conductor</DialogTitle>
           <DialogDescription>
             Actualizando a{" "}
-            <span className="font-semibold">{driver.user.name}</span>.
+            <span className="font-semibold">{driver.name}</span>.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="name">Nombre completo</Label>
+              <Input
+                id="name"
+                placeholder="Juan Pérez"
+                value={formData.name ?? ""}
+                onChange={handleChange}
+              />
+            </div>
+
             <div className="grid gap-2">
               <Label>Estado</Label>
               <Select
@@ -116,23 +127,32 @@ export function EditDriverModal({ open, onOpenChange, driver, onSuccess }: EditD
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="hireDate">Fecha de contratación (opcional)</Label>
+              <Label htmlFor="email">Correo (opcional)</Label>
               <Input
-                id="hireDate"
-                type="date"
-                value={formData.hireDate ?? ""}
+                id="email"
+                type="email"
+                placeholder="juan@ejemplo.com"
+                value={formData.email ?? ""}
                 onChange={handleChange}
               />
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="vehicleId">ID vehículo asignado (opcional)</Label>
+              <Label htmlFor="address">Dirección (opcional)</Label>
               <Input
-                id="vehicleId"
-                type="number"
-                min={1}
-                placeholder="1"
-                value={formData.vehicleId ?? ""}
+                id="address"
+                placeholder="Calle 123 #45-67, Bogotá"
+                value={formData.address ?? ""}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="hireDate">Fecha de contratación (opcional)</Label>
+              <Input
+                id="hireDate"
+                type="date"
+                value={formData.hireDate ?? ""}
                 onChange={handleChange}
               />
             </div>

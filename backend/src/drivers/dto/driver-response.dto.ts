@@ -1,26 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { DriverStatus } from '../enums/driverStatus.enum';
 
-export class DriverUserDto {
+export class DriverResponseDto {
     @ApiProperty({ example: 1 })
     id!: number;
 
     @ApiProperty({ example: 'Juan Pérez' })
     name!: string;
-
-    @ApiProperty({ example: 'juan@example.com' })
-    email!: string;
-}
-
-export class DriverResponseDto {
-    @ApiProperty({ example: 1 })
-    id!: number;
-
-    @ApiProperty({ example: 1 })
-    userId!: number;
-
-    @ApiProperty({ type: DriverUserDto })
-    user!: DriverUserDto;
 
     @ApiProperty({ enum: DriverStatus, example: DriverStatus.ACTIVE })
     status!: DriverStatus;
@@ -28,11 +14,14 @@ export class DriverResponseDto {
     @ApiPropertyOptional({ example: '+573001234567' })
     phone!: string | null;
 
+    @ApiPropertyOptional({ example: 'juan@example.com' })
+    email!: string | null;
+
+    @ApiPropertyOptional({ example: 'Calle 123 #45-67, Bogotá' })
+    address!: string | null;
+
     @ApiPropertyOptional({ example: '2024-01-15' })
     hireDate!: Date | null;
-
-    @ApiPropertyOptional({ example: 1 })
-    vehicleId!: number | null;
 
     @ApiPropertyOptional({ example: 'https://example.com/photo.jpg' })
     photoUrl!: string | null;

@@ -45,8 +45,14 @@ export class TarifaResponseDto {
     @ApiPropertyOptional({ example: 1 })
     driverId!: number | null;
 
+    @ApiPropertyOptional({ example: 'Juan Pérez' })
+    driverName!: string | null;
+
     @ApiPropertyOptional({ example: 1 })
     vehicleId!: number | null;
+
+    @ApiPropertyOptional({ example: 'ABC123' })
+    vehiclePlate!: string | null;
 
     @ApiProperty({ type: [MediaTarifaResponseDto] })
     media!: MediaTarifaResponseDto[];

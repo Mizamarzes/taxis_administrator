@@ -7,7 +7,9 @@ export interface Tarifa {
   paymentMethod: PaymentMethod | null
   tarifaDate: string | null
   driverId: number | null
+  driverName: string | null
   vehicleId: number | null
+  vehiclePlate: string | null
   createdAt: string
   updatedAt: string
 }
@@ -17,7 +19,6 @@ export interface ICreateTarifaPayload {
   description?: string
   paymentMethod?: PaymentMethod
   tarifaDate?: string
-  driverId?: number
   vehicleId?: number
 }
 
@@ -26,7 +27,6 @@ export interface IUpdateTarifaPayload {
   description?: string
   paymentMethod?: PaymentMethod
   tarifaDate?: string
-  driverId?: number
   vehicleId?: number
 }
 

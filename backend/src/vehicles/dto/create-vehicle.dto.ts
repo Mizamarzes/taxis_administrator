@@ -43,4 +43,11 @@ export class CreateVehicleDto {
     @IsOptional()
     @IsEnum(VehicleStatus)
     vehicleStatus?: VehicleStatus;
+
+    @ApiPropertyOptional({ example: 1, description: 'ID del conductor asignado' })
+    @IsOptional()
+    @Type(() => Number)
+    @IsInt()
+    @IsPositive()
+    driverId?: number;
 }

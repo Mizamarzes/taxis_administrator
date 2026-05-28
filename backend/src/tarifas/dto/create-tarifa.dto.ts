@@ -41,12 +41,5 @@ export class CreateTarifaDto {
     @Type(() => Number)
     @IsInt()
     @IsPositive()
-    driverId?: number;
-
-    @ApiPropertyOptional({ example: 1 })
-    @IsOptional()
-    @Type(() => Number)
-    @IsInt()
-    @IsPositive()
     vehicleId?: number;
 }

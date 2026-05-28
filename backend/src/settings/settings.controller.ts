@@ -5,30 +5,30 @@ import { UpdateSettingDto } from './dto/update-setting.dto';
 
 @Controller('settings')
 export class SettingsController {
-  constructor(private readonly settingsService: SettingsService) {}
+    constructor(private readonly settingsService: SettingsService) {}
 
-  @Post()
-  create(@Body() createSettingDto: CreateSettingDto) {
-    return this.settingsService.create(createSettingDto);
-  }
+    @Post()
+    create(@Body() createSettingDto: CreateSettingDto) {
+        return this.settingsService.create(createSettingDto);
+    }
 
-  @Get()
-  findAll() {
-    return this.settingsService.findAll();
-  }
+    @Get()
+    findAll() {
+        return this.settingsService.findAll();
+    }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.settingsService.findOne(+id);
-  }
+    @Get(':id')
+    findOne(@Param('id') id: string) {
+        return this.settingsService.findOne(+id);
+    }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateSettingDto: UpdateSettingDto) {
-    return this.settingsService.update(+id, updateSettingDto);
-  }
+    @Patch(':id')
+    update(@Param('id') id: string, @Body() updateSettingDto: UpdateSettingDto) {
+        return this.settingsService.update(+id, updateSettingDto);
+    }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.settingsService.remove(+id);
-  }
+    @Delete(':id')
+    remove(@Param('id') id: string) {
+        return this.settingsService.remove(+id);
+    }
 }

@@ -40,6 +40,7 @@ export class VehiclesService {
                 photoUrl: dto.photoUrl,
                 vehicleModelId: dto.vehicleModelId,
                 vehicleStatus: dto.vehicleStatus,
+                driverId: dto.driverId,
             });
 
             const saved = await this.vehiclesRepository.save(vehicle);
@@ -143,6 +144,7 @@ export class VehiclesService {
             if (dto.photoUrl !== undefined) vehicle.photoUrl = dto.photoUrl;
             if (dto.vehicleModelId !== undefined) vehicle.vehicleModelId = dto.vehicleModelId;
             if (dto.vehicleStatus !== undefined) vehicle.vehicleStatus = dto.vehicleStatus;
+            if (dto.driverId !== undefined) vehicle.driverId = dto.driverId;
 
             const saved = await this.vehiclesRepository.save(vehicle);
 

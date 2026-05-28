@@ -26,7 +26,7 @@ export class Tarifa extends BaseEntity {
     tarifaDate!: Date;
 
     @Column({ name: 'driver_id', type: 'int', nullable: true })
-    driverId!: number;
+    driverId!: number | null;
 
     @Column({ name: 'vehicle_id', type: 'int', nullable: true })
     vehicleId!: number;

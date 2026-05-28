@@ -25,6 +25,7 @@ export interface Vehicle {
   plate: string
   drivingRestrictionDay: string | null
   photoUrl: string | null
+  driverId: number | null
   vehicleModelId: number | null
   vehicleModel: VehicleModel | null
   vehicleStatus: VehicleStatus
@@ -39,6 +40,7 @@ export interface ICreateVehiclePayload {
   photoUrl?: string
   vehicleModelId?: number
   vehicleStatus?: VehicleStatus
+  driverId?: number
 }
 
 export interface IUpdateVehiclePayload {
@@ -47,6 +49,7 @@ export interface IUpdateVehiclePayload {
   photoUrl?: string
   vehicleModelId?: number
   vehicleStatus?: VehicleStatus
+  driverId?: number
 }
 
 export interface IVehiclesPaginatedResponse {

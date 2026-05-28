@@ -27,10 +27,11 @@ interface CreateDriverModalProps {
 }
 
 const emptyForm: ICreateDriverPayload = {
-  userId: 0,
+  name: "",
   phone: "",
+  email: "",
+  address: "",
   hireDate: "",
-  vehicleId: undefined,
   photoUrl: "",
   status: "active",
 }
@@ -41,23 +42,18 @@ export function CreateDriverModal({ open, onOpenChange, onSuccess }: CreateDrive
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [id]:
-        id === "userId" || id === "vehicleId"
-          ? value === "" ? (id === "userId" ? 0 : undefined) : Number(value)
-          : value,
-    }))
+    setFormData((prev) => ({ ...prev, [id]: value }))
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    const payload: ICreateDriverPayload = { userId: formData.userId }
+    const payload: ICreateDriverPayload = { name: formData.name }
     if (formData.status) payload.status = formData.status
     if (formData.phone?.trim()) payload.phone = formData.phone.trim()
     if (formData.hireDate?.trim()) payload.hireDate = formData.hireDate.trim()
-    if (formData.vehicleId) payload.vehicleId = formData.vehicleId
+    if (formData.email?.trim()) payload.email = formData.email.trim()
+    if (formData.address?.trim()) payload.address = formData.address.trim()
     if (formData.photoUrl?.trim()) payload.photoUrl = formData.photoUrl.trim()
     try {
       await createDriverService(payload)
@@ -76,20 +72,18 @@ export function CreateDriverModal({ open, onOpenChange, onSuccess }: CreateDrive
         <DialogHeader>
           <DialogTitle>Agregar conductor</DialogTitle>
           <DialogDescription>
-            Registra un nuevo conductor vinculado a un usuario existente.
+            Registra un nuevo conductor en el sistema.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="userId">ID de usuario</Label>
+              <Label htmlFor="name">Nombre completo</Label>
               <Input
-                id="userId"
-                type="number"
-                min={1}
-                placeholder="1"
-                value={formData.userId || ""}
+                id="name"
+                placeholder="Juan Pérez"
+                value={formData.name}
                 onChange={handleChange}
                 required
               />
@@ -125,23 +119,32 @@ export function CreateDriverModal({ open, onOpenChange, onSuccess }: CreateDrive
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="hireDate">Fecha de contratación (opcional)</Label>
+              <Label htmlFor="email">Correo (opcional)</Label>
               <Input
-                id="hireDate"
-                type="date"
-                value={formData.hireDate ?? ""}
+                id="email"
+                type="email"
+                placeholder="juan@ejemplo.com"
+                value={formData.email ?? ""}
                 onChange={handleChange}
               />
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="vehicleId">ID vehículo asignado (opcional)</Label>
+              <Label htmlFor="address">Dirección (opcional)</Label>
               <Input
-                id="vehicleId"
-                type="number"
-                min={1}
-                placeholder="1"
-                value={formData.vehicleId ?? ""}
+                id="address"
+                placeholder="Calle 123 #45-67, Bogotá"
+                value={formData.address ?? ""}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="hireDate">Fecha de contratación (opcional)</Label>
+              <Input
+                id="hireDate"
+                type="date"
+                value={formData.hireDate ?? ""}
                 onChange={handleChange}
               />
             </div>

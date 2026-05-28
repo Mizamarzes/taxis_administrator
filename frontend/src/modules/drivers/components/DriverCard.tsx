@@ -2,7 +2,7 @@ import Avatar from "react-avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
-import { PencilIcon, TrashIcon, PhoneIcon, CarFrontIcon, MailIcon } from "lucide-react"
+import { PencilIcon, TrashIcon, PhoneIcon, CarFrontIcon } from "lucide-react"
 import type { Driver, DriverStatus } from "../types/driver.types"
 
 const statusConfig: Record<DriverStatus, { label: string; className: string; dot: string }> = {
@@ -39,7 +39,7 @@ export const DriverCard = ({ driver, onEdit, onDelete }: DriverCardProps) => {
       <CardContent className="flex flex-col items-center gap-3 pt-6 pb-3 px-5">
         <div className="relative">
           <Avatar
-            name={driver.user.name}
+            name={driver.name}
             src={driver.photoUrl ?? undefined}
             size="72px"
             round="12px"
@@ -48,17 +48,13 @@ export const DriverCard = ({ driver, onEdit, onDelete }: DriverCardProps) => {
         </div>
 
         <div className="text-center">
-          <h3 className="font-semibold text-base leading-tight">{driver.user.name}</h3>
+          <h3 className="font-semibold text-base leading-tight">{driver.name}</h3>
           <Badge variant="outline" className={`mt-1 text-xs font-medium ${status.className}`}>
             {status.label}
           </Badge>
         </div>
 
         <div className="w-full space-y-1.5 text-sm">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <MailIcon className="size-3.5 shrink-0" />
-            <span className="truncate">{driver.user.email}</span>
-          </div>
           {driver.phone && (
             <div className="flex items-center gap-2 text-muted-foreground">
               <PhoneIcon className="size-3.5 shrink-0" />

@@ -49,14 +49,7 @@ export function DeleteDriverModal({ open, onOpenChange, driver, onSuccess }: Del
         <div className="py-4 space-y-1">
           <p className="text-sm text-muted-foreground">
             Estás eliminando al conductor{" "}
-            <span className="font-semibold text-foreground">{driver.user.name}</span>
-            {driver.user.email && (
-              <>
-                {" "}(
-                <span className="font-mono text-foreground">{driver.user.email}</span>)
-              </>
-            )}
-            .
+            <span className="font-semibold text-foreground">{driver.name}</span>.
           </p>
         </div>
 

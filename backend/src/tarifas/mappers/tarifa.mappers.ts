@@ -2,6 +2,11 @@ import { Tarifa } from '../entities/tarifa.entity';
 import { MediaTarifa } from '../entities/media-tarifa.entity';
 import { TarifaResponseDto, MediaTarifaResponseDto } from '../dto/tarifa-response.dto';
 
+interface TarifaEnrichment {
+    driverName?: string | null;
+    vehiclePlate?: string | null;
+}
+
 export const mapMediaToResponseDto = (media: MediaTarifa): MediaTarifaResponseDto => {
     return new MediaTarifaResponseDto({
         id: media.id,
@@ -13,7 +18,10 @@ export const mapMediaToResponseDto = (media: MediaTarifa): MediaTarifaResponseDt
     });
 };
 
-export const mapTarifaToResponseDto = (tarifa: Tarifa): TarifaResponseDto => {
+export const mapTarifaToResponseDto = (
+    tarifa: Tarifa,
+    enrichment: TarifaEnrichment = {},
+): TarifaResponseDto => {
     return new TarifaResponseDto({
         id: tarifa.id,
         amount: Number(tarifa.amount),
@@ -21,13 +29,18 @@ export const mapTarifaToResponseDto = (tarifa: Tarifa): TarifaResponseDto => {
         paymentMethod: tarifa.paymentMethod ?? null,
         tarifaDate: tarifa.tarifaDate ?? null,
         driverId: tarifa.driverId ?? null,
+        driverName: enrichment.driverName ?? null,
         vehicleId: tarifa.vehicleId ?? null,
+        vehiclePlate: enrichment.vehiclePlate ?? null,
         media: tarifa.media?.map(mapMediaToResponseDto) ?? [],
         createdAt: tarifa.createdAt,
         updatedAt: tarifa.updatedAt,
     });
 };
 
-export const mapTarifasToResponseDtos = (tarifas: Tarifa[]): TarifaResponseDto[] => {
-    return tarifas.map(mapTarifaToResponseDto);
+export const mapTarifasToResponseDtos = (
+    tarifas: Tarifa[],
+    enrichments: Map<number, TarifaEnrichment> = new Map(),
+): TarifaResponseDto[] => {
+    return tarifas.map((t) => mapTarifaToResponseDto(t, enrichments.get(t.id)));
 };

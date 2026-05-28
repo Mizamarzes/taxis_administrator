@@ -1,11 +1,10 @@
-import { Transform, Type } from 'class-transformer';
+import { Transform } from 'class-transformer';
 import {
     IsDateString,
+    IsEmail,
     IsEnum,
-    IsInt,
     IsNotEmpty,
     IsOptional,
-    IsPositive,
     IsString,
     IsUrl,
     MaxLength,
@@ -14,18 +13,18 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { DriverStatus } from '../enums/driverStatus.enum';
 
 export class CreateDriverDto {
-    @ApiProperty({ example: 1, description: 'ID del usuario asociado al conductor' })
-    @Type(() => Number)
-    @IsInt()
-    @IsPositive()
+    @ApiProperty({ example: 'Juan Pérez', description: 'Nombre completo del conductor' })
+    @IsString()
     @IsNotEmpty()
-    userId!: number;
+    @MaxLength(100)
+    @Transform(({ value }: { value: string }) => value?.trim())
+    name!: string;
 
     @ApiPropertyOptional({ example: '+573001234567' })
     @IsOptional()
     @IsString()
     @MaxLength(50)
-    @Transform(({ value }) => value?.trim())
+    @Transform(({ value }: { value: string }) => value?.trim())
     phone?: string;
 
     @ApiPropertyOptional({ example: '2024-01-15' })
@@ -33,12 +32,18 @@ export class CreateDriverDto {
     @IsDateString()
     hireDate?: string;
 
-    @ApiPropertyOptional({ example: 1 })
+    @ApiPropertyOptional({ example: 'juan@example.com' })
     @IsOptional()
-    @Type(() => Number)
-    @IsInt()
-    @IsPositive()
-    vehicleId?: number;
+    @IsEmail()
+    @Transform(({ value }: { value: string }) => value?.trim().toLowerCase())
+    email?: string;
+
+    @ApiPropertyOptional({ example: 'Calle 123 #45-67, Bogotá' })
+    @IsOptional()
+    @IsString()
+    @MaxLength(255)
+    @Transform(({ value }: { value: string }) => value?.trim())
+    address?: string;
 
     @ApiPropertyOptional({ example: 'https://example.com/photo.jpg' })
     @IsOptional()

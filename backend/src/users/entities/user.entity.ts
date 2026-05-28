@@ -1,9 +1,4 @@
-import {
-    Column,
-    Entity,
-    PrimaryGeneratedColumn,
-    OneToMany,
-} from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { UserRole } from './userRole.entity';
 import { BaseEntity } from '../../common/entities/base.entity';
 
@@ -29,5 +24,4 @@ export class User extends BaseEntity {
 
     @Column({ type: 'timestamp', nullable: true })
     lastLogin: Date;
-
 }

@@ -39,6 +39,7 @@ export function EditVehicleModal({ open, onOpenChange, vehicle, onSuccess }: Edi
         photoUrl: vehicle.photoUrl ?? "",
         vehicleModelId: vehicle.vehicleModelId ?? undefined,
         vehicleStatus: vehicle.vehicleStatus,
+        driverId: vehicle.driverId ?? undefined,
       })
     }
   }, [vehicle])
@@ -47,7 +48,9 @@ export function EditVehicleModal({ open, onOpenChange, vehicle, onSuccess }: Edi
     const { id, value } = e.target
     setFormData((prev) => ({
       ...prev,
-      [id]: id === "vehicleModelId" ? (value === "" ? undefined : Number(value)) : value,
+      [id]: id === "vehicleModelId" || id === "driverId"
+        ? (value === "" ? undefined : Number(value))
+        : value,
     }))
   }
 
@@ -61,6 +64,7 @@ export function EditVehicleModal({ open, onOpenChange, vehicle, onSuccess }: Edi
     if (formData.vehicleStatus) payload.vehicleStatus = formData.vehicleStatus
     if (formData.drivingRestrictionDay?.trim()) payload.drivingRestrictionDay = formData.drivingRestrictionDay.trim()
     if (formData.photoUrl?.trim()) payload.photoUrl = formData.photoUrl.trim()
+    if (formData.driverId) payload.driverId = formData.driverId
     try {
       await updateVehicleService(vehicle.id, payload)
       onOpenChange(false)
@@ -134,6 +138,18 @@ export function EditVehicleModal({ open, onOpenChange, vehicle, onSuccess }: Edi
                 id="drivingRestrictionDay"
                 placeholder="Lunes"
                 value={formData.drivingRestrictionDay ?? ""}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="driverId">ID conductor asignado (opcional)</Label>
+              <Input
+                id="driverId"
+                type="number"
+                min={1}
+                placeholder="1"
+                value={formData.driverId ?? ""}
                 onChange={handleChange}
               />
             </div>

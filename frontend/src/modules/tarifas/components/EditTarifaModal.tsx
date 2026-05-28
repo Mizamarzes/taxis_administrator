@@ -19,6 +19,8 @@ import {
 } from "@/components/ui/select"
 import type { IUpdateTarifaPayload, PaymentMethod, Tarifa } from "../types/tarifa.types"
 import { updateTarifaService } from "../services/tarifa.service"
+import { getVehiclesService } from "@/modules/vehicles/services/vehicle.service"
+import type { Vehicle } from "@/modules/vehicles/types/vehicle.types"
 
 interface EditTarifaModalProps {
   open: boolean
@@ -30,6 +32,14 @@ interface EditTarifaModalProps {
 export function EditTarifaModal({ open, onOpenChange, tarifa, onSuccess }: EditTarifaModalProps) {
   const [formData, setFormData] = useState<IUpdateTarifaPayload>({})
   const [isLoading, setIsLoading] = useState(false)
+  const [vehicles, setVehicles] = useState<Vehicle[]>([])
+
+  useEffect(() => {
+    if (!open) return
+    getVehiclesService({ page: 1, limit: 100 })
+      .then((res) => setVehicles(res.data.items))
+      .catch(() => setVehicles([]))
+  }, [open])
 
   useEffect(() => {
     if (tarifa) {
@@ -38,7 +48,6 @@ export function EditTarifaModal({ open, onOpenChange, tarifa, onSuccess }: EditT
         description: tarifa.description ?? "",
         paymentMethod: tarifa.paymentMethod ?? undefined,
         tarifaDate: tarifa.tarifaDate ?? "",
-        driverId: tarifa.driverId ?? undefined,
         vehicleId: tarifa.vehicleId ?? undefined,
       })
     }
@@ -48,14 +57,11 @@ export function EditTarifaModal({ open, onOpenChange, tarifa, onSuccess }: EditT
     const { id, value } = e.target
     setFormData((prev) => ({
       ...prev,
-      [id]:
-        id === "amount" || id === "driverId" || id === "vehicleId"
-          ? value === "" ? undefined : Number(value)
-          : value,
+      [id]: id === "amount" ? (value === "" ? undefined : Number(value)) : value,
     }))
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault()
     if (!tarifa) return
     setIsLoading(true)
@@ -95,24 +101,27 @@ export function EditTarifaModal({ open, onOpenChange, tarifa, onSuccess }: EditT
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="driverId">ID Conductor</Label>
-              <Input
-                id="driverId"
-                type="number"
-                min={1}
-                value={formData.driverId ?? ""}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="vehicleId">ID Vehículo</Label>
-              <Input
-                id="vehicleId"
-                type="number"
-                min={1}
-                value={formData.vehicleId ?? ""}
-                onChange={handleChange}
-              />
+              <Label>Vehículo</Label>
+              <Select
+                value={formData.vehicleId ? String(formData.vehicleId) : ""}
+                onValueChange={(val) =>
+                  setFormData((prev) => ({ ...prev, vehicleId: Number(val) }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar vehículo" />
+                </SelectTrigger>
+                <SelectContent>
+                  {vehicles.map((v) => (
+                    <SelectItem key={v.id} value={String(v.id)}>
+                      {v.plate}
+                      {v.vehicleModel
+                        ? ` — ${v.vehicleModel.brand.name} ${v.vehicleModel.name}`
+                        : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="tarifaDate">Fecha</Label>
