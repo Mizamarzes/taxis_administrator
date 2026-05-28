@@ -1,25 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { VehicleStatus } from '../entities/vehicle.entity';
 
-export class VehicleBrandResponseDto {
-    @ApiProperty({ example: 1 })
-    id!: number;
-
-    @ApiProperty({ example: 'Toyota' })
-    name!: string;
-}
-
-export class VehicleModelResponseDto {
-    @ApiProperty({ example: 1 })
-    id!: number;
-
-    @ApiProperty({ example: 'Corolla' })
-    name!: string;
-
-    @ApiProperty({ type: VehicleBrandResponseDto })
-    brand!: VehicleBrandResponseDto;
-}
-
 export class VehicleDocumentResponseDto {
     @ApiProperty({ example: 1 })
     id!: number;
@@ -56,12 +37,6 @@ export class VehicleResponseDto {
 
     @ApiPropertyOptional({ example: 'https://example.com/photo.jpg' })
     photoUrl!: string | null;
-
-    @ApiPropertyOptional({ example: 1 })
-    vehicleModelId!: number | null;
-
-    @ApiPropertyOptional({ type: VehicleModelResponseDto })
-    vehicleModel!: VehicleModelResponseDto | null;
 
     @ApiPropertyOptional({ example: 1 })
     driverId!: number | null;

@@ -1,6 +1,5 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { BaseEntity } from '../../common/entities/base.entity';
-import { VehicleModel } from './vehicle-model.entity';
 import { VehicleDocument } from './vehicle-document.entity';
 
 export enum VehicleStatus {
@@ -19,20 +18,13 @@ export class Vehicle extends BaseEntity {
     plate!: string;
 
     @Column({ name: 'driving_restriction_day', type: 'varchar', length: 20, nullable: true })
-    drivingRestrictionDay!: string;
+    drivingRestrictionDay!: string | null;
 
     @Column({ name: 'photo_url', type: 'text', nullable: true })
-    photoUrl!: string;
+    photoUrl!: string | null;
 
     @Column({ name: 'driver_id', type: 'int', nullable: true, unique: true })
     driverId!: number | null;
-
-    @Column({ name: 'vehicle_model_id', type: 'int', nullable: true })
-    vehicleModelId!: number;
-
-    @ManyToOne(() => VehicleModel, { eager: false, nullable: true })
-    @JoinColumn({ name: 'vehicle_model_id' })
-    vehicleModel!: VehicleModel;
 
     @Column({
         name: 'vehicle_status',

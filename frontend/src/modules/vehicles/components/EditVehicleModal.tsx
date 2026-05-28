@@ -37,7 +37,6 @@ export function EditVehicleModal({ open, onOpenChange, vehicle, onSuccess }: Edi
         plate: vehicle.plate,
         drivingRestrictionDay: vehicle.drivingRestrictionDay ?? "",
         photoUrl: vehicle.photoUrl ?? "",
-        vehicleModelId: vehicle.vehicleModelId ?? undefined,
         vehicleStatus: vehicle.vehicleStatus,
         driverId: vehicle.driverId ?? undefined,
       })
@@ -48,9 +47,7 @@ export function EditVehicleModal({ open, onOpenChange, vehicle, onSuccess }: Edi
     const { id, value } = e.target
     setFormData((prev) => ({
       ...prev,
-      [id]: id === "vehicleModelId" || id === "driverId"
-        ? (value === "" ? undefined : Number(value))
-        : value,
+      [id]: id === "driverId" ? (value === "" ? undefined : Number(value)) : value,
     }))
   }
 
@@ -60,7 +57,6 @@ export function EditVehicleModal({ open, onOpenChange, vehicle, onSuccess }: Edi
     setIsLoading(true)
     const payload: IUpdateVehiclePayload = {}
     if (formData.plate?.trim()) payload.plate = formData.plate.trim()
-    if (formData.vehicleModelId) payload.vehicleModelId = formData.vehicleModelId
     if (formData.vehicleStatus) payload.vehicleStatus = formData.vehicleStatus
     if (formData.drivingRestrictionDay?.trim()) payload.drivingRestrictionDay = formData.drivingRestrictionDay.trim()
     if (formData.photoUrl?.trim()) payload.photoUrl = formData.photoUrl.trim()
@@ -97,18 +93,6 @@ export function EditVehicleModal({ open, onOpenChange, vehicle, onSuccess }: Edi
                 value={formData.plate ?? ""}
                 onChange={handleChange}
                 required
-              />
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="vehicleModelId">ID Modelo de vehículo</Label>
-              <Input
-                id="vehicleModelId"
-                type="number"
-                min={1}
-                placeholder="1"
-                value={formData.vehicleModelId ?? ""}
-                onChange={handleChange}
               />
             </div>
 

@@ -38,7 +38,6 @@ export class VehiclesService {
                 plate: dto.plate,
                 drivingRestrictionDay: dto.drivingRestrictionDay,
                 photoUrl: dto.photoUrl,
-                vehicleModelId: dto.vehicleModelId,
                 vehicleStatus: dto.vehicleStatus,
                 driverId: dto.driverId,
             });
@@ -65,7 +64,7 @@ export class VehiclesService {
             const skip = (page - 1) * limit;
 
             const [vehicles, totalItems] = await this.vehiclesRepository.findAndCount({
-                relations: ['vehicleModel', 'vehicleModel.brand', 'documents'],
+                relations: ['documents'],
                 order: { createdAt: 'DESC' },
                 skip,
                 take: limit,
@@ -101,7 +100,7 @@ export class VehiclesService {
         try {
             const vehicle = await this.vehiclesRepository.findOne({
                 where: { id },
-                relations: ['vehicleModel', 'vehicleModel.brand', 'documents'],
+                relations: ['documents'],
             });
 
             if (!vehicle) {
@@ -123,7 +122,7 @@ export class VehiclesService {
         try {
             const vehicle = await this.vehiclesRepository.findOne({
                 where: { id },
-                relations: ['vehicleModel', 'vehicleModel.brand', 'documents'],
+                relations: ['documents'],
             });
 
             if (!vehicle) {
@@ -142,7 +141,6 @@ export class VehiclesService {
             if (dto.drivingRestrictionDay !== undefined)
                 vehicle.drivingRestrictionDay = dto.drivingRestrictionDay;
             if (dto.photoUrl !== undefined) vehicle.photoUrl = dto.photoUrl;
-            if (dto.vehicleModelId !== undefined) vehicle.vehicleModelId = dto.vehicleModelId;
             if (dto.vehicleStatus !== undefined) vehicle.vehicleStatus = dto.vehicleStatus;
             if (dto.driverId !== undefined) vehicle.driverId = dto.driverId;
 

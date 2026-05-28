@@ -40,8 +40,6 @@ const Vehicles = () => {
     return vehicles.filter(
       (v) =>
         v.plate.toLowerCase().includes(q) ||
-        (v.vehicleModel?.name.toLowerCase().includes(q) ?? false) ||
-        (v.vehicleModel?.brand.name.toLowerCase().includes(q) ?? false) ||
         (v.drivingRestrictionDay?.toLowerCase().includes(q) ?? false)
     )
   }, [search, vehicles])

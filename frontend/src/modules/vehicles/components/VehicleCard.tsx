@@ -41,9 +41,6 @@ interface VehicleCardProps {
 
 export const VehicleCard = ({ vehicle, onEdit, onDelete }: VehicleCardProps) => {
   const status = statusConfig[vehicle.vehicleStatus]
-  const modelLabel = vehicle.vehicleModel
-    ? `${vehicle.vehicleModel.brand.name} · ${vehicle.vehicleModel.name}`
-    : "Modelo no registrado"
 
   return (
     <Card className="flex flex-col gap-0 overflow-hidden py-0">
@@ -59,7 +56,6 @@ export const VehicleCard = ({ vehicle, onEdit, onDelete }: VehicleCardProps) => 
               <h3 className="font-mono font-semibold text-base leading-tight tracking-wider">
                 {vehicle.plate}
               </h3>
-              <p className="text-xs text-muted-foreground mt-0.5">{modelLabel}</p>
             </div>
           </div>
 

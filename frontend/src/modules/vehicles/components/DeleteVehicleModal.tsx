@@ -36,10 +36,6 @@ export function DeleteVehicleModal({ open, onOpenChange, vehicle, onSuccess }: D
 
   if (!vehicle) return null
 
-  const modelName = vehicle.vehicleModel
-    ? `${vehicle.vehicleModel.brand.name} ${vehicle.vehicleModel.name}`
-    : null
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
@@ -55,13 +51,7 @@ export function DeleteVehicleModal({ open, onOpenChange, vehicle, onSuccess }: D
             Estás eliminando el vehículo con placa{" "}
             <span className="font-mono font-semibold text-foreground">
               {vehicle.plate}
-            </span>
-            {modelName && (
-              <>
-                {" "}({modelName})
-              </>
-            )}
-            .
+            </span>.
           </p>
         </div>
 

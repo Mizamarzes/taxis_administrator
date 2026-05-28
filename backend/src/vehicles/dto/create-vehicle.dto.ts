@@ -32,13 +32,6 @@ export class CreateVehicleDto {
     @IsUrl()
     photoUrl?: string;
 
-    @ApiPropertyOptional({ example: 1, description: 'ID del modelo del vehículo' })
-    @IsOptional()
-    @Type(() => Number)
-    @IsInt()
-    @IsPositive()
-    vehicleModelId?: number;
-
     @ApiPropertyOptional({ enum: VehicleStatus, default: VehicleStatus.ACTIVE })
     @IsOptional()
     @IsEnum(VehicleStatus)

@@ -115,9 +115,6 @@ export function EditTarifaModal({ open, onOpenChange, tarifa, onSuccess }: EditT
                   {vehicles.map((v) => (
                     <SelectItem key={v.id} value={String(v.id)}>
                       {v.plate}
-                      {v.vehicleModel
-                        ? ` — ${v.vehicleModel.brand.name} ${v.vehicleModel.name}`
-                        : ""}
                     </SelectItem>
                   ))}
                 </SelectContent>
