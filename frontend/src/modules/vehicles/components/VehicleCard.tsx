@@ -9,6 +9,7 @@ import {
   FileTextIcon,
 } from "lucide-react"
 import type { Vehicle, VehicleStatus } from "../types/vehicle.types"
+import { getRestrictionDayLabel } from "../types/vehicle.types"
 
 const statusConfig: Record<VehicleStatus, { label: string; className: string; dot: string }> = {
   active: {
@@ -69,10 +70,10 @@ export const VehicleCard = ({ vehicle, onEdit, onDelete }: VehicleCardProps) => 
         <div className="border-t" />
 
         <div className="space-y-1.5 text-sm">
-          {vehicle.drivingRestrictionDay && (
+          {getRestrictionDayLabel(vehicle.drivingRestrictionDay) && (
             <div className="flex items-center gap-2 text-muted-foreground">
               <CalendarOffIcon className="size-3.5 shrink-0" />
-              <span>Restricción: {vehicle.drivingRestrictionDay}</span>
+              <span>Pico y placa: {getRestrictionDayLabel(vehicle.drivingRestrictionDay)}</span>
             </div>
           )}
           <div className="flex items-center gap-2 text-muted-foreground">

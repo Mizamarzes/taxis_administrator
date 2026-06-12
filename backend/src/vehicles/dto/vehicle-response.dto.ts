@@ -32,8 +32,8 @@ export class VehicleResponseDto {
     @ApiProperty({ example: 'ABC123' })
     plate!: string;
 
-    @ApiPropertyOptional({ example: 'Lunes' })
-    drivingRestrictionDay!: string | null;
+    @ApiPropertyOptional({ example: 1 })
+    drivingRestrictionDay!: number | null;
 
     @ApiPropertyOptional({ example: 'https://example.com/photo.jpg' })
     photoUrl!: string | null;

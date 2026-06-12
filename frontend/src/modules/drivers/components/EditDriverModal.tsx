@@ -156,16 +156,6 @@ export function EditDriverModal({ open, onOpenChange, driver, onSuccess }: EditD
                 onChange={handleChange}
               />
             </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="photoUrl">URL de foto (opcional)</Label>
-              <Input
-                id="photoUrl"
-                placeholder="https://ejemplo.com/foto.jpg"
-                value={formData.photoUrl ?? ""}
-                onChange={handleChange}
-              />
-            </div>
           </div>
 
           <DialogFooter>
