@@ -2,7 +2,7 @@ import Avatar from "react-avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
-import { PencilIcon, TrashIcon, PhoneIcon, CarFrontIcon } from "lucide-react"
+import { PencilIcon, TrashIcon, PhoneIcon, MailIcon, EyeIcon } from "lucide-react"
 import type { Driver, DriverStatus } from "../types/driver.types"
 
 const statusConfig: Record<DriverStatus, { label: string; className: string; dot: string }> = {
@@ -25,11 +25,12 @@ const statusConfig: Record<DriverStatus, { label: string; className: string; dot
 
 interface DriverCardProps {
   driver: Driver
+  onView: (driver: Driver) => void
   onEdit: (driver: Driver) => void
   onDelete: (driver: Driver) => void
 }
 
-export const DriverCard = ({ driver, onEdit, onDelete }: DriverCardProps) => {
+export const DriverCard = ({ driver, onView, onEdit, onDelete }: DriverCardProps) => {
   const status = statusConfig[driver.status]
 
   return (
@@ -61,10 +62,10 @@ export const DriverCard = ({ driver, onEdit, onDelete }: DriverCardProps) => {
               <span className="truncate">{driver.phone}</span>
             </div>
           )}
-          {driver.vehicleId && (
+          {driver.email && (
             <div className="flex items-center gap-2 text-muted-foreground">
-              <CarFrontIcon className="size-3.5 shrink-0" />
-              <span>Vehículo ID: {driver.vehicleId}</span>
+              <MailIcon className="size-3.5 shrink-0" />
+              <span className="truncate">{driver.email}</span>
             </div>
           )}
         </div>
@@ -75,10 +76,17 @@ export const DriverCard = ({ driver, onEdit, onDelete }: DriverCardProps) => {
           variant="outline"
           size="sm"
           className="flex-1"
+          onClick={() => onView(driver)}
+        >
+          <EyeIcon className="size-3.5 mr-1.5" />
+          Ver
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
           onClick={() => onEdit(driver)}
         >
-          <PencilIcon className="size-3.5 mr-1.5" />
-          Editar
+          <PencilIcon className="size-3.5" />
         </Button>
         <Button
           variant="outline"

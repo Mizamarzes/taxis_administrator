@@ -6,6 +6,7 @@ import { getColumns } from "./components/columns"
 import { CreateTarifaModal } from "./components/CreateTarifaModal"
 import { EditTarifaModal } from "./components/EditTarifaModal"
 import { DeleteTarifaModal } from "./components/DeleteTarifaModal"
+import { TarifaDetailModal } from "./components/TarifaDetailModal"
 import { DateRangeFilter } from "./components/DateRangeFilter"
 import type { Tarifa } from "./types/tarifa.types"
 import { getTarifasService } from "./services/tarifa.service"
@@ -24,6 +25,7 @@ const Tarifas = () => {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
     const [isEditModalOpen, setIsEditModalOpen] = useState(false)
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
     const [selectedTarifa, setSelectedTarifa] = useState<Tarifa | null>(null)
 
     useEffect(() => {
@@ -60,6 +62,11 @@ const Tarifas = () => {
         fetchTarifas()
     }, [fetchTarifas])
 
+    const handleView = (tarifa: Tarifa) => {
+        setSelectedTarifa(tarifa)
+        setIsDetailModalOpen(true)
+    }
+
     const handleEdit = (tarifa: Tarifa) => {
         setSelectedTarifa(tarifa)
         setIsEditModalOpen(true)
@@ -71,7 +78,7 @@ const Tarifas = () => {
     }
 
     const columns = useMemo(
-        () => getColumns({ onEdit: handleEdit, onDelete: handleDelete }),
+        () => getColumns({ onView: handleView, onEdit: handleEdit, onDelete: handleDelete }),
         // eslint-disable-next-line react-hooks/exhaustive-deps
         []
     )
@@ -96,6 +103,12 @@ const Tarifas = () => {
                         </Button>
                     </div>
                 }
+            />
+
+            <TarifaDetailModal
+                open={isDetailModalOpen}
+                onOpenChange={setIsDetailModalOpen}
+                tarifa={selectedTarifa}
             />
 
             <CreateTarifaModal
