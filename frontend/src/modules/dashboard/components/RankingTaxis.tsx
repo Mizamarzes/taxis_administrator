@@ -8,7 +8,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { TrophyIcon } from "lucide-react"
-import { rankingTaxis } from "../data/mockData"
+import type { RankingItem } from "../types/dashboard.types"
 
 const medalColors: Record<number, string> = {
   0: "text-yellow-500",
@@ -16,8 +16,12 @@ const medalColors: Record<number, string> = {
   2: "text-amber-600",
 }
 
-export const RankingTaxis = () => {
-  const maxIngresos = rankingTaxis[0].ingresos
+interface RankingTaxisProps {
+  data: RankingItem[]
+}
+
+export const RankingTaxis = ({ data }: RankingTaxisProps) => {
+  const maxIngresos = data.length > 0 ? data[0].ingresos : 0
 
   return (
     <Card className="flex flex-col">
@@ -26,10 +30,15 @@ export const RankingTaxis = () => {
           <TrophyIcon className="h-4 w-4 text-yellow-500" />
           Ranking de taxis
         </CardTitle>
-        <CardDescription>Top conductores por ingresos del mes</CardDescription>
+        <CardDescription>Top conductores por ingresos del periodo</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-0 px-5">
-        {rankingTaxis.map((taxi, index) => (
+        {data.length === 0 && (
+          <div className="py-10 text-center text-sm text-muted-foreground">
+            Sin datos en el periodo
+          </div>
+        )}
+        {data.map((taxi, index) => (
           <div key={taxi.id}>
             <div className="flex items-center gap-3 py-3">
               {/* Posición */}
@@ -64,7 +73,7 @@ export const RankingTaxis = () => {
                 </div>
               </div>
             </div>
-            {index < rankingTaxis.length - 1 && <Separator />}
+            {index < data.length - 1 && <Separator />}
           </div>
         ))}
       </CardContent>

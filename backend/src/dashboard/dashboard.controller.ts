@@ -1,34 +1,29 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Query } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { DashboardService } from './dashboard.service';
-import { CreateDashboardDto } from './dto/create-dashboard.dto';
-import { UpdateDashboardDto } from './dto/update-dashboard.dto';
+import { DashboardFilterDto } from './dto/dashboard-filter.dto';
+import { DashboardSummaryResponseDto } from './dto/dashboard-summary.dto';
+import { Auth } from '../auth/decorators/auth.decorator';
+import { Role } from '../common/enums/rol.enum';
+import { ApiResponseInterface } from '../common/interfaces/api-response.interface';
 
+@ApiTags('dashboard')
 @Controller('dashboard')
 export class DashboardController {
     constructor(private readonly dashboardService: DashboardService) {}
 
-    @Post()
-    create(@Body() createDashboardDto: CreateDashboardDto) {
-        return this.dashboardService.create(createDashboardDto);
-    }
-
-    @Get()
-    findAll() {
-        return this.dashboardService.findAll();
-    }
-
-    @Get(':id')
-    findOne(@Param('id') id: string) {
-        return this.dashboardService.findOne(+id);
-    }
-
-    @Patch(':id')
-    update(@Param('id') id: string, @Body() updateDashboardDto: UpdateDashboardDto) {
-        return this.dashboardService.update(+id, updateDashboardDto);
-    }
-
-    @Delete(':id')
-    remove(@Param('id') id: string) {
-        return this.dashboardService.remove(+id);
+    @Get('summary')
+    @Auth(Role.ADMIN)
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Get dashboard summary for a date range' })
+    @ApiResponse({ status: 200, type: DashboardSummaryResponseDto })
+    async getSummary(
+        @Query() filter: DashboardFilterDto,
+    ): Promise<ApiResponseInterface<DashboardSummaryResponseDto>> {
+        const data = await this.dashboardService.getSummary(filter);
+        return {
+            message: 'Dashboard summary retrieved successfully',
+            data,
+        };
     }
 }
