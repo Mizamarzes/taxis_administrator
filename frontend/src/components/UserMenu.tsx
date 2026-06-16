@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { Link } from 'react-router-dom'
 
 export const UserMenu = () => {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
 
   const handleLogout = () => {
     logout();
@@ -15,13 +15,17 @@ export const UserMenu = () => {
     <DropdownMenu>
         <DropdownMenuTrigger>
             <div className="relative">
-                <Avatar 
-                    src={APP_SIDEBAR.curProfile.src}
+                <Avatar
+                    name={user?.name}
                     size="32px"
                     round="8px"
                 />
 
-                <div className="absolute bottom-0 right-0 size-2 rounded-full bg-emerald-500 dark:bg-emerald-400 ring-sidebar ring-1">
+                <div className={`absolute bottom-0 right-0 size-2 rounded-full ring-sidebar ring-1 ${
+                    user?.isActive === false
+                        ? "bg-gray-400"
+                        : "bg-emerald-500 dark:bg-emerald-400"
+                }`}>
                 </div>
             </div>
         </DropdownMenuTrigger>
