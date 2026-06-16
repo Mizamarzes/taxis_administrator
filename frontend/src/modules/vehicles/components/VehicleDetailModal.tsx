@@ -12,9 +12,17 @@ import {
   UserIcon,
   FileTextIcon,
   CalendarIcon,
+  PhoneIcon,
+  MailIcon,
 } from "lucide-react"
-import type { Vehicle, VehicleStatus } from "../types/vehicle.types"
+import type { Vehicle, VehicleStatus, DriverStatus } from "../types/vehicle.types"
 import { getRestrictionDayLabel } from "../types/vehicle.types"
+
+const driverStatusLabel: Record<DriverStatus, string> = {
+  active: "Activo",
+  inactive: "Inactivo",
+  suspended: "Suspendido",
+}
 
 const statusConfig: Record<VehicleStatus, { label: string; className: string; dot: string }> = {
   active: {
@@ -110,8 +118,33 @@ export function VehicleDetailModal({ open, onOpenChange, vehicle }: VehicleDetai
           <DetailRow
             icon={<UserIcon className="size-4" />}
             label="Conductor asignado"
-            value={vehicle.driverId ? `ID ${vehicle.driverId}` : "Sin asignar"}
+            value={
+              vehicle.driver ? (
+                <span className="flex flex-wrap items-center gap-2">
+                  {vehicle.driver.name}
+                  <Badge variant="outline" className="text-xs font-normal">
+                    {driverStatusLabel[vehicle.driver.status]}
+                  </Badge>
+                </span>
+              ) : (
+                "Sin asignar"
+              )
+            }
           />
+          {vehicle.driver?.phone && (
+            <DetailRow
+              icon={<PhoneIcon className="size-4" />}
+              label="Teléfono del conductor"
+              value={vehicle.driver.phone}
+            />
+          )}
+          {vehicle.driver?.email && (
+            <DetailRow
+              icon={<MailIcon className="size-4" />}
+              label="Correo del conductor"
+              value={vehicle.driver.email}
+            />
+          )}
           <DetailRow
             icon={<FileTextIcon className="size-4" />}
             label="Documentos"

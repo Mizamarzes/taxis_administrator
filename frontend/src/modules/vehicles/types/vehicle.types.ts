@@ -22,12 +22,24 @@ export interface VehicleDocument {
   createdAt: string
 }
 
+export type DriverStatus = "active" | "inactive" | "suspended"
+
+export interface VehicleDriver {
+  id: number
+  name: string
+  status: DriverStatus
+  phone: string | null
+  email: string | null
+  photoUrl: string | null
+}
+
 export interface Vehicle {
   id: number
   plate: string
   drivingRestrictionDay: number | null
   photoUrl: string | null
   driverId: number | null
+  driver: VehicleDriver | null
   vehicleStatus: VehicleStatus
   documents: VehicleDocument[]
   createdAt: string

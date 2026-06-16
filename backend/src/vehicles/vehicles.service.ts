@@ -64,7 +64,7 @@ export class VehiclesService {
             const skip = (page - 1) * limit;
 
             const [vehicles, totalItems] = await this.vehiclesRepository.findAndCount({
-                relations: ['documents'],
+                relations: ['documents', 'driver'],
                 order: { createdAt: 'DESC' },
                 skip,
                 take: limit,
@@ -100,7 +100,7 @@ export class VehiclesService {
         try {
             const vehicle = await this.vehiclesRepository.findOne({
                 where: { id },
-                relations: ['documents'],
+                relations: ['documents', 'driver'],
             });
 
             if (!vehicle) {
@@ -122,7 +122,7 @@ export class VehiclesService {
         try {
             const vehicle = await this.vehiclesRepository.findOne({
                 where: { id },
-                relations: ['documents'],
+                relations: ['documents', 'driver'],
             });
 
             if (!vehicle) {

@@ -59,7 +59,7 @@ export const RankingTaxis = () => {
                     />
                   </div>
                   <Badge variant="outline" className="text-xs shrink-0">
-                    {taxi.viajes} viajes
+                    {taxi.tarifas} tarifas
                   </Badge>
                 </div>
               </div>

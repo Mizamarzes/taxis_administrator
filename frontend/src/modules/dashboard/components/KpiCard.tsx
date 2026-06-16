@@ -7,13 +7,10 @@ interface KpiCardProps {
   value: string | number
   subtitle?: string
   icon: LucideIcon
-  trend?: { value: number; label: string }
   className?: string
 }
 
-export const KpiCard = ({ title, value, subtitle, icon: Icon, trend, className }: KpiCardProps) => {
-  const isPositive = trend && trend.value >= 0
-
+export const KpiCard = ({ title, value, subtitle, icon: Icon, className }: KpiCardProps) => {
   return (
     <Card className={cn("gap-3 py-5", className)}>
       <CardContent className="flex flex-col gap-3 px-5">
@@ -30,21 +27,6 @@ export const KpiCard = ({ title, value, subtitle, icon: Icon, trend, className }
             <span className="text-xs text-muted-foreground">{subtitle}</span>
           )}
         </div>
-
-        {trend && (
-          <div className="flex items-center gap-1">
-            <span
-              className={cn(
-                "text-xs font-medium",
-                isPositive ? "text-emerald-600" : "text-red-500"
-              )}
-            >
-              {isPositive ? "+" : ""}
-              {trend.value}%
-            </span>
-            <span className="text-xs text-muted-foreground">{trend.label}</span>
-          </div>
-        )}
       </CardContent>
     </Card>
   )

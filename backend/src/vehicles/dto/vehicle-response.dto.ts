@@ -1,5 +1,30 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { VehicleStatus } from '../entities/vehicle.entity';
+import { DriverStatus } from '../../drivers/enums/driverStatus.enum';
+
+export class VehicleDriverResponseDto {
+    @ApiProperty({ example: 1 })
+    id!: number;
+
+    @ApiProperty({ example: 'Juan Pérez' })
+    name!: string;
+
+    @ApiProperty({ enum: DriverStatus })
+    status!: DriverStatus;
+
+    @ApiPropertyOptional({ example: '+57 300 123 4567' })
+    phone!: string | null;
+
+    @ApiPropertyOptional({ example: 'juan.perez@example.com' })
+    email!: string | null;
+
+    @ApiPropertyOptional({ example: 'https://example.com/driver.jpg' })
+    photoUrl!: string | null;
+
+    constructor(partial: Partial<VehicleDriverResponseDto>) {
+        Object.assign(this, partial);
+    }
+}
 
 export class VehicleDocumentResponseDto {
     @ApiProperty({ example: 1 })
@@ -40,6 +65,9 @@ export class VehicleResponseDto {
 
     @ApiPropertyOptional({ example: 1 })
     driverId!: number | null;
+
+    @ApiPropertyOptional({ type: VehicleDriverResponseDto, nullable: true })
+    driver!: VehicleDriverResponseDto | null;
 
     @ApiProperty({ enum: VehicleStatus })
     vehicleStatus!: VehicleStatus;

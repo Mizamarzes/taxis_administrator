@@ -8,6 +8,7 @@ import {
   CalendarOffIcon,
   FileTextIcon,
   EyeIcon,
+  UserIcon,
 } from "lucide-react"
 import type { Vehicle, VehicleStatus } from "../types/vehicle.types"
 import { getRestrictionDayLabel } from "../types/vehicle.types"
@@ -78,6 +79,12 @@ export const VehicleCard = ({ vehicle, onView, onEdit, onDelete }: VehicleCardPr
               <span>Pico y placa: {getRestrictionDayLabel(vehicle.drivingRestrictionDay)}</span>
             </div>
           )}
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <UserIcon className="size-3.5 shrink-0" />
+            <span className="truncate">
+              {vehicle.driver ? vehicle.driver.name : "Sin conductor"}
+            </span>
+          </div>
           <div className="flex items-center gap-2 text-muted-foreground">
             <FileTextIcon className="size-3.5 shrink-0" />
             <span>

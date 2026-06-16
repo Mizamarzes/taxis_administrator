@@ -1,6 +1,24 @@
 import { Vehicle } from '../entities/vehicle.entity';
 import { VehicleDocument } from '../entities/vehicle-document.entity';
-import { VehicleResponseDto, VehicleDocumentResponseDto } from '../dto/vehicle-response.dto';
+import { Driver } from '../../drivers/entities/driver.entity';
+import {
+    VehicleResponseDto,
+    VehicleDocumentResponseDto,
+    VehicleDriverResponseDto,
+} from '../dto/vehicle-response.dto';
+
+export const mapDriverToVehicleDriverResponseDto = (
+    driver: Driver,
+): VehicleDriverResponseDto => {
+    return new VehicleDriverResponseDto({
+        id: driver.id,
+        name: driver.name,
+        status: driver.status,
+        phone: driver.phone ?? null,
+        email: driver.email ?? null,
+        photoUrl: driver.photoUrl ?? null,
+    });
+};
 
 export const mapDocumentToResponseDto = (doc: VehicleDocument): VehicleDocumentResponseDto => {
     return new VehicleDocumentResponseDto({
@@ -20,6 +38,7 @@ export const mapVehicleToResponseDto = (vehicle: Vehicle): VehicleResponseDto =>
         drivingRestrictionDay: vehicle.drivingRestrictionDay ?? null,
         photoUrl: vehicle.photoUrl ?? null,
         driverId: vehicle.driverId ?? null,
+        driver: vehicle.driver ? mapDriverToVehicleDriverResponseDto(vehicle.driver) : null,
         vehicleStatus: vehicle.vehicleStatus,
         documents: vehicle.documents?.map(mapDocumentToResponseDto) ?? [],
         createdAt: vehicle.createdAt,
