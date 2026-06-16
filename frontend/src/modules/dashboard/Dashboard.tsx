@@ -1,23 +1,56 @@
 import { useEffect, useMemo, useState } from "react"
-import { DollarSignIcon, ReceiptIcon, Loader2Icon } from "lucide-react"
-import { format, startOfMonth } from "date-fns"
+import {
+  DollarSignIcon,
+  ReceiptIcon,
+  Loader2Icon,
+  FileSpreadsheetIcon,
+} from "lucide-react"
+import { format, subDays } from "date-fns"
 import { es } from "date-fns/locale"
 import type { DateRange } from "react-day-picker"
 import { KpiCard } from "./components/KpiCard"
 import { GananciasChart } from "./components/GananciasChart"
 import { RankingTaxis } from "./components/RankingTaxis"
 import { DateRangeFilter } from "@/components/DateRangeFilter"
+import { Button } from "@/components/ui/button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { getDashboardSummaryService } from "./services/dashboard.service"
 import type { DashboardSummary } from "./types/dashboard.types"
 
+type Preset = "today" | "week" | "month" | "custom"
+
+const getPresetRange = (preset: Exclude<Preset, "custom">): DateRange => {
+  const today = new Date()
+  if (preset === "today") return { from: today, to: today }
+  if (preset === "week") return { from: subDays(today, 6), to: today }
+  return { from: subDays(today, 29), to: today }
+}
+
 const Dashboard = () => {
-  const [dateRange, setDateRange] = useState<DateRange | undefined>({
-    from: startOfMonth(new Date()),
-    to: new Date(),
-  })
+  const [preset, setPreset] = useState<Preset>("month")
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(() =>
+    getPresetRange("month")
+  )
   const [summary, setSummary] = useState<DashboardSummary | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  const handlePresetChange = (value: string) => {
+    const next = value as Exclude<Preset, "custom">
+    setPreset(next)
+    setDateRange(getPresetRange(next))
+  }
+
+  const handleRangeChange = (range: DateRange | undefined) => {
+    setPreset("custom")
+    setDateRange(range)
+  }
 
   useEffect(() => {
     let active = true
@@ -56,12 +89,30 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-sm text-muted-foreground">Resumen de actividad del periodo.</p>
         </div>
-        <DateRangeFilter value={dateRange} onChange={setDateRange} />
+        <div className="flex flex-wrap items-center gap-2">
+          <Select value={preset} onValueChange={handlePresetChange}>
+            <SelectTrigger className="h-9 w-40">
+              <SelectValue placeholder="Periodo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="today">Hoy</SelectItem>
+              <SelectItem value="week">Última semana</SelectItem>
+              <SelectItem value="month">Último mes</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <DateRangeFilter value={dateRange} onChange={handleRangeChange} />
+
+          <Button variant="outline" size="sm" className="h-9 gap-2">
+            <FileSpreadsheetIcon className="h-4 w-4" />
+            Exportar Excel
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
