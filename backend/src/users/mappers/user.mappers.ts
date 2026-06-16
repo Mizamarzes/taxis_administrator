@@ -15,6 +15,8 @@ export const mapUserToUserResponseDto = (user: User): UserResponseDto => {
                 id: ur.role.id,
                 name: ur.role.name,
             })) || [],
+        isActive: user.isActive,
+        lastLogin: user.lastLogin ?? null,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
     });

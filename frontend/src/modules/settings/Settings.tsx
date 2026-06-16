@@ -25,9 +25,23 @@ import {
   PaletteIcon,
   ShieldIcon,
   SaveIcon,
+  ConstructionIcon,
 } from "lucide-react"
 
 type Section = "cuenta" | "seguridad" | "notificaciones" | "apariencia"
+
+const StandbyBanner = () => (
+  <div className="flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-amber-600 dark:text-amber-400">
+    <ConstructionIcon className="mt-0.5 h-4 w-4 shrink-0" />
+    <div className="space-y-0.5">
+      <p className="text-sm font-medium">Funcionalidad en desarrollo</p>
+      <p className="text-xs text-amber-600/80 dark:text-amber-400/80">
+        Esta sección está disponible como vista previa. Las acciones de guardado
+        se habilitarán próximamente.
+      </p>
+    </div>
+  </div>
+)
 
 const NAV_ITEMS: { id: Section; label: string; icon: React.ElementType; badge?: string }[] = [
   { id: "cuenta", label: "Cuenta", icon: UserIcon },
@@ -54,12 +68,15 @@ const CuentaSection = () => {
       </div>
       <Separator />
 
+      <StandbyBanner />
+
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="name">Nombre completo</Label>
           <Input
             id="name"
             value={form.name}
+            disabled
             onChange={(e) => setForm({ ...form, name: e.target.value })}
           />
         </div>
@@ -69,6 +86,7 @@ const CuentaSection = () => {
             id="email"
             type="email"
             value={form.email}
+            disabled
             onChange={(e) => setForm({ ...form, email: e.target.value })}
           />
         </div>
@@ -77,13 +95,14 @@ const CuentaSection = () => {
           <Input
             id="phone"
             value={form.phone}
+            disabled
             onChange={(e) => setForm({ ...form, phone: e.target.value })}
           />
         </div>
       </div>
 
       <div className="flex justify-end">
-        <Button className="gap-2">
+        <Button className="gap-2" disabled>
           <SaveIcon className="h-4 w-4" />
           Guardar cambios
         </Button>
@@ -110,6 +129,8 @@ const SeguridadSection = () => {
       </div>
       <Separator />
 
+      <StandbyBanner />
+
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
@@ -128,6 +149,7 @@ const SeguridadSection = () => {
               type="password"
               placeholder="••••••••"
               value={form.current}
+              disabled
               onChange={(e) => setForm({ ...form, current: e.target.value })}
             />
           </div>
@@ -138,6 +160,7 @@ const SeguridadSection = () => {
               type="password"
               placeholder="••••••••"
               value={form.next}
+              disabled
               onChange={(e) => setForm({ ...form, next: e.target.value })}
             />
           </div>
@@ -148,11 +171,12 @@ const SeguridadSection = () => {
               type="password"
               placeholder="••••••••"
               value={form.confirm}
+              disabled
               onChange={(e) => setForm({ ...form, confirm: e.target.value })}
             />
           </div>
           <div className="flex justify-end">
-            <Button className="gap-2">
+            <Button className="gap-2" disabled>
               <SaveIcon className="h-4 w-4" />
               Actualizar contraseña
             </Button>
@@ -208,6 +232,8 @@ const NotificacionesSection = () => {
       </div>
       <Separator />
 
+      <StandbyBanner />
+
       <div className="space-y-2">
         {notifItems.map((item) => (
           <div
@@ -221,9 +247,10 @@ const NotificacionesSection = () => {
             <button
               type="button"
               role="switch"
+              disabled
               aria-checked={enabled[item.id]}
               onClick={() => toggle(item.id)}
-              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+              className={`relative inline-flex h-6 w-11 shrink-0 cursor-not-allowed items-center rounded-full border-2 border-transparent opacity-60 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                 enabled[item.id] ? "bg-primary" : "bg-input"
               }`}
             >
@@ -238,7 +265,7 @@ const NotificacionesSection = () => {
       </div>
 
       <div className="flex justify-end">
-        <Button className="gap-2">
+        <Button className="gap-2" disabled>
           <SaveIcon className="h-4 w-4" />
           Guardar preferencias
         </Button>
@@ -262,10 +289,12 @@ const AparienciaSection = () => {
       </div>
       <Separator />
 
+      <StandbyBanner />
+
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label>Idioma</Label>
-          <Select value={language} onValueChange={setLanguage}>
+          <Select value={language} onValueChange={setLanguage} disabled>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
@@ -279,7 +308,7 @@ const AparienciaSection = () => {
 
         <div className="space-y-2">
           <Label>Densidad de la tabla</Label>
-          <Select value={density} onValueChange={setDensity}>
+          <Select value={density} onValueChange={setDensity} disabled>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
@@ -293,7 +322,7 @@ const AparienciaSection = () => {
       </div>
 
       <div className="flex justify-end">
-        <Button className="gap-2">
+        <Button className="gap-2" disabled>
           <SaveIcon className="h-4 w-4" />
           Guardar apariencia
         </Button>
@@ -322,7 +351,13 @@ const Settings = () => {
   return (
     <div className="w-full max-w-4xl space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Configuración</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-3xl font-bold tracking-tight">Configuración</h1>
+          <Badge variant="secondary" className="gap-1">
+            <ConstructionIcon className="h-3 w-3" />
+            Próximamente
+          </Badge>
+        </div>
         <p className="text-muted-foreground">
           Administra las preferencias de tu cuenta y del sistema.
         </p>

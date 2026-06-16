@@ -19,6 +19,8 @@ import { Role } from '../common/enums/rol.enum';
 import { UserResponseDto } from './dto/user-response.dto';
 import { ApiResponseInterface } from '../common/interfaces/api-response.interface';
 import { PaginationDTO, PaginationResponseDto } from '../common/dto/pagination.dto';
+import { ActiveUser } from '../common/decorators/activeUser.decorator';
+import type { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 
 @ApiTags('users')
 @Controller('users')
@@ -38,6 +40,21 @@ export class UsersController {
         return {
             message: 'User created successfully',
             data: user,
+        };
+    }
+
+    @Get('me')
+    @Auth(Role.USER, Role.ADMIN)
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Get authenticated user profile' })
+    @ApiResponse({ status: 200, type: UserResponseDto })
+    async getProfile(
+        @ActiveUser() user: JwtPayload,
+    ): Promise<ApiResponseInterface<UserResponseDto>> {
+        const profile = await this.usersService.findOne(user.sub);
+        return {
+            message: 'Profile retrieved successfully',
+            data: profile,
         };
     }
 
