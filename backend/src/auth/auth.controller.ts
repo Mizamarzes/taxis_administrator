@@ -4,7 +4,7 @@ import { LoginDto } from './dto/login.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { Role } from '../common/enums/rol.enum';
 import { Auth } from './decorators/auth.decorator';
-import { ActiveUser } from 'src/common/decorators/activeUser.decorator';
+import { ActiveUser } from '../common/decorators/activeUser.decorator';
 import type { RequestWithUserInterface } from '../common/interfaces/requestWithUser.interface';
 import type { Response } from 'express';
 
