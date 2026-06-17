@@ -18,7 +18,7 @@ export const config = () => {
             port: process.env.PORT || 3000,
         },
         frontend: {
-            url: process.env.FRONTEND_URL || 'http://localhost:5173',
+            url: process.env.FRONTEND_URL || 'http://localhost:5173' || 'https://taxis-administrator-frontend.vercel.app',
         },
         app: {
             nodeEnv: process.env.NODE_ENV || 'development',
