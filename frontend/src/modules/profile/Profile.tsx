@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react"
 import Avatar from "react-avatar"
 import {
   Card,
@@ -7,22 +8,29 @@ import {
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { APP_SIDEBAR } from "@/constants"
 import {
   UserIcon,
   MailIcon,
   ShieldIcon,
   CalendarIcon,
   ClockIcon,
+  Loader2Icon,
 } from "lucide-react"
+import { getProfileService } from "./services/profile.service"
+import type { Profile as ProfileType } from "./types/profile.types"
 
-const mockProfileData = {
-  ...APP_SIDEBAR.curProfile,
-  role: "Administrador",
-  status: "active" as const,
-  lastLogin: "2026-04-22",
-  createdAt: "2024-01-15",
-  phone: "+34 612 345 678",
+const formatDate = (value: string | null) => {
+  if (!value) return "Sin registro"
+  return new Date(value).toLocaleDateString("es-ES", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  })
+}
+
+const formatRoles = (roles: ProfileType["roles"]) => {
+  if (!roles || roles.length === 0) return "Sin rol"
+  return roles.map((role) => role.name).join(", ")
 }
 
 const InfoRow = ({
@@ -46,7 +54,38 @@ const InfoRow = ({
 )
 
 const Profile = () => {
-  const profile = mockProfileData
+  const [profile, setProfile] = useState<ProfileType | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    getProfileService()
+      .then((response) => setProfile(response.data))
+      .catch(() => setError("No se pudo cargar la información del perfil."))
+      .finally(() => setIsLoading(false))
+  }, [])
+
+  if (isLoading) {
+    return (
+      <div className="flex w-full max-w-4xl items-center justify-center py-20 text-muted-foreground">
+        <Loader2Icon className="h-6 w-6 animate-spin" />
+      </div>
+    )
+  }
+
+  if (error || !profile) {
+    return (
+      <div className="w-full max-w-4xl">
+        <Card>
+          <CardContent className="py-10 text-center text-sm text-muted-foreground">
+            {error ?? "No hay información de perfil disponible."}
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  const roleLabel = formatRoles(profile.roles)
 
   return (
     <div className="w-full max-w-4xl space-y-6">
@@ -54,29 +93,28 @@ const Profile = () => {
         <CardContent className="py-6">
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
             <div className="relative shrink-0">
-              <Avatar
-                src={profile.src}
-                name={profile.name}
-                size="80px"
-                round="12px"
+              <Avatar name={profile.name} size="80px" round="12px" />
+              <span
+                className={`absolute bottom-1 right-1 block h-3 w-3 rounded-full ring-2 ring-background ${
+                  profile.isActive ? "bg-emerald-500" : "bg-gray-400"
+                }`}
               />
-              <span className="absolute bottom-1 right-1 block h-3 w-3 rounded-full bg-emerald-500 ring-2 ring-background" />
             </div>
 
             <div className="flex flex-1 flex-col gap-1 text-center sm:text-left">
               <h2 className="text-2xl font-bold tracking-tight">{profile.name}</h2>
               <p className="text-sm text-muted-foreground">{profile.email}</p>
               <div className="mt-2 flex flex-wrap justify-center gap-2 sm:justify-start">
-                <Badge variant="secondary">{profile.role}</Badge>
+                <Badge variant="secondary">{roleLabel}</Badge>
                 <Badge
                   variant="outline"
                   className={
-                    profile.status === "active"
+                    profile.isActive
                       ? "border-emerald-500 text-emerald-600"
                       : "border-gray-400 text-gray-500"
                   }
                 >
-                  {profile.status === "active" ? "Activo" : "Inactivo"}
+                  {profile.isActive ? "Activo" : "Inactivo"}
                 </Badge>
               </div>
             </div>
@@ -95,7 +133,7 @@ const Profile = () => {
             <Separator />
             <InfoRow icon={MailIcon} label="Correo electrónico" value={profile.email} />
             <Separator />
-            <InfoRow icon={ShieldIcon} label="Rol" value={profile.role} />
+            <InfoRow icon={ShieldIcon} label="Rol" value={roleLabel} />
           </CardContent>
         </Card>
 
@@ -108,27 +146,19 @@ const Profile = () => {
             <InfoRow
               icon={CalendarIcon}
               label="Miembro desde"
-              value={new Date(profile.createdAt).toLocaleDateString("es-ES", {
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-              })}
+              value={formatDate(profile.createdAt)}
             />
             <Separator />
             <InfoRow
               icon={ClockIcon}
               label="Último acceso"
-              value={new Date(profile.lastLogin).toLocaleDateString("es-ES", {
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-              })}
+              value={formatDate(profile.lastLogin)}
             />
             <Separator />
             <InfoRow
               icon={ShieldIcon}
               label="Estado"
-              value={profile.status === "active" ? "Activo" : "Inactivo"}
+              value={profile.isActive ? "Activo" : "Inactivo"}
             />
           </CardContent>
         </Card>

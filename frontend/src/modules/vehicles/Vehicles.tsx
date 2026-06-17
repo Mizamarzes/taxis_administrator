@@ -6,7 +6,9 @@ import { VehicleCard } from "./components/VehicleCard"
 import { CreateVehicleModal } from "./components/CreateVehicleModal"
 import { EditVehicleModal } from "./components/EditVehicleModal"
 import { DeleteVehicleModal } from "./components/DeleteVehicleModal"
+import { VehicleDetailModal } from "./components/VehicleDetailModal"
 import type { Vehicle } from "./types/vehicle.types"
+import { getRestrictionDayLabel } from "./types/vehicle.types"
 import { getVehiclesService } from "./services/vehicle.service"
 
 const LIMIT = 20
@@ -20,6 +22,7 @@ const Vehicles = () => {
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
+  const [isDetailOpen, setIsDetailOpen] = useState(false)
 
   const fetchVehicles = useCallback(async () => {
     try {
@@ -40,9 +43,14 @@ const Vehicles = () => {
     return vehicles.filter(
       (v) =>
         v.plate.toLowerCase().includes(q) ||
-        (v.drivingRestrictionDay?.toLowerCase().includes(q) ?? false)
+        (getRestrictionDayLabel(v.drivingRestrictionDay)?.toLowerCase().includes(q) ?? false)
     )
   }, [search, vehicles])
+
+  const handleView = (vehicle: Vehicle) => {
+    setSelectedVehicle(vehicle)
+    setIsDetailOpen(true)
+  }
 
   const handleEdit = (vehicle: Vehicle) => {
     setSelectedVehicle(vehicle)
@@ -83,6 +91,7 @@ const Vehicles = () => {
             <VehicleCard
               key={vehicle.id}
               vehicle={vehicle}
+              onView={handleView}
               onEdit={handleEdit}
               onDelete={handleDelete}
             />
@@ -113,6 +122,15 @@ const Vehicles = () => {
           </Button>
         </div>
       )}
+
+      <VehicleDetailModal
+        open={isDetailOpen}
+        onOpenChange={(open) => {
+          setIsDetailOpen(open)
+          if (!open) setSelectedVehicle(null)
+        }}
+        vehicle={selectedVehicle}
+      />
 
       <CreateVehicleModal
         open={isCreateOpen}

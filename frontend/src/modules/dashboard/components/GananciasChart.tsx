@@ -15,30 +15,42 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { gananciasPorDia } from "../data/mockData"
+import { format, parseISO } from "date-fns"
+import { es } from "date-fns/locale"
+import type { EarningDay } from "../types/dashboard.types"
 
 const formatCurrency = (value: number) =>
   `$${value.toLocaleString("es-ES")}`
 
-export const GananciasChart = () => {
+interface GananciasChartProps {
+  data: EarningDay[]
+}
+
+export const GananciasChart = ({ data }: GananciasChartProps) => {
   return (
     <Card>
       <CardHeader>
         <CardTitle>Ganancias por día</CardTitle>
         <CardDescription>
-          Ingresos y cantidad de tarifas de los últimos 7 días
+          Ingresos y cantidad de tarifas en el periodo seleccionado
         </CardDescription>
       </CardHeader>
       <CardContent>
+        {data.length === 0 ? (
+          <div className="flex h-[280px] items-center justify-center text-sm text-muted-foreground">
+            Sin datos en el periodo
+          </div>
+        ) : (
         <ResponsiveContainer width="100%" height={280}>
           <BarChart
-            data={gananciasPorDia}
+            data={data}
             margin={{ top: 4, right: 16, left: 0, bottom: 0 }}
             barGap={4}
           >
             <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
             <XAxis
-              dataKey="dia"
+              dataKey="fecha"
+              tickFormatter={(value: string) => format(parseISO(value), "dd MMM", { locale: es })}
               tick={{ fontSize: 12 }}
               axisLine={false}
               tickLine={false}
@@ -62,6 +74,9 @@ export const GananciasChart = () => {
               className="fill-muted-foreground"
             />
             <Tooltip
+              labelFormatter={(label) =>
+                label ? format(parseISO(String(label)), "dd MMM yyyy", { locale: es }) : ""
+              }
               formatter={(value, name) =>
                 name === "ingresos" ? [formatCurrency(value as number), "Ingresos"] : [value, "Tarifas"]
               }
@@ -91,6 +106,7 @@ export const GananciasChart = () => {
             />
           </BarChart>
         </ResponsiveContainer>
+        )}
       </CardContent>
     </Card>
   )

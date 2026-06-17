@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { MoreVertical, Pencil, Trash2 } from "lucide-react"
+import { MoreVertical, Pencil, Trash2, Eye } from "lucide-react"
 
 const paymentMethodConfig: Record<PaymentMethod, { label: string; className: string }> = {
   cash: {
@@ -26,11 +26,12 @@ const paymentMethodConfig: Record<PaymentMethod, { label: string; className: str
 }
 
 interface ColumnsProps {
+  onView: (tarifa: Tarifa) => void
   onEdit: (tarifa: Tarifa) => void
   onDelete: (tarifa: Tarifa) => void
 }
 
-export const getColumns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<Tarifa>[] => [
+export const getColumns = ({ onView, onEdit, onDelete }: ColumnsProps): ColumnDef<Tarifa>[] => [
   {
     accessorKey: "id",
     header: "ID",
@@ -125,6 +126,10 @@ export const getColumns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<Tarifa
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => onView(tarifa)}>
+              <Eye className="mr-2 h-4 w-4" />
+              Ver detalle
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onEdit(tarifa)}>
               <Pencil className="mr-2 h-4 w-4" />
               Editar

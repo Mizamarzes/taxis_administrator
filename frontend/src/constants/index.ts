@@ -53,23 +53,6 @@ export const APP_SIDEBAR = {
       Icon: SettingsIcon,
     },
   ],
-  curProfile: {
-    src: 'https://randomuser.me/api/portraits/men/47.jpg',
-    name: 'Salvador Pearson',
-    email: 'salvador.pearson@example.com',
-  },
-  allProfiles: [
-    {
-      src: 'https://randomuser.me/api/portraits/men/47.jpg',
-      name: 'Salvador Pearson',
-      email: 'salvador.pearson@example.com',
-    },
-    {
-      src: 'https://randomuser.me/api/portraits/women/43.jpg',
-      name: 'Violet Hicks',
-      email: 'violet.hicks@example.com',
-    },
-  ],
   userMenu: {
     itemsPrimary: [
       {

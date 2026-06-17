@@ -21,6 +21,12 @@ export class UserResponseDto {
     @ApiProperty({ type: [RoleResponseDto] })
     roles: RoleResponseDto[];
 
+    @ApiProperty({ example: true })
+    isActive: boolean;
+
+    @ApiProperty({ example: '2024-12-29T10:00:00Z', nullable: true })
+    lastLogin: Date | null;
+
     @ApiProperty({ example: '2024-12-29T10:00:00Z' })
     createdAt: Date;
 

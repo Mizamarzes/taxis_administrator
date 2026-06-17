@@ -6,6 +6,7 @@ import { DriverCard } from "./components/DriverCard"
 import { CreateDriverModal } from "./components/CreateDriverModal"
 import { EditDriverModal } from "./components/EditDriverModal"
 import { DeleteDriverModal } from "./components/DeleteDriverModal"
+import { DriverDetailModal } from "./components/DriverDetailModal"
 import type { Driver } from "./types/driver.types"
 import { getDriversService } from "./services/driver.service"
 
@@ -20,6 +21,7 @@ const Drivers = () => {
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
+  const [isDetailOpen, setIsDetailOpen] = useState(false)
 
   const fetchDrivers = useCallback(async () => {
     try {
@@ -39,11 +41,16 @@ const Drivers = () => {
     if (!q) return drivers
     return drivers.filter(
       (d) =>
-        d.user.name.toLowerCase().includes(q) ||
-        d.user.email.toLowerCase().includes(q) ||
+        d.name.toLowerCase().includes(q) ||
+        (d.email?.toLowerCase().includes(q) ?? false) ||
         (d.phone?.toLowerCase().includes(q) ?? false)
     )
   }, [search, drivers])
+
+  const handleView = (driver: Driver) => {
+    setSelectedDriver(driver)
+    setIsDetailOpen(true)
+  }
 
   const handleEdit = (driver: Driver) => {
     setSelectedDriver(driver)
@@ -84,6 +91,7 @@ const Drivers = () => {
             <DriverCard
               key={driver.id}
               driver={driver}
+              onView={handleView}
               onEdit={handleEdit}
               onDelete={handleDelete}
             />
@@ -114,6 +122,15 @@ const Drivers = () => {
           </Button>
         </div>
       )}
+
+      <DriverDetailModal
+        open={isDetailOpen}
+        onOpenChange={(open) => {
+          setIsDetailOpen(open)
+          if (!open) setSelectedDriver(null)
+        }}
+        driver={selectedDriver}
+      />
 
       <CreateDriverModal
         open={isCreateOpen}

@@ -7,8 +7,11 @@ import {
   CarFrontIcon,
   CalendarOffIcon,
   FileTextIcon,
+  EyeIcon,
+  UserIcon,
 } from "lucide-react"
 import type { Vehicle, VehicleStatus } from "../types/vehicle.types"
+import { getRestrictionDayLabel } from "../types/vehicle.types"
 
 const statusConfig: Record<VehicleStatus, { label: string; className: string; dot: string }> = {
   active: {
@@ -35,11 +38,12 @@ const statusConfig: Record<VehicleStatus, { label: string; className: string; do
 
 interface VehicleCardProps {
   vehicle: Vehicle
+  onView: (vehicle: Vehicle) => void
   onEdit: (vehicle: Vehicle) => void
   onDelete: (vehicle: Vehicle) => void
 }
 
-export const VehicleCard = ({ vehicle, onEdit, onDelete }: VehicleCardProps) => {
+export const VehicleCard = ({ vehicle, onView, onEdit, onDelete }: VehicleCardProps) => {
   const status = statusConfig[vehicle.vehicleStatus]
 
   return (
@@ -69,12 +73,18 @@ export const VehicleCard = ({ vehicle, onEdit, onDelete }: VehicleCardProps) => 
         <div className="border-t" />
 
         <div className="space-y-1.5 text-sm">
-          {vehicle.drivingRestrictionDay && (
+          {getRestrictionDayLabel(vehicle.drivingRestrictionDay) && (
             <div className="flex items-center gap-2 text-muted-foreground">
               <CalendarOffIcon className="size-3.5 shrink-0" />
-              <span>Restricción: {vehicle.drivingRestrictionDay}</span>
+              <span>Pico y placa: {getRestrictionDayLabel(vehicle.drivingRestrictionDay)}</span>
             </div>
           )}
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <UserIcon className="size-3.5 shrink-0" />
+            <span className="truncate">
+              {vehicle.driver ? vehicle.driver.name : "Sin conductor"}
+            </span>
+          </div>
           <div className="flex items-center gap-2 text-muted-foreground">
             <FileTextIcon className="size-3.5 shrink-0" />
             <span>
@@ -91,10 +101,17 @@ export const VehicleCard = ({ vehicle, onEdit, onDelete }: VehicleCardProps) => 
           variant="outline"
           size="sm"
           className="flex-1"
+          onClick={() => onView(vehicle)}
+        >
+          <EyeIcon className="size-3.5 mr-1.5" />
+          Ver
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
           onClick={() => onEdit(vehicle)}
         >
-          <PencilIcon className="size-3.5 mr-1.5" />
-          Editar
+          <PencilIcon className="size-3.5" />
         </Button>
         <Button
           variant="outline"
