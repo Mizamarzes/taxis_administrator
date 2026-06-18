@@ -3,7 +3,6 @@
  */
 import {
   LayoutDashboardIcon,
-  LifeBuoyIcon,
   LogOutIcon,
   Car,
   SettingsIcon,
@@ -43,13 +42,13 @@ export const APP_SIDEBAR = {
   ],
   secondaryNav: [
     {
-      title: 'Support',
-      url: '#',
-      Icon: LifeBuoyIcon,
+        title: 'Ver perfil',
+        url: '/profile',
+        Icon: UserIcon,
     },
     {
       title: 'Settings',
-      url: '#',
+      url: '/settings',
       Icon: SettingsIcon,
     },
   ],
