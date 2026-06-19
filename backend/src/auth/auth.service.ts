@@ -18,17 +18,17 @@ export class AuthService {
         const user = await this.usersService.findOneByEmailForAuth(data.email);
 
         if (!user) {
-            throw new UnauthorizedException('Invalid credentials');
+            throw new UnauthorizedException('Correo o contraseña incorrectos');
         }
 
         if (!user.isActive) {
-            throw new UnauthorizedException('Account is inactive');
+            throw new UnauthorizedException('La cuenta está inactiva');
         }
 
         const isPasswordValid = await bcrypt.compare(data.password, user.password);
 
         if (!isPasswordValid) {
-            throw new UnauthorizedException('Invalid credentials');
+            throw new UnauthorizedException('Correo o contraseña incorrectos');
         }
 
         await this.usersService.updateLastLogin(user.id);
@@ -58,7 +58,7 @@ export class AuthService {
         const user = await this.usersService.findOneByEmail(email);
 
         if (!user) {
-            throw new UnauthorizedException('User not found');
+            throw new UnauthorizedException('Usuario no encontrado');
         }
 
         return user;
