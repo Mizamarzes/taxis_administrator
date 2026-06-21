@@ -30,6 +30,11 @@ import { DashboardModule } from './dashboard/dashboard.module';
                 entities: [__dirname + '/**/*.entity{.ts,.js}'],
                 synchronize: configService.get('app.nodeEnv') === 'development',
                 ssl: { rejectUnauthorized: false },
+                extra: {
+                    max: configService.get<number>('database.poolSize'),
+                    idleTimeoutMillis: 30000,
+                    connectionTimeoutMillis: 10000,
+                },
             }),
             inject: [ConfigService],
         }),

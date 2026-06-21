@@ -10,6 +10,7 @@ export const config = () => {
             username: process.env.DB_USERNAME || 'user',
             password: process.env.DB_PASSWORD || 'password',
             database: process.env.DB_NAME || 'taxis_db',
+            poolSize: process.env.DB_POOL_SIZE || 5,
         },
         cookies: {
             secret: process.env.COOKIE_SECRET || 'default_cookie_secret',

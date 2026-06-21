@@ -10,8 +10,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
 
 export const AppSideBar = () => {
-    const { isMobile } = useSidebar();
+    const { isMobile, setOpenMobile } = useSidebar();
     const { logout, user } = useAuth();
+
+    const handleNavClick = () => {
+        if (isMobile) {
+            setOpenMobile(false);
+        }
+    };
 
     return (
         <Sidebar
@@ -38,12 +44,12 @@ export const AppSideBar = () => {
                                 <SidebarMenuItem key={item.title}>
                                     <SidebarMenuButton tooltip={item.title} asChild>
                                         {item.url.startsWith('#') ? (
-                                            <a href={item.url}>
+                                            <a href={item.url} onClick={handleNavClick}>
                                                 <item.Icon />
                                                 <span>{item.title}</span>
                                             </a>
                                         ) : (
-                                            <Link to={item.url}>
+                                            <Link to={item.url} onClick={handleNavClick}>
                                                 <item.Icon />
                                                 <span>{item.title}</span>
                                             </Link>
@@ -64,12 +70,12 @@ export const AppSideBar = () => {
                                     <SidebarMenuItem key={item.title}>
                                         <SidebarMenuButton tooltip={item.title} asChild>
                                             {item.url.startsWith('#') ? (
-                                                <a href={item.url}>
+                                                <a href={item.url} onClick={handleNavClick}>
                                                     <item.Icon />
                                                     <span>{item.title}</span>
                                                 </a>
                                             ) : (
-                                                <Link to={item.url}>
+                                                <Link to={item.url} onClick={handleNavClick}>
                                                     <item.Icon />
                                                     <span>{item.title}</span>
                                                 </Link>
