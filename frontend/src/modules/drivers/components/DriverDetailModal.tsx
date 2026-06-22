@@ -14,6 +14,7 @@ import {
   CalendarIcon,
 } from "lucide-react"
 import type { Driver, DriverStatus } from "../types/driver.types"
+import { formatDateOnly } from "@/lib/utils"
 
 const statusConfig: Record<DriverStatus, { label: string; className: string; dot: string }> = {
   active: {
@@ -39,14 +40,8 @@ interface DriverDetailModalProps {
   driver: Driver | null
 }
 
-const formatDate = (value: string | null): string => {
-  if (!value) return "—"
-  return new Date(value).toLocaleDateString("es-CO", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  })
-}
+const formatDate = (value: string | null): string =>
+  formatDateOnly(value, { year: "numeric", month: "long", day: "numeric" })
 
 function DetailRow({
   icon,

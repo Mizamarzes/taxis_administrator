@@ -74,6 +74,7 @@ export const GananciasChart = ({ data }: GananciasChartProps) => {
               className="fill-muted-foreground"
             />
             <Tooltip
+              cursor={{ fill: "var(--muted)", opacity: 0.3 }}
               labelFormatter={(label) =>
                 label ? format(parseISO(String(label)), "dd MMM yyyy", { locale: es }) : ""
               }
@@ -83,7 +84,12 @@ export const GananciasChart = ({ data }: GananciasChartProps) => {
               contentStyle={{
                 borderRadius: "8px",
                 fontSize: "13px",
+                backgroundColor: "var(--card)",
+                border: "1px solid var(--border)",
+                color: "var(--foreground)",
               }}
+              labelStyle={{ color: "var(--foreground)", fontWeight: 600 }}
+              itemStyle={{ color: "var(--foreground)" }}
             />
             <Legend
               formatter={(value) => (value === "ingresos" ? "Ingresos" : "Tarifas")}
@@ -92,17 +98,16 @@ export const GananciasChart = ({ data }: GananciasChartProps) => {
             <Bar
               yAxisId="ingresos"
               dataKey="ingresos"
-              fill="hsl(var(--primary))"
+              fill="var(--chart-2)"
               radius={[4, 4, 0, 0]}
               maxBarSize={40}
             />
             <Bar
               yAxisId="tarifas"
               dataKey="tarifas"
-              fill="hsl(var(--muted-foreground))"
+              fill="var(--chart-4)"
               radius={[4, 4, 0, 0]}
               maxBarSize={40}
-              opacity={0.5}
             />
           </BarChart>
         </ResponsiveContainer>

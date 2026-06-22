@@ -55,23 +55,21 @@ export class DashboardService {
         }
     }
 
-    private resolveRange(filter: DashboardFilterDto): { from: Date; to: Date } {
+    private resolveRange(filter: DashboardFilterDto): { from: string; to: string } {
         const now = new Date();
 
         const from = filter.from
-            ? new Date(filter.from)
-            : new Date(now.getFullYear(), now.getMonth(), 1);
-        from.setHours(0, 0, 0, 0);
+            ? filter.from.slice(0, 10)
+            : this.toDateKey(new Date(now.getFullYear(), now.getMonth(), 1));
 
-        const to = filter.to ? new Date(filter.to) : new Date(now);
-        to.setHours(23, 59, 59, 999);
+        const to = filter.to ? filter.to.slice(0, 10) : this.toDateKey(now);
 
         return { from, to };
     }
 
     private async getKpis(
-        from: Date,
-        to: Date,
+        from: string,
+        to: string,
     ): Promise<{ totalIngresos: number; totalTarifas: number }> {
         const raw = await this.tarifasRepository
             .createQueryBuilder('tarifa')
@@ -87,7 +85,7 @@ export class DashboardService {
         };
     }
 
-    private async getGananciasPorDia(from: Date, to: Date): Promise<DashboardEarningDayDto[]> {
+    private async getGananciasPorDia(from: string, to: string): Promise<DashboardEarningDayDto[]> {
         const rows = await this.tarifasRepository
             .createQueryBuilder('tarifa')
             .select('tarifa.tarifaDate', 'fecha')
@@ -111,7 +109,7 @@ export class DashboardService {
         return this.fillRange(from, to, byDate);
     }
 
-    private async getRanking(from: Date, to: Date): Promise<DashboardRankingItemDto[]> {
+    private async getRanking(from: string, to: string): Promise<DashboardRankingItemDto[]> {
         const rows = await this.tarifasRepository
             .createQueryBuilder('tarifa')
             .select('tarifa.vehicleId', 'vehicleId')
@@ -160,13 +158,15 @@ export class DashboardService {
     }
 
     private fillRange(
-        from: Date,
-        to: Date,
+        from: string,
+        to: string,
         byDate: Map<string, { ingresos: number; tarifas: number }>,
     ): DashboardEarningDayDto[] {
         const result: DashboardEarningDayDto[] = [];
-        const cursor = new Date(from.getFullYear(), from.getMonth(), from.getDate());
-        const end = new Date(to.getFullYear(), to.getMonth(), to.getDate());
+        const [fromYear, fromMonth, fromDay] = from.split('-').map(Number);
+        const [toYear, toMonth, toDay] = to.split('-').map(Number);
+        const cursor = new Date(fromYear, fromMonth - 1, fromDay);
+        const end = new Date(toYear, toMonth - 1, toDay);
 
         while (cursor <= end) {
             const key = this.toDateKey(cursor);

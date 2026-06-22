@@ -25,7 +25,7 @@ export class DriversService {
                 phone: dto.phone,
                 email: dto.email,
                 address: dto.address,
-                hireDate: dto.hireDate ? new Date(dto.hireDate) : undefined,
+                hireDate: dto.hireDate ?? undefined,
                 photoUrl: dto.photoUrl,
                 status: dto.status,
             });
@@ -104,7 +104,7 @@ export class DriversService {
             if (dto.phone !== undefined) driver.phone = dto.phone;
             if (dto.email !== undefined) driver.email = dto.email;
             if (dto.address !== undefined) driver.address = dto.address;
-            if (dto.hireDate !== undefined) driver.hireDate = new Date(dto.hireDate);
+            if (dto.hireDate !== undefined) driver.hireDate = dto.hireDate;
             if (dto.photoUrl !== undefined) driver.photoUrl = dto.photoUrl;
             if (dto.status !== undefined) driver.status = dto.status;
 

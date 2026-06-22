@@ -21,7 +21,7 @@ export class DriverResponseDto {
     address!: string | null;
 
     @ApiPropertyOptional({ example: '2024-01-15' })
-    hireDate!: Date | null;
+    hireDate!: string | null;
 
     @ApiPropertyOptional({ example: 'https://example.com/photo.jpg' })
     photoUrl!: string | null;
