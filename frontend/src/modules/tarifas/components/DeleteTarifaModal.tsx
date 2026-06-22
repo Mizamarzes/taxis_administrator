@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button"
 import type { Tarifa } from "../types/tarifa.types"
 import { deleteTarifaService } from "../services/tarifa.service"
+import { formatDateOnly } from "@/lib/utils"
 
 interface DeleteTarifaModalProps {
   open: boolean
@@ -61,7 +62,7 @@ export function DeleteTarifaModal({ open, onOpenChange, tarifa, onSuccess }: Del
               <>
                 {" "}con fecha{" "}
                 <span className="font-semibold text-foreground">
-                  {new Date(tarifa.tarifaDate).toLocaleDateString("es-CO", {
+                  {formatDateOnly(tarifa.tarifaDate, {
                     year: "numeric",
                     month: "long",
                     day: "numeric",

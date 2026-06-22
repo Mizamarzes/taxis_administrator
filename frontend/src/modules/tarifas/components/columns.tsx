@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { MoreVertical, Pencil, Trash2, Eye } from "lucide-react"
+import { formatDateOnly } from "@/lib/utils"
 
 const paymentMethodConfig: Record<PaymentMethod, { label: string; className: string }> = {
   cash: {
@@ -81,12 +82,7 @@ export const getColumns = ({ onView, onEdit, onDelete }: ColumnsProps): ColumnDe
     cell: ({ row }) => {
       const val = row.getValue("tarifaDate") as string | null
       if (!val) return <span className="text-muted-foreground">—</span>
-      const date = new Date(val)
-      return date.toLocaleDateString("es-CO", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      })
+      return formatDateOnly(val)
     },
   },
   {

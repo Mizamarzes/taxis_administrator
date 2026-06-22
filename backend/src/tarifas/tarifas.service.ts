@@ -85,7 +85,7 @@ export class TarifasService {
                 amount: dto.amount,
                 description: dto.description,
                 paymentMethod: dto.paymentMethod,
-                tarifaDate: dto.tarifaDate ? new Date(dto.tarifaDate) : undefined,
+                tarifaDate: dto.tarifaDate ?? undefined,
                 driverId,
                 vehicleId: dto.vehicleId,
                 createdBy: userId,
@@ -113,18 +113,14 @@ export class TarifasService {
                 .orderBy('tarifa.createdAt', 'DESC');
 
             if (tarifaDateFrom) {
-                const dateFrom = new Date(tarifaDateFrom);
-                dateFrom.setHours(0, 0, 0, 0);
                 query = query.andWhere('tarifa.tarifaDate >= :tarifaDateFrom', {
-                    tarifaDateFrom: dateFrom,
+                    tarifaDateFrom,
                 });
             }
 
             if (tarifaDateTo) {
-                const dateTo = new Date(tarifaDateTo);
-                dateTo.setHours(23, 59, 59, 999);
                 query = query.andWhere('tarifa.tarifaDate <= :tarifaDateTo', {
-                    tarifaDateTo: dateTo,
+                    tarifaDateTo,
                 });
             }
 
@@ -195,7 +191,7 @@ export class TarifasService {
             if (dto.amount !== undefined) tarifa.amount = dto.amount;
             if (dto.description !== undefined) tarifa.description = dto.description;
             if (dto.paymentMethod !== undefined) tarifa.paymentMethod = dto.paymentMethod;
-            if (dto.tarifaDate !== undefined) tarifa.tarifaDate = new Date(dto.tarifaDate);
+            if (dto.tarifaDate !== undefined) tarifa.tarifaDate = dto.tarifaDate;
             if (dto.vehicleId !== undefined) {
                 tarifa.vehicleId = dto.vehicleId;
                 tarifa.driverId = await this.resolveDriverId(dto.vehicleId);
