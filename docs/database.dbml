@@ -1,0 +1,406 @@
+//////////////////////////////////////////////////////
+// TAXIS ADMINISTRATOR - ESQUEMA REAL (PostgreSQL)
+// Base de datos: taxis_administrator
+// Generado desde la BD el 2026-10-16
+// NOTA: la ultima seccion es una PROPUESTA sin implementar (modulo de deudas)
+//////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////
+// ENUMS
+//////////////////////////////////////////////////////
+
+Enum drivers_status_enum {
+  active
+  inactive
+  suspended
+}
+
+Enum vehicles_vehicle_status_enum {
+  active
+  inactive
+  in_maintenance
+  out_of_service
+}
+
+Enum tarifas_payment_method_enum {
+  cash
+  credit_card
+  debit_card
+  nequi
+  daviplata
+}
+
+Enum media_tarifas_media_type_enum {
+  image
+  document
+  spreadsheet
+  other
+}
+
+//////////////////////////////////////////////////////
+// TABLE: USERS (usuarios del panel administrativo)
+//////////////////////////////////////////////////////
+
+Table users {
+  id int [pk, increment]
+  name varchar(100) [not null]
+  email varchar(100) [not null, unique]
+  password varchar(255) [not null] // hash bcrypt, select:false en la entidad
+  isActive boolean [not null, default: true]
+  lastLogin timestamp [null]
+
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null, default: `now()`]
+  deletedAt timestamp [null] // soft delete
+  createdBy int [null]
+  updatedBy int [null]
+  deletedBy int [null]
+}
+
+//////////////////////////////////////////////////////
+// TABLE: ROLES
+//////////////////////////////////////////////////////
+
+Table roles {
+  id int [pk, increment]
+  name varchar(50) [not null, unique] // USER, ADMIN
+  description varchar(255) [null]
+
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null, default: `now()`]
+}
+
+//////////////////////////////////////////////////////
+// TABLE: PERMISSIONS
+//////////////////////////////////////////////////////
+
+Table permissions {
+  id int [pk, increment]
+  action varchar(100) [not null, unique] // ej: "users.create"
+
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null, default: `now()`]
+}
+
+//////////////////////////////////////////////////////
+// TABLE: USER_ROLES (N a N users <-> roles)
+//////////////////////////////////////////////////////
+
+Table user_roles {
+  id int [pk, increment]
+  user_id int [not null, ref: > users.id] // ON DELETE CASCADE
+  role_id int [not null, ref: > roles.id] // ON DELETE CASCADE
+
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null, default: `now()`]
+}
+
+//////////////////////////////////////////////////////
+// TABLE: ROLE_PERMISSIONS (N a N roles <-> permissions)
+//////////////////////////////////////////////////////
+
+Table role_permissions {
+  id int [pk, increment]
+  role_id int [not null, ref: > roles.id]             // ON DELETE CASCADE
+  permission_id int [not null, ref: > permissions.id] // ON DELETE CASCADE
+
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null, default: `now()`]
+}
+
+//////////////////////////////////////////////////////
+// TABLE: DRIVERS (conductores)
+//////////////////////////////////////////////////////
+
+Table drivers {
+  id int [pk, increment]
+  name varchar(100) [not null]
+  status drivers_status_enum [not null, default: 'active']
+  hire_date date [null]
+  photo_url text [null]
+  phone varchar(50) [null]
+  email varchar(100) [null]
+  address varchar(255) [null]
+
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null, default: `now()`]
+  deletedAt timestamp [null] // soft delete
+  createdBy int [null]
+  updatedBy int [null]
+  deletedBy int [null]
+}
+
+//////////////////////////////////////////////////////
+// TABLE: VEHICLES (vehiculos)
+// Relacion 1 a 1 con drivers (driver_id es UNIQUE)
+//////////////////////////////////////////////////////
+
+Table vehicles {
+  id int [pk, increment]
+  plate varchar(20) [not null, unique]
+  driver_id int [null, unique, ref: - drivers.id] // ON DELETE SET NULL
+  vehicle_status vehicles_vehicle_status_enum [not null, default: 'active']
+  driving_restriction_day int [null] // dia de pico y placa (1-7)
+  photo_url text [null]
+
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null, default: `now()`]
+  deletedAt timestamp [null] // soft delete
+  createdBy int [null]
+  updatedBy int [null]
+  deletedBy int [null]
+}
+
+//////////////////////////////////////////////////////
+// TABLE: VEHICLE_DOCUMENTS (SOAT, tecnomecanica, etc.)
+//////////////////////////////////////////////////////
+
+Table vehicle_documents {
+  id int [pk, increment]
+  vehicle_id int [not null, ref: > vehicles.id] // ON DELETE CASCADE
+  document_type_id int [null] // sin FK en BD: no existe tabla document_types
+  issue_date date [null]
+  expiry_date date [null]
+  file_url text [null]
+
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null, default: `now()`]
+  createdBy int [null]
+  updatedBy int [null]
+  deletedBy int [null]
+}
+
+//////////////////////////////////////////////////////
+// TABLE: TARIFAS (pago/registro diario del conductor)
+//////////////////////////////////////////////////////
+
+Table tarifas {
+  id int [pk, increment]
+  amount decimal(10,2) [not null]
+  description text [null]
+  payment_method tarifas_payment_method_enum [null]
+  tarifa_date date [null]
+  driver_id int [null]  // sin FK en BD (ver Ref logicos abajo)
+  vehicle_id int [null] // sin FK en BD (ver Ref logicos abajo)
+
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null, default: `now()`]
+  deletedAt timestamp [null] // soft delete
+  createdBy int [null]
+  updatedBy int [null]
+  deletedBy int [null]
+}
+
+//////////////////////////////////////////////////////
+// TABLE: MEDIA_TARIFAS (comprobantes de la tarifa)
+//////////////////////////////////////////////////////
+
+Table media_tarifas {
+  id int [pk, increment]
+  tarifa_id int [not null, ref: > tarifas.id] // ON DELETE CASCADE
+  title varchar(255) [not null]
+  description text [null]
+  file_url text [not null]
+  media_type media_tarifas_media_type_enum [not null, default: 'other']
+
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null, default: `now()`]
+  deletedAt timestamp [null] // soft delete
+  createdBy int [null]
+  updatedBy int [null]
+  deletedBy int [null]
+}
+
+//////////////////////////////////////////////////////
+// TABLE: VEHICLE_BRANDS
+// Existe en la BD pero no tiene entidad TypeORM (tabla huerfana)
+//////////////////////////////////////////////////////
+
+Table vehicle_brands {
+  id int [pk, increment]
+  name varchar(255) [not null, unique]
+
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null, default: `now()`]
+}
+
+//////////////////////////////////////////////////////
+// TABLE: VEHICLE_MODELS
+// Existe en la BD pero no tiene entidad TypeORM (tabla huerfana)
+//////////////////////////////////////////////////////
+
+Table vehicle_models {
+  id int [pk, increment]
+  name varchar(255) [not null]
+  brand_id int [not null, ref: > vehicle_brands.id] // ON DELETE RESTRICT
+
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null, default: `now()`]
+}
+
+//////////////////////////////////////////////////////
+// REFS LOGICOS (NO existen como FOREIGN KEY en PostgreSQL)
+// La entidad Tarifa guarda driver_id / vehicle_id como int simple.
+// Se dibujan aqui para documentar la intencion del modelo.
+//////////////////////////////////////////////////////
+
+Ref: tarifas.driver_id > drivers.id
+Ref: tarifas.vehicle_id > vehicles.id
+
+//////////////////////////////////////////////////////
+//////////////////////////////////////////////////////
+//
+//  PROPUESTA: MODULO DE DEUDAS (NO IMPLEMENTADO)
+//
+//  Cuando el conductor no entrega la tarifa queda debiendo. La deuda
+//  se acumula de varias tarifas durante semanas y el conductor va
+//  abonando de a poco mientras sigue acumulando.
+//
+//  Por eso NO es "una deuda con abonos" sino una CUENTA CORRIENTE:
+//  un libro de movimientos por conductor.
+//
+//    debt        -> el administrador le carga una deuda  (sube el saldo)
+//    payment     -> abono del conductor                  (baja el saldo)
+//    forgiveness -> el administrador le perdona           (baja el saldo)
+//
+//  El saldo NO se guarda en ninguna columna, se calcula:
+//    saldo = SUM(debt) - SUM(payment) - SUM(forgiveness)
+//
+//  REGISTRO MANUAL: el administrador carga las deudas y los abonos a
+//  mano. No se infiere la deuda desde las tarifas faltantes, porque
+//  la ausencia de tarifa es ambigua (puede ser que no entrego, que no
+//  trabajo, pico y placa, carro en taller o festivo). Inferirla
+//  exigiria cuota diaria, calendario laboral y proceso de cierre.
+//
+//  Ventajas de este modelo:
+//    - no hay que decidir a cual deuda se le aplica un abono: todo va
+//      contra el mismo saldo
+//    - una sola tabla, sin datos maestros nuevos
+//    - el sistema refleja exactamente como trabaja el administrador hoy
+//
+//  A cambio: la exactitud del saldo depende de que el administrador
+//  registre las deudas. Si olvida una, el saldo queda corto y nada lo
+//  detecta. Es el mismo riesgo que tiene hoy en papel.
+//
+//////////////////////////////////////////////////////
+//////////////////////////////////////////////////////
+
+Enum deuda_movements_type_enum {
+  debt        // deuda cargada por el administrador: sube el saldo
+  payment     // abono del conductor: baja el saldo
+  forgiveness // condonacion del administrador: baja el saldo
+}
+
+//////////////////////////////////////////////////////
+// TABLE: DEUDA_MOVEMENTS (cuenta corriente del conductor) - PROPUESTA
+//
+// Una fila por cada movimiento de plata. Append-only: un movimiento
+// no se edita ni se borra, se anula con otro movimiento contrario.
+//
+// amount SIEMPRE es positivo. El signo lo define `type`.
+// No existe tabla de "cuenta" aparte: el saldo es una consulta.
+// Guardarlo en columna se desincroniza tarde o temprano.
+//
+// NO poner indice unico por (driver_id, movement_date): con registro
+// manual el administrador puede cargar dos deudas validas el mismo
+// dia, y un unico se lo bloquearia.
+//////////////////////////////////////////////////////
+
+Table deuda_movements {
+  id int [pk, increment]
+  driver_id int [not null, ref: > drivers.id] // ON DELETE RESTRICT: no borrar conductor con saldo
+
+  type deuda_movements_type_enum [not null]
+  amount decimal(10,2) [not null] // siempre positivo
+  movement_date date [not null]   // fecha real del hecho, no la de captura
+
+  // Solo en type = 'payment'
+  payment_method tarifas_payment_method_enum [null] // compartir tipo con enumName: 'payment_method_enum'
+
+  // Clave con registro manual: es donde el administrador explica el
+  // movimiento. "no entrego el 15 y el 17", "abono parcial".
+  description text [null]
+
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null, default: `now()`]
+  deletedAt timestamp [null] // soft delete
+  createdBy int [null]
+  updatedBy int [null]
+  deletedBy int [null]
+
+  indexes {
+    (driver_id, movement_date) // consulta principal: extracto del conductor
+    (driver_id, type)
+  }
+}
+
+//////////////////////////////////////////////////////
+// TABLE: MEDIA_DEUDA_MOVEMENTS (comprobantes) - PROPUESTA
+// Opcional. Mismo patron que media_tarifas.
+// Sirve sobre todo para la foto del abono (nequi, transferencia).
+//////////////////////////////////////////////////////
+
+Table media_deuda_movements {
+  id int [pk, increment]
+  movement_id int [not null, ref: > deuda_movements.id] // ON DELETE CASCADE
+
+  title varchar(255) [not null]
+  description text [null]
+  file_url text [not null]
+  media_type media_tarifas_media_type_enum [not null, default: 'other']
+
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null, default: `now()`]
+  deletedAt timestamp [null] // soft delete
+  createdBy int [null]
+  updatedBy int [null]
+  deletedBy int [null]
+}
+
+//////////////////////////////////////////////////////
+// DONDE SE GUARDA EL ACUMULADO - PROPUESTA
+//
+// En NINGUNA tabla. El saldo no se guarda, se calcula desde los
+// movimientos. Esto es a proposito, no es un olvido del diseño.
+//
+// POR QUE NO guardarlo en una columna:
+//   Si existe drivers.deuda_total y a la vez existen los movimientos,
+//   hay DOS verdades. En el momento en que no coincidan (un movimiento
+//   anulado, una peticion que falla a mitad, dos abonos simultaneos)
+//   nadie sabe cual creer, y cuadrarlo a mano es un infierno.
+//   Calculandolo, el historial es la unica verdad posible.
+//
+// SALDO ACTUAL de un conductor:
+//   SELECT COALESCE(SUM(
+//            CASE type WHEN 'debt' THEN amount ELSE -amount END
+//          ), 0) AS saldo
+//   FROM deuda_movements
+//   WHERE driver_id = $1 AND "deletedAt" IS NULL;
+//
+// LISTADO de todos los conductores con su saldo (una sola consulta):
+//   SELECT d.id, d.name, COALESCE(SUM(
+//            CASE m.type WHEN 'debt' THEN m.amount ELSE -m.amount END
+//          ), 0) AS saldo
+//   FROM drivers d
+//   LEFT JOIN deuda_movements m
+//          ON m.driver_id = d.id AND m."deletedAt" IS NULL
+//   WHERE d."deletedAt" IS NULL
+//   GROUP BY d.id, d.name;
+//
+// EXTRACTO con saldo corriente (como un estado de cuenta bancario):
+//   el acumulado despues de cada movimiento sale con window function,
+//   no con una columna:
+//   SELECT movement_date, type, amount,
+//          SUM(CASE type WHEN 'debt' THEN amount ELSE -amount END)
+//            OVER (ORDER BY movement_date, id) AS saldo_corriente
+//   FROM deuda_movements
+//   WHERE driver_id = $1 AND "deletedAt" IS NULL
+//   ORDER BY movement_date, id;
+//
+// El indice (driver_id, movement_date) ya cubre estas consultas.
+//
+// SI ALGUN DIA hace falta por rendimiento (miles de movimientos por
+// conductor), la forma segura es una columna CACHE en drivers, con la
+// regla de que se puede reconstruir desde los movimientos en cualquier
+// momento. Cache, no fuente de verdad. Hoy no hace falta.
+//////////////////////////////////////////////////////
