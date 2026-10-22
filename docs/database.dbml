@@ -2,7 +2,8 @@
 // TAXIS ADMINISTRATOR - ESQUEMA REAL (PostgreSQL)
 // Base de datos: taxis_administrator
 // Generado desde la BD el 2026-10-16
-// NOTA: la ultima seccion es el modulo de deudas (deuda_movements)
+// NOTA: las ultimas secciones son propuestas: modulo de deudas
+// (deuda_movements) y modulo de gastos de vehiculo (vehicle_expenses)
 //////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////
@@ -435,4 +436,238 @@ Table media_deuda_movements {
 // conductor), la forma segura es una columna CACHE en drivers, con la
 // regla de que se puede reconstruir desde los movimientos en cualquier
 // momento. Cache, no fuente de verdad. Hoy no hace falta.
+//////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////
+//////////////////////////////////////////////////////
+//
+//  PROPUESTA: MODULO DE GASTOS DE VEHICULO (NO IMPLEMENTADO)
+//
+//  Registra lo que se gasta en cada vehiculo: repuestos, cambios de
+//  aceite, mantenimientos, reparaciones, llantas, lavadas, etc.
+//
+//  Modelo ENCABEZADO + DETALLE, como una factura:
+//
+//    vehicle_expenses       -> el evento: "cambio de aceite del 15/10
+//                              en Lubricentro X, a los 85.300 km"
+//    vehicle_expense_items  -> lo que se compro/pago en ese evento:
+//                              4 L aceite 20W50, filtro de aceite,
+//                              mano de obra
+//
+//  Por que no una sola tabla con un monto:
+//    - un cambio de aceite casi nunca es un solo item (aceite + filtro
+//      + mano de obra). Con una sola fila se pierde el detalle de que
+//      repuesto se compro y cuanto costo cada uno.
+//    - permite reportes por tipo de item (cuanto se gasta en mano de
+//      obra vs repuestos) ademas de por categoria de evento.
+//
+//  EL TOTAL NO SE GUARDA, se calcula (mismo criterio que deudas):
+//    total_gasto = SUM(quantity * unit_price) de sus items
+//  Si existiera vehicle_expenses.total y a la vez los items, habria
+//  dos verdades que tarde o temprano no coinciden.
+//
+//  KILOMETRAJE: vehicles no tiene columna de km. Se registra el
+//  odometro en cada gasto (odometer_km). El km "actual" conocido del
+//  vehiculo es el MAX(odometer_km) de sus gastos. Si mas adelante se
+//  necesita un km real al dia, va en su propia tabla de lecturas, no
+//  aqui.
+//
+//  PROXIMO SERVICIO: next_service_km / next_service_date permiten
+//  alertas tipo "le toca cambio de aceite a los 90.300 km o el
+//  15/01". Genericos en el encabezado porque tambien sirven para
+//  llantas, frenos, correa de reparticion, etc. La alerta vigente de
+//  una categoria es la del gasto MAS RECIENTE de esa categoria: el
+//  siguiente cambio de aceite "reemplaza" al anterior sin tener que
+//  marcar nada como cumplido.
+//
+//  SIN CATALOGO DE REPUESTOS por ahora: el item es texto libre
+//  (description) + item_type. Un catalogo (tabla supplies) exige
+//  mantener datos maestros y hoy no hay inventario ni stock que lo
+//  justifique. Si despues se quiere "historial del filtro X" o
+//  inventario en bodega, se agrega supply_id null a los items sin
+//  romper nada.
+//
+//  QUIEN PAGA: este modulo registra el gasto del propietario. Si un
+//  dano lo debe pagar el conductor, el administrador ademas carga un
+//  movimiento 'debt' en deuda_movements. No se enlazan automaticamente
+//  para no mezclar los dos libros.
+//
+//  EDICION Y BORRADO: igual que deudas. Se permite editar; eliminar es
+//  SIEMPRE softDelete en el encabezado. Los items se reemplazan
+//  completos al editar (borrar e insertar dentro de una transaccion),
+//  por eso los items NO tienen soft delete: su rastro es el del
+//  encabezado (updatedBy / updatedAt).
+//
+//  REGLA EN VEHICLES: vehicles usa soft delete, la FK RESTRICT no se
+//  dispara. Los gastos se conservan como historial aunque el vehiculo
+//  se elimine; no hace falta bloquear el borrado.
+//
+//////////////////////////////////////////////////////
+//////////////////////////////////////////////////////
+
+Enum vehicle_expenses_category_enum {
+  oil_change   // cambio de aceite (y filtros asociados)
+  maintenance  // mantenimiento preventivo / sincronizacion / revision
+  repair       // reparacion correctiva (danos, fallas)
+  spare_part   // compra de repuesto suelto sin servicio
+  tires        // llantas, alineacion, balanceo
+  bodywork     // latoneria y pintura
+  wash         // lavada
+  other
+}
+
+Enum vehicle_expense_items_item_type_enum {
+  part   // repuesto: filtro, pastillas, bujias, bateria
+  fluid  // aceite, refrigerante, liquido de frenos
+  labor  // mano de obra
+  other
+}
+
+Enum vehicle_expenses_payment_method_enum {
+  cash
+  credit_card
+  debit_card
+  nequi
+  daviplata
+}
+
+//////////////////////////////////////////////////////
+// TABLE: VEHICLE_EXPENSES (encabezado del gasto) - PROPUESTA
+//
+// Un registro por evento de gasto en un vehiculo.
+//
+// CHECKS en BD (@Check en la entidad):
+//   odometer_km IS NULL OR odometer_km >= 0
+//   next_service_km IS NULL OR odometer_km IS NULL
+//     OR next_service_km > odometer_km
+//
+// payment_method: tipo propio en Postgres por la misma razon que en
+// deuda_movements (no tocar tarifas_payment_method_enum).
+//////////////////////////////////////////////////////
+
+Table vehicle_expenses {
+  id int [pk, increment]
+  vehicle_id int [not null, ref: > vehicles.id] // ON DELETE RESTRICT
+  driver_id int [null, ref: > drivers.id]       // ON DELETE SET NULL. Conductor asignado en ese momento
+
+  category vehicle_expenses_category_enum [not null]
+  expense_date date [not null] // fecha real del gasto, no la de captura
+
+  odometer_km int [null]       // km del vehiculo al momento del gasto
+  next_service_km int [null]   // ej: proximo cambio de aceite a los 90.300 km
+  next_service_date date [null]
+
+  supplier varchar(150) [null]      // taller o almacen
+  invoice_number varchar(50) [null] // numero de factura del proveedor
+  payment_method vehicle_expenses_payment_method_enum [null]
+  description text [null]           // notas del administrador
+
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null, default: `now()`]
+  deletedAt timestamp [null] // soft delete
+  createdBy int [null]
+  updatedBy int [null]
+  deletedBy int [null]
+
+  indexes {
+    (vehicle_id, expense_date)           // historial del vehiculo
+    (vehicle_id, category, expense_date) // ultimo cambio de aceite / proximo servicio
+    expense_date                         // reportes por mes de toda la flota
+  }
+}
+
+//////////////////////////////////////////////////////
+// TABLE: VEHICLE_EXPENSE_ITEMS (detalle del gasto) - PROPUESTA
+//
+// Cada repuesto, insumo o servicio pagado dentro del gasto.
+// Subtotal = quantity * unit_price (no se guarda).
+//
+// quantity decimal porque el aceite se compra por litros/galones
+// (ej: 4.5). unit guarda la unidad para mostrarla ("L", "gal", "und").
+//
+// CHECKS en BD:
+//   quantity > 0
+//   unit_price >= 0   // 0 permitido: repuesto en garantia o regalado
+//
+// Regla en servicio: un gasto debe tener al menos 1 item.
+//////////////////////////////////////////////////////
+
+Table vehicle_expense_items {
+  id int [pk, increment]
+  expense_id int [not null, ref: > vehicle_expenses.id] // ON DELETE CASCADE
+
+  item_type vehicle_expense_items_item_type_enum [not null, default: 'part']
+  description varchar(255) [not null] // "Aceite Mobil 20W50", "Filtro de aceite"
+  brand varchar(100) [null]
+  quantity decimal(10,2) [not null, default: 1]
+  unit varchar(20) [null]             // "und", "L", "gal"
+  unit_price decimal(10,2) [not null]
+
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null, default: `now()`]
+
+  indexes {
+    expense_id
+  }
+}
+
+//////////////////////////////////////////////////////
+// TABLE: MEDIA_VEHICLE_EXPENSES (facturas / fotos) - PROPUESTA
+// Mismo patron que media_tarifas. Foto de la factura del taller,
+// del repuesto cambiado, del odometro.
+//////////////////////////////////////////////////////
+
+Table media_vehicle_expenses {
+  id int [pk, increment]
+  expense_id int [not null, ref: > vehicle_expenses.id] // ON DELETE CASCADE
+
+  title varchar(255) [not null]
+  description text [null]
+  file_url text [not null]
+  media_type media_tarifas_media_type_enum [not null, default: 'other']
+
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null, default: `now()`]
+  deletedAt timestamp [null] // soft delete
+  createdBy int [null]
+  updatedBy int [null]
+  deletedBy int [null]
+}
+
+//////////////////////////////////////////////////////
+// CONSULTAS PRINCIPALES - PROPUESTA
+//
+// TOTAL GASTADO por vehiculo (opcionalmente en un rango de fechas):
+//   SELECT e.vehicle_id, COALESCE(SUM(i.quantity * i.unit_price), 0) AS total
+//   FROM vehicle_expenses e
+//   JOIN vehicle_expense_items i ON i.expense_id = e.id
+//   WHERE e."deletedAt" IS NULL
+//     AND e.expense_date BETWEEN $1 AND $2
+//   GROUP BY e.vehicle_id;
+//
+// GASTO POR CATEGORIA Y MES de un vehiculo:
+//   SELECT date_trunc('month', e.expense_date) AS mes, e.category,
+//          SUM(i.quantity * i.unit_price) AS total
+//   FROM vehicle_expenses e
+//   JOIN vehicle_expense_items i ON i.expense_id = e.id
+//   WHERE e.vehicle_id = $1 AND e."deletedAt" IS NULL
+//   GROUP BY mes, e.category
+//   ORDER BY mes;
+//
+// PROXIMO CAMBIO DE ACEITE de cada vehiculo (el ultimo registrado):
+//   SELECT DISTINCT ON (e.vehicle_id)
+//          e.vehicle_id, e.expense_date, e.odometer_km,
+//          e.next_service_km, e.next_service_date
+//   FROM vehicle_expenses e
+//   WHERE e.category = 'oil_change' AND e."deletedAt" IS NULL
+//   ORDER BY e.vehicle_id, e.expense_date DESC, e.id DESC;
+//
+// KM CONOCIDO actual del vehiculo:
+//   SELECT MAX(odometer_km) FROM vehicle_expenses
+//   WHERE vehicle_id = $1 AND "deletedAt" IS NULL;
+//
+// RENTABILIDAD (cruce con tarifas, para el dashboard):
+//   ingresos = SUM(tarifas.amount) del vehiculo en el periodo
+//   gastos   = total gastado del vehiculo en el mismo periodo
+//   neto     = ingresos - gastos
 //////////////////////////////////////////////////////

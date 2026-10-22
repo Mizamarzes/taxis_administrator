@@ -16,6 +16,7 @@ import Vehicles from "@/modules/vehicles/Vehicles";
 import Profile from "@/modules/profile/Profile";
 import Settings from "@/modules/settings/Settings";
 import Deudas from "@/modules/deudas/Deudas";
+import Gastos from "@/modules/gastos/Gastos";
 
 const AppRouter = () => {
   const { isAuthenticated } = useAuth();
@@ -47,6 +48,7 @@ const AppRouter = () => {
             <Route path="/vehicles" element={<Vehicles />} />
             <Route path="/drivers" element={<Drivers />} />
             <Route path="/deudas" element={<Deudas />} />
+            <Route path="/gastos" element={<Gastos />} />
             <Route path="/users" element={<Users />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/settings" element={<Settings />} />

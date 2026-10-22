@@ -10,7 +10,8 @@ import {
   UsersIcon,
   WalletIcon,
   IdCardIcon,
-  HandCoinsIcon
+  HandCoinsIcon,
+  WrenchIcon
 } from 'lucide-react';
 
 export const APP_SIDEBAR = {
@@ -39,6 +40,11 @@ export const APP_SIDEBAR = {
       title: 'Deudas',
       url: '/deudas',
       Icon: HandCoinsIcon,
+    },
+    {
+      title: 'Gastos',
+      url: '/gastos',
+      Icon: WrenchIcon,
     },
     {
       title: 'Usuarios',
