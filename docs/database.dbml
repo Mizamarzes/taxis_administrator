@@ -2,7 +2,7 @@
 // TAXIS ADMINISTRATOR - ESQUEMA REAL (PostgreSQL)
 // Base de datos: taxis_administrator
 // Generado desde la BD el 2026-10-16
-// NOTA: la ultima seccion es una PROPUESTA sin implementar (modulo de deudas)
+// NOTA: la ultima seccion es el modulo de deudas (deuda_movements)
 //////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////
@@ -282,6 +282,17 @@ Ref: tarifas.vehicle_id > vehicles.id
 //  registre las deudas. Si olvida una, el saldo queda corto y nada lo
 //  detecta. Es el mismo riesgo que tiene hoy en papel.
 //
+//  EDICION Y BORRADO: se permite editar y eliminar deudas y abonos.
+//  Como el saldo se calcula, cualquier cambio se refleja solo en la
+//  siguiente consulta, sin nada que sincronizar.
+//
+//  REGLA EN DRIVERS: drivers usa soft delete, por lo que la FK con
+//  ON DELETE RESTRICT nunca se dispara. DriversService debe calcular
+//  el saldo antes de softDelete y rechazar si es distinto de 0.
+//
+//  SALDO NEGATIVO: se permite. Si el conductor abona de mas queda
+//  saldo a favor. Evita bloqueos por concurrencia al validar abonos.
+//
 //////////////////////////////////////////////////////
 //////////////////////////////////////////////////////
 
@@ -291,13 +302,31 @@ Enum deuda_movements_type_enum {
   forgiveness // condonacion del administrador: baja el saldo
 }
 
+Enum deuda_movements_payment_method_enum {
+  cash
+  credit_card
+  debit_card
+  nequi
+  daviplata
+}
+
 //////////////////////////////////////////////////////
 // TABLE: DEUDA_MOVEMENTS (cuenta corriente del conductor) - PROPUESTA
 //
-// Una fila por cada movimiento de plata. Append-only: un movimiento
-// no se edita ni se borra, se anula con otro movimiento contrario.
+// Una fila por cada movimiento de plata. El amount de cada fila no
+// sube ni baja: lo que cambia es el saldo, que es la suma de filas.
+//
+// Se permite editar y eliminar:
+//   - editar: se guarda updatedBy. El monto se puede corregir.
+//   - eliminar: SIEMPRE softDelete (deletedAt + deletedBy), nunca
+//     DELETE fisico, para conservar el rastro de quien lo borro.
+//   - si el type deja de ser 'payment', payment_method pasa a null.
 //
 // amount SIEMPRE es positivo. El signo lo define `type`.
+//
+// CHECKS en BD (@Check en la entidad):
+//   amount > 0
+//   type = 'payment' OR payment_method IS NULL
 // No existe tabla de "cuenta" aparte: el saldo es una consulta.
 // Guardarlo en columna se desincroniza tarde o temprano.
 //
@@ -308,14 +337,18 @@ Enum deuda_movements_type_enum {
 
 Table deuda_movements {
   id int [pk, increment]
-  driver_id int [not null, ref: > drivers.id] // ON DELETE RESTRICT: no borrar conductor con saldo
+  driver_id int [not null, ref: > drivers.id] // ON DELETE RESTRICT (la regla real va en DriversService)
+  vehicle_id int [null, ref: > vehicles.id]   // ON DELETE SET NULL. Vehiculo con el que se genero
 
   type deuda_movements_type_enum [not null]
   amount decimal(10,2) [not null] // siempre positivo
   movement_date date [not null]   // fecha real del hecho, no la de captura
 
-  // Solo en type = 'payment'
-  payment_method tarifas_payment_method_enum [null] // compartir tipo con enumName: 'payment_method_enum'
+  // Solo en type = 'payment'. Reusa el enum TS PaymentMethod pero con
+  // tipo propio en Postgres. NO renombrar tarifas_payment_method_enum:
+  // con synchronize TypeORM podria recrear tarifas.payment_method y
+  // perder los datos.
+  payment_method deuda_movements_payment_method_enum [null]
 
   // Clave con registro manual: es donde el administrador explica el
   // movimiento. "no entrego el 15 y el 17", "abono parcial".
@@ -330,7 +363,6 @@ Table deuda_movements {
 
   indexes {
     (driver_id, movement_date) // consulta principal: extracto del conductor
-    (driver_id, type)
   }
 }
 

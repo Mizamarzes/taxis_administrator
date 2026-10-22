@@ -11,6 +11,7 @@ import { TarifasModule } from './tarifas/tarifas.module';
 import { VehiclesModule } from './vehicles/vehicles.module';
 import { SettingsModule } from './settings/settings.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { DeudasModule } from './deudas/deudas.module';
 @Module({
     imports: [
         ConfigModule.forRoot({
@@ -47,6 +48,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
         VehiclesModule,
         SettingsModule,
         DashboardModule,
+        DeudasModule,
     ],
 })
 export class AppModule {}
