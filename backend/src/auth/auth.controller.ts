@@ -19,6 +19,12 @@ export class AuthController {
         return await this.authService.login(loginDto, response);
     }
 
+    @Post('login/mobile')
+    @HttpCode(HttpStatus.OK)
+    async loginMobile(@Body() loginDto: LoginDto) {
+        return await this.authService.loginMobile(loginDto);
+    }
+
     @Get('profile')
     @Auth(Role.USER, Role.ADMIN)
     async profile(@ActiveUser() user: RequestWithUserInterface) {

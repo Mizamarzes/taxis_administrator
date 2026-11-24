@@ -14,7 +14,7 @@ export class AuthService {
         private readonly jwtService: JwtService,
     ) {}
 
-    async login(data: LoginDto, response: Response) {
+    private async authenticate(data: LoginDto) {
         const user = await this.usersService.findOneByEmailForAuth(data.email);
 
         if (!user) {
@@ -39,6 +39,12 @@ export class AuthService {
 
         const token = await this.jwtService.signAsync(payload);
 
+        return { user, token };
+    }
+
+    async login(data: LoginDto, response: Response) {
+        const { user, token } = await this.authenticate(data);
+
         const isProduction = process.env.NODE_ENV === 'production';
 
         response.cookie('access_token', token, {
@@ -51,6 +57,18 @@ export class AuthService {
         return {
             message: 'Login successful',
             email: user.email,
+        };
+    }
+
+    async loginMobile(data: LoginDto) {
+        const { user, token } = await this.authenticate(data);
+
+        return {
+            message: 'Login successful',
+            data: {
+                accessToken: token,
+                email: user.email,
+            },
         };
     }
 

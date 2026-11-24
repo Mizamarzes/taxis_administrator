@@ -23,6 +23,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Axios for HTTP requests (configured with auth interceptors)
 - Radix UI components for UI primitives
 
+**Mobile (`mobile/`):**
+- Expo SDK 58 + React Native + TypeScript
+- Expo Router (file-based routing in `src/app/`)
+- Auth via `POST /api/auth/login/mobile` (token in body), stored with `expo-secure-store`, sent as Bearer header
+- Styling with `StyleSheet` and theme palette in `src/theme/`
+- Use `npx expo install <pkg>` to add dependencies (SDK-compatible versions)
+
 ## Directory Structure
 
 ```
@@ -149,6 +156,17 @@ npm run preview
 npm run lint
 ```
 
+### Mobile
+```bash
+cd mobile
+
+npm start
+npm run android
+npm run typecheck
+npx expo-doctor
+```
+Set `EXPO_PUBLIC_API_URL` in `mobile/.env` (use the PC's LAN IP on physical devices, `10.0.2.2` on Android emulator).
+
 ## API Documentation
 
 - **Swagger UI:** http://localhost:3000/docs (auto-generated when backend runs)
@@ -156,6 +174,7 @@ npm run lint
 
 Key endpoints:
 - POST `/api/auth/login` - Login with email/password
+- POST `/api/auth/login/mobile` - Login for mobile app (returns token in body)
 - GET `/api/auth/profile` - Get authenticated user's profile
 - GET/POST/PATCH/DELETE `/api/users` - User CRUD (admin-only)
 - `/api/drivers`, `/api/vehicles`, `/api/tarifas` - Resource management
