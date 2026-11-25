@@ -9,6 +9,7 @@ import { useFocusQuery } from "@/hooks/useFocusQuery"
 import { formatCurrency, formatKm } from "@/lib/format"
 import { useTheme } from "@/theme/useTheme"
 import { ExpenseRow } from "@/modules/gastos/components/ExpenseRow"
+import { OilPredictionNote } from "@/modules/predictions/components/OilPredictionNote"
 import { EXPENSE_CATEGORIES, formatNextService, getOilStatus, OIL_STATUS } from "@/modules/gastos/constants"
 import { deleteExpenseService, getVehicleExpensesService } from "@/modules/gastos/services/gasto.service"
 import type { ExpenseCategory, VehicleExpense } from "@/modules/gastos/types/gasto.types"
@@ -93,6 +94,8 @@ export default function VehicleExpensesScreen() {
               accentColor={oilColor}
               style={styles.fullCard}
             />
+
+            <OilPredictionNote vehicleId={summary.vehicleId} />
 
             <View style={styles.stats}>
               <StatCard label="Este mes" value={formatCurrency(summary.monthSpent)} />

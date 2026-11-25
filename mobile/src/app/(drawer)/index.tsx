@@ -8,6 +8,7 @@ import { useTheme } from "@/theme/useTheme"
 import { KpiCard } from "@/modules/dashboard/components/KpiCard"
 import { GananciasChart } from "@/modules/dashboard/components/GananciasChart"
 import { RankingTaxis } from "@/modules/dashboard/components/RankingTaxis"
+import { OilChangeForecastCard } from "@/modules/predictions/components/OilChangeForecastCard"
 import { getDashboardSummaryService } from "@/modules/dashboard/services/dashboard.service"
 import type { DashboardSummary } from "@/modules/dashboard/types/dashboard.types"
 
@@ -89,6 +90,8 @@ function DashboardContent() {
           <RankingTaxis data={summary.ranking} />
         </>
       )}
+
+      <OilChangeForecastCard />
     </ScrollView>
   )
 }

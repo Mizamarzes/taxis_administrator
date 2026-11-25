@@ -30,6 +30,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Styling with `StyleSheet` and theme palette in `src/theme/`
 - Use `npx expo install <pkg>` to add dependencies (SDK-compatible versions)
 
+**ML Service (`ml-service/`):**
+- Python 3.11+ with FastAPI + scikit-learn + pandas, SQLAlchemy (read-only queries to the same PostgreSQL)
+- Internal only: NestJS `predictions` module proxies `/api/predictions/*` with the `X-Internal-Key` header (`ML_SERVICE_URL` / `ML_SERVICE_KEY` in both `.env` files, same key)
+- Models are saved in `ml-service/artifacts/` (joblib) and retrained daily and when the input data changes
+- See `ml-service/README.md` for how to add a new model
+
 ## Directory Structure
 
 ```
@@ -165,6 +171,14 @@ npm run android
 npm run typecheck
 npx expo-doctor
 ```
+### ML Service
+```bash
+cd ml-service
+
+.venv/bin/uvicorn app.main:app --reload --port 8000
+.venv/bin/python -m pytest
+```
+
 Set `EXPO_PUBLIC_API_URL` in `mobile/.env` (use the PC's LAN IP on physical devices, `10.0.2.2` on Android emulator).
 
 ## API Documentation
