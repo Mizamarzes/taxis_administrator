@@ -36,7 +36,7 @@ export function EditUserModal({ open, onOpenChange, user, onSuccess }: EditUserM
     if (user) {
       setFormData({
         name: user.name,
-        roleNames: user.roles.map((r) => r.name),
+        roleName: user.role?.name,
         isActive: user.isActive,
       })
     }
@@ -53,7 +53,7 @@ export function EditUserModal({ open, onOpenChange, user, onSuccess }: EditUserM
     setIsLoading(true)
     const payload: IUpdateUserPayload = {}
     if (formData.name?.trim()) payload.name = formData.name.trim()
-    if (formData.roleNames?.length) payload.roleNames = formData.roleNames
+    if (formData.roleName) payload.roleName = formData.roleName
     if (formData.isActive !== undefined) payload.isActive = formData.isActive
     if (formData.password?.trim()) payload.password = formData.password.trim()
     try {
@@ -93,9 +93,9 @@ export function EditUserModal({ open, onOpenChange, user, onSuccess }: EditUserM
             <div className="grid gap-2">
               <Label>Rol</Label>
               <Select
-                value={formData.roleNames?.[0] ?? "USER"}
+                value={formData.roleName ?? "USER"}
                 onValueChange={(val) =>
-                  setFormData((prev) => ({ ...prev, roleNames: [val] }))
+                  setFormData((prev) => ({ ...prev, roleName: val }))
                 }
               >
                 <SelectTrigger>

@@ -28,10 +28,9 @@ export function UserCard({ user, isCurrent, onPress }: { user: User; isCurrent: 
       </View>
       <View style={styles.badges}>
         <Badge label={user.isActive ? "Activo" : "Inactivo"} tone={user.isActive ? "success" : "muted"} />
-        {user.roles.map((role) => {
-          const config = getRoleConfig(role.name)
-          return <Badge key={role.id} label={config.label} tone={config.tone} />
-        })}
+        {user.role && (
+          <Badge label={getRoleConfig(user.role.name).label} tone={getRoleConfig(user.role.name).tone} />
+        )}
       </View>
       <View style={styles.inline}>
         <Ionicons name="log-in-outline" size={14} color={theme.mutedForeground} />

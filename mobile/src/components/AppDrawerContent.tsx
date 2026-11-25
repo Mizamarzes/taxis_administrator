@@ -25,7 +25,7 @@ export function AppDrawerContent({ state, navigation }: DrawerContentComponentPr
     ])
   }
 
-  const roleLabel = user?.roles?.map((role) => role.name).join(" · ") || user?.email
+  const roleLabel = user?.role?.name || user?.email
 
   const renderItem = (item: NavItem) => {
     const isActive = activeRoute === item.name

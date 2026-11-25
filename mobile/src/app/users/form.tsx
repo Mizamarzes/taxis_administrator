@@ -46,7 +46,7 @@ export default function UserFormScreen() {
     if (!id) return
     getUserByIdService(Number(id))
       .then(({ data }) => {
-        const role = data.roles.map((item) => item.name).find(isRoleName) ?? "USER"
+        const role = isRoleName(data.role?.name) ? data.role.name : "USER"
         setForm({ name: data.name, email: data.email, password: "", role, isActive: data.isActive })
       })
       .catch((err: Error) => {
@@ -84,7 +84,7 @@ export default function UserFormScreen() {
       if (isEdit) {
         const payload: IUpdateUserPayload = { name: form.name.trim() }
         if (!isSelf) {
-          payload.roleNames = [form.role]
+          payload.roleName = form.role
           payload.isActive = form.isActive
         }
         if (form.password.trim()) payload.password = form.password.trim()
@@ -94,7 +94,7 @@ export default function UserFormScreen() {
           name: form.name.trim(),
           email: form.email.trim().toLowerCase(),
           password: form.password.trim(),
-          roleNames: [form.role],
+          roleName: form.role,
         })
       }
       router.back()

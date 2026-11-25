@@ -47,6 +47,7 @@ Table users {
   name varchar(100) [not null]
   email varchar(100) [not null, unique]
   password varchar(255) [not null] // hash bcrypt, select:false en la entidad
+  role_id int [not null, ref: > roles.id] // ON DELETE RESTRICT. Un usuario tiene un solo rol
   isActive boolean [not null, default: true]
   lastLogin timestamp [null]
 
@@ -78,19 +79,6 @@ Table roles {
 Table permissions {
   id int [pk, increment]
   action varchar(100) [not null, unique] // ej: "users.create"
-
-  createdAt timestamp [not null, default: `now()`]
-  updatedAt timestamp [not null, default: `now()`]
-}
-
-//////////////////////////////////////////////////////
-// TABLE: USER_ROLES (N a N users <-> roles)
-//////////////////////////////////////////////////////
-
-Table user_roles {
-  id int [pk, increment]
-  user_id int [not null, ref: > users.id] // ON DELETE CASCADE
-  role_id int [not null, ref: > roles.id] // ON DELETE CASCADE
 
   createdAt timestamp [not null, default: `now()`]
   updatedAt timestamp [not null, default: `now()`]
@@ -671,3 +659,49 @@ Table media_vehicle_expenses {
 //   gastos   = total gastado del vehiculo en el mismo periodo
 //   neto     = ingresos - gastos
 //////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////
+// REFS LOGICOS DE AUDITORIA (NO existen como FOREIGN KEY en PostgreSQL)
+// BaseEntity define createdBy / updatedBy / deletedBy como int simple
+// con el id del usuario del panel que hizo la accion.
+//////////////////////////////////////////////////////
+
+Ref: users.createdBy > users.id
+Ref: users.updatedBy > users.id
+Ref: users.deletedBy > users.id
+
+Ref: drivers.createdBy > users.id
+Ref: drivers.updatedBy > users.id
+Ref: drivers.deletedBy > users.id
+
+Ref: vehicles.createdBy > users.id
+Ref: vehicles.updatedBy > users.id
+Ref: vehicles.deletedBy > users.id
+
+Ref: vehicle_documents.createdBy > users.id
+Ref: vehicle_documents.updatedBy > users.id
+Ref: vehicle_documents.deletedBy > users.id
+
+Ref: tarifas.createdBy > users.id
+Ref: tarifas.updatedBy > users.id
+Ref: tarifas.deletedBy > users.id
+
+Ref: media_tarifas.createdBy > users.id
+Ref: media_tarifas.updatedBy > users.id
+Ref: media_tarifas.deletedBy > users.id
+
+Ref: deuda_movements.createdBy > users.id
+Ref: deuda_movements.updatedBy > users.id
+Ref: deuda_movements.deletedBy > users.id
+
+Ref: media_deuda_movements.createdBy > users.id
+Ref: media_deuda_movements.updatedBy > users.id
+Ref: media_deuda_movements.deletedBy > users.id
+
+Ref: vehicle_expenses.createdBy > users.id
+Ref: vehicle_expenses.updatedBy > users.id
+Ref: vehicle_expenses.deletedBy > users.id
+
+Ref: media_vehicle_expenses.createdBy > users.id
+Ref: media_vehicle_expenses.updatedBy > users.id
+Ref: media_vehicle_expenses.deletedBy > users.id

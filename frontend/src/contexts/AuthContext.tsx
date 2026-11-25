@@ -12,7 +12,7 @@ interface AuthUser {
   id: number;
   name: string;
   email: string;
-  roles: AuthUserRole[];
+  role: AuthUserRole;
   isActive: boolean;
 }
 

@@ -49,7 +49,7 @@ export default function ProfileScreen() {
 
   const name = profile?.name ?? user?.name
   const email = profile?.email ?? user?.email
-  const roles = profile?.roles ?? user?.roles ?? []
+  const role = profile?.role ?? user?.role
   const isActive = profile?.isActive ?? user?.isActive
 
   return (
@@ -63,9 +63,7 @@ export default function ProfileScreen() {
         <Text style={{ color: theme.mutedForeground }}>{email}</Text>
         <View style={styles.badges}>
           <Badge label={isActive ? "Activo" : "Inactivo"} tone={isActive ? "success" : "muted"} />
-          {roles.map((role) => (
-            <Badge key={role.id} label={role.name} tone="primary" />
-          ))}
+          {role && <Badge label={role.name} tone="primary" />}
         </View>
       </Card>
 

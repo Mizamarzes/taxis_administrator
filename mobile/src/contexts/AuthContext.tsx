@@ -73,7 +73,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const value = useMemo<AuthContextType>(() => ({
     isAuthenticated: user !== null,
     isLoading,
-    isAdmin: user?.roles?.some((role) => ADMIN_ROLES.includes(role.name)) ?? false,
+    isAdmin: user?.role ? ADMIN_ROLES.includes(user.role.name) : false,
     user,
     login,
     logout,

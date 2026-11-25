@@ -9,7 +9,7 @@ export interface User {
   id: number
   name: string
   email: string
-  roles: UserRole[]
+  role: UserRole
   isActive: boolean
   lastLogin: string | null
   createdAt: string
@@ -20,13 +20,13 @@ export interface ICreateUserPayload {
   name: string
   email: string
   password: string
-  roleNames?: RoleName[]
+  roleName?: RoleName
 }
 
 export interface IUpdateUserPayload {
   name?: string
   password?: string
-  roleNames?: RoleName[]
+  roleName?: RoleName
   isActive?: boolean
 }
 

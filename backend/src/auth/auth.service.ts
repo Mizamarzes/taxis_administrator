@@ -33,9 +33,7 @@ export class AuthService {
 
         await this.usersService.updateLastLogin(user.id);
 
-        const roles = user.userRoles.map((ur) => ur.role.name);
-
-        const payload: JwtPayload = { sub: user.id, email: user.email, roles: roles };
+        const payload: JwtPayload = { sub: user.id, email: user.email, role: user.role.name };
 
         const token = await this.jwtService.signAsync(payload);
 
@@ -72,7 +70,7 @@ export class AuthService {
         };
     }
 
-    async profile({ email }: { email: string; roles: Role[] }) {
+    async profile({ email }: { email: string; role: Role }) {
         const user = await this.usersService.findOneByEmail(email);
 
         if (!user) {

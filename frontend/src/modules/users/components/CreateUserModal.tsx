@@ -30,7 +30,7 @@ const emptyForm: ICreateUserPayload = {
   name: "",
   email: "",
   password: "",
-  roleNames: ["USER"],
+  roleName: "USER",
 }
 
 export function CreateUserModal({ open, onOpenChange, onSuccess }: CreateUserModalProps) {
@@ -107,9 +107,9 @@ export function CreateUserModal({ open, onOpenChange, onSuccess }: CreateUserMod
             <div className="grid gap-2">
               <Label>Rol</Label>
               <Select
-                value={formData.roleNames?.[0] ?? "USER"}
+                value={formData.roleName ?? "USER"}
                 onValueChange={(val) =>
-                  setFormData((prev) => ({ ...prev, roleNames: [val] }))
+                  setFormData((prev) => ({ ...prev, roleName: val }))
                 }
               >
                 <SelectTrigger>
