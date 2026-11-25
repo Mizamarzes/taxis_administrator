@@ -24,5 +24,10 @@ export const config = () => {
         app: {
             nodeEnv: process.env.NODE_ENV || 'development',
         },
+        ml: {
+            url: process.env.ML_SERVICE_URL || 'http://localhost:8000',
+            key: process.env.ML_SERVICE_KEY || '',
+            timeoutMs: Number(process.env.ML_SERVICE_TIMEOUT_MS) || 10000,
+        },
     };
 };

@@ -13,6 +13,7 @@ import { SettingsModule } from './settings/settings.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { DeudasModule } from './deudas/deudas.module';
 import { GastosModule } from './gastos/gastos.module';
+import { PredictionsModule } from './predictions/predictions.module';
 @Module({
     imports: [
         ConfigModule.forRoot({
@@ -51,6 +52,7 @@ import { GastosModule } from './gastos/gastos.module';
         DashboardModule,
         DeudasModule,
         GastosModule,
+        PredictionsModule,
     ],
 })
 export class AppModule {}
