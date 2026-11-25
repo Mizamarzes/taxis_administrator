@@ -1,11 +1,11 @@
 import { StyleSheet, Text, View } from "react-native"
+import type { Palette } from "@/theme/colors"
 import { useTheme } from "@/theme/useTheme"
 
 export type BadgeTone = "success" | "muted" | "destructive" | "warning" | "info" | "primary"
 
-export function Badge({ label, tone = "muted" }: { label: string; tone?: BadgeTone }) {
-  const theme = useTheme()
-  const color = {
+export function getToneColor(theme: Palette, tone: BadgeTone): string {
+  return {
     success: theme.success,
     muted: theme.mutedForeground,
     destructive: theme.destructive,
@@ -13,6 +13,11 @@ export function Badge({ label, tone = "muted" }: { label: string; tone?: BadgeTo
     info: theme.info,
     primary: theme.primary,
   }[tone]
+}
+
+export function Badge({ label, tone = "muted" }: { label: string; tone?: BadgeTone }) {
+  const theme = useTheme()
+  const color = getToneColor(theme, tone)
 
   return (
     <View style={[styles.badge, { borderColor: color + "55", backgroundColor: color + "1A" }]}>

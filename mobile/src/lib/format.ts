@@ -44,6 +44,28 @@ export function formatCurrency(value: number | string | null | undefined): strin
   return `$${amount.toLocaleString("es-CO", { maximumFractionDigits: 0 })}`
 }
 
+export function formatKm(value: number | null | undefined): string {
+  if (value == null) return "—"
+  return `${Number(value).toLocaleString("es-CO")} km`
+}
+
+export function toOptionalNumber(value: string): number | undefined {
+  const trimmed = value.trim()
+  if (trimmed === "") return undefined
+  const parsed = Number(trimmed)
+  return Number.isNaN(parsed) ? undefined : parsed
+}
+
+export function sanitizeDecimal(value: string): string {
+  const cleaned = value.replace(",", ".").replace(/[^0-9.]/g, "")
+  const [integer, ...decimals] = cleaned.split(".")
+  return decimals.length > 0 ? `${integer}.${decimals.join("").slice(0, 2)}` : integer
+}
+
+export function sanitizeInteger(value: string): string {
+  return value.replace(/[^0-9]/g, "")
+}
+
 export function isValidDateOnly(value: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false
   const date = parseDateOnly(value)

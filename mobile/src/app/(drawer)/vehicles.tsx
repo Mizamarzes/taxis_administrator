@@ -15,6 +15,7 @@ export default function VehiclesScreen() {
         fetcher={fetcher}
         keyExtractor={(item) => String(item.id)}
         emptyMessage="No hay vehículos registrados."
+        onCreate={() => router.push("/vehicles/form")}
         renderItem={(item) => (
           <VehicleCard
             vehicle={item}

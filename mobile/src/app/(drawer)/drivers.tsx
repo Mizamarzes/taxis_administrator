@@ -15,6 +15,7 @@ export default function DriversScreen() {
         fetcher={fetcher}
         keyExtractor={(item) => String(item.id)}
         emptyMessage="No hay conductores registrados."
+        onCreate={() => router.push("/drivers/form")}
         renderItem={(item) => (
           <DriverCard
             driver={item}

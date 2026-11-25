@@ -12,6 +12,8 @@ export interface Palette {
   success: string
   warning: string
   info: string
+  accent: string
+  pink: string
 }
 
 export const lightPalette: Palette = {
@@ -28,6 +30,8 @@ export const lightPalette: Palette = {
   success: "#059669",
   warning: "#D97706",
   info: "#2563EB",
+  accent: "#7C3AED",
+  pink: "#DB2777",
 }
 
 export const darkPalette: Palette = {
@@ -44,4 +48,6 @@ export const darkPalette: Palette = {
   success: "#34D399",
   warning: "#FBBF24",
   info: "#60A5FA",
+  accent: "#A78BFA",
+  pink: "#F472B6",
 }

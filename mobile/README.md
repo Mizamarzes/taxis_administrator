@@ -43,7 +43,7 @@ src/
   app/                       # Rutas (Expo Router, basado en archivos)
     _layout.tsx              # Stack raíz + protección de rutas por sesión
     login.tsx
-    (tabs)/                  # Navegación inferior
+    (drawer)/                # Menú lateral (drawer)
       index.tsx              # Dashboard
       tarifas.tsx
       vehicles.tsx
@@ -51,8 +51,13 @@ src/
       profile.tsx
     tarifas/[id].tsx         # Detalle de tarifa
     tarifas/form.tsx         # Crear / editar tarifa (modal)
-    vehicles/[id].tsx
-    drivers/[id].tsx
+    vehicles/[id].tsx, vehicles/form.tsx
+    drivers/[id].tsx, drivers/form.tsx
+    deudas/[driverId].tsx    # Estado de cuenta del conductor
+    deudas/form.tsx          # Crear / editar movimiento (modal)
+    gastos/[vehicleId].tsx   # Historial de gastos del vehículo
+    gastos/form.tsx          # Crear / editar gasto con ítems (modal)
+    users/[id].tsx, users/form.tsx
   modules/{feature}/         # Igual que el frontend web: services, types, components
   components/                # Componentes compartidos y ui/
   contexts/AuthContext.tsx
@@ -68,8 +73,11 @@ src/
 | Login | Inicio de sesión con persistencia segura del token |
 | Dashboard | KPIs, ganancias por día y ranking, con filtros Hoy / Semana / Mes |
 | Tarifas | Listado paginado con búsqueda, detalle, crear, editar y eliminar |
-| Autos | Listado paginado, detalle con conductor asignado y documentos |
-| Conductores | Listado paginado, detalle con botones para llamar y WhatsApp |
+| Autos | Listado paginado, crear, detalle con conductor asignado y documentos |
+| Conductores | Listado paginado, crear, detalle con botones para llamar y WhatsApp |
+| Deudas | Saldos por conductor con filtros, estado de cuenta con saldo acumulado; registrar deuda, abono o condonación; editar y eliminar movimientos |
+| Gastos | Resumen por vehículo con alertas de cambio de aceite; historial por categoría; registrar, editar y eliminar gastos con ítems (repuestos, líquidos, mano de obra) |
+| Usuarios | Listado paginado, detalle, crear, editar (rol, estado, contraseña) y eliminar |
 | Perfil | Datos del usuario, roles y cierre de sesión |
 
 Las secciones de administración solo se muestran a usuarios con rol `ADMIN` o `SUPERADMIN`.
