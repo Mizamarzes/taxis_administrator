@@ -8,10 +8,14 @@ import type { User } from "./types/user.types"
 import { getUsersService } from "./services/user.service"
 import { Button } from "@/components/ui/button"
 import { PlusIcon } from "lucide-react"
+import { useAuth } from "@/contexts/AuthContext"
 
 const LIMIT = 20
 
 const Users = () => {
+  const { can } = useAuth()
+  const canEdit = can("users.update")
+  const canDelete = can("users.delete")
   const [users, setUsers] = useState<User[]>([])
   const [search, setSearch] = useState("")
   const [debouncedSearch, setDebouncedSearch] = useState("")
@@ -55,9 +59,9 @@ const Users = () => {
   }
 
   const columns = useMemo(
-    () => getColumns({ onEdit: handleEdit, onDelete: handleDelete }),
+    () => getColumns({ onEdit: handleEdit, onDelete: handleDelete, canEdit, canDelete }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [canEdit, canDelete]
   )
 
   return (
@@ -72,10 +76,12 @@ const Users = () => {
         currentPage={page}
         onPageChange={setPage}
         toolbarRight={
-          <Button onClick={() => setIsCreateModalOpen(true)}>
-            <PlusIcon className="size-4 mr-2" />
-            Agregar usuario
-          </Button>
+          can("users.create") && (
+            <Button onClick={() => setIsCreateModalOpen(true)}>
+              <PlusIcon className="size-4 mr-2" />
+              Agregar usuario
+            </Button>
+          )
         }
       />
 

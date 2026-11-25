@@ -1,5 +1,6 @@
 import {
     BadRequestException,
+    ForbiddenException,
     Injectable,
     Logger,
     ConflictException,
@@ -12,7 +13,9 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
 import { Role } from '../roles/entities/role.entity';
-import { Role as RoleName } from '../common/enums/rol.enum';
+import { Role as RoleName, SUPER_ADMIN_ROLE } from '../common/enums/rol.enum';
+import { AuthorizationService } from '../authorization/authorization.service';
+import type { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { UserResponseDto } from './dto/user-response.dto';
 import { mapUsersToUserResponseDtos, mapUserToUserResponseDto } from './mappers/user.mappers';
 import { PaginationDTO, PaginationResponseDto } from '../common/dto/pagination.dto';
@@ -27,7 +30,17 @@ export class UsersService {
         private readonly usersRepository: Repository<User>,
         @InjectRepository(Role)
         private readonly roleRepository: Repository<Role>,
+        private readonly authorizationService: AuthorizationService,
     ) {}
+
+    private async assertCanManageSuperAdmin(actor: JwtPayload, roleName: string | undefined) {
+        if (roleName !== SUPER_ADMIN_ROLE) {
+            return;
+        }
+        if (!(await this.authorizationService.isSuperAdmin(actor))) {
+            throw new ForbiddenException('Solo un SUPERADMIN puede gestionar usuarios SUPERADMIN');
+        }
+    }
 
     private async findRoleByName(name: string): Promise<Role> {
         const role = await this.roleRepository.findOne({ where: { name } });
@@ -39,7 +52,7 @@ export class UsersService {
         return role;
     }
 
-    async create(data: CreateUserDto): Promise<UserResponseDto | null> {
+    async create(data: CreateUserDto, actor: JwtPayload): Promise<UserResponseDto | null> {
         try {
             const existingUser = await this.findOneByEmail(data.email);
 
@@ -48,6 +61,7 @@ export class UsersService {
             }
 
             const role = await this.findRoleByName(data.roleName ?? RoleName.USER);
+            await this.assertCanManageSuperAdmin(actor, role.name);
 
             const passwordEncripted = await bcrypt.hash(data.password, 10);
 
@@ -62,7 +76,11 @@ export class UsersService {
             return mapUserToUserResponseDto(user);
         } catch (error) {
             this.logger.error(`Error creating user: ${error.message}`, error.stack);
-            if (error instanceof BadRequestException || error instanceof ConflictException) {
+            if (
+                error instanceof BadRequestException ||
+                error instanceof ConflictException ||
+                error instanceof ForbiddenException
+            ) {
                 throw error;
             }
             throw new BadRequestException('Error creating user');
@@ -161,15 +179,22 @@ export class UsersService {
         }
     }
 
-    async update(id: number, updateUserDto: UpdateUserDto): Promise<UserResponseDto | null> {
+    async update(
+        id: number,
+        updateUserDto: UpdateUserDto,
+        actor: JwtPayload,
+    ): Promise<UserResponseDto | null> {
         try {
             const existingUser = await this.usersRepository.findOne({
                 where: { id },
+                relations: ['role'],
             });
 
             if (!existingUser) {
                 throw new NotFoundException(`User with ID ${id} not found`);
             }
+
+            await this.assertCanManageSuperAdmin(actor, existingUser.role?.name);
 
             if (updateUserDto.name) {
                 existingUser.name = updateUserDto.name;
@@ -185,6 +210,7 @@ export class UsersService {
 
             if (updateUserDto.roleName) {
                 const role = await this.findRoleByName(updateUserDto.roleName);
+                await this.assertCanManageSuperAdmin(actor, role.name);
                 existingUser.roleId = role.id;
                 existingUser.role = role;
             }
@@ -197,7 +223,8 @@ export class UsersService {
             if (
                 error instanceof BadRequestException ||
                 error instanceof NotFoundException ||
-                error instanceof ConflictException
+                error instanceof ConflictException ||
+                error instanceof ForbiddenException
             ) {
                 throw error;
             }
@@ -205,7 +232,7 @@ export class UsersService {
         }
     }
 
-    async remove(id: number): Promise<{ message: string }> {
+    async remove(id: number, actor: JwtPayload): Promise<{ message: string }> {
         try {
             const user = await this.findOne(id);
 
@@ -213,12 +240,14 @@ export class UsersService {
                 throw new NotFoundException(`User with ID ${id} not found`);
             }
 
+            await this.assertCanManageSuperAdmin(actor, user.role?.name);
+
             await this.usersRepository.softDelete(id);
 
             return { message: `User ${user?.name} has been removed successfully` };
         } catch (error) {
             this.logger.error(`Error removing user: ${error.message}`, error.stack);
-            if (error instanceof NotFoundException) {
+            if (error instanceof NotFoundException || error instanceof ForbiddenException) {
                 throw error;
             }
             throw new BadRequestException('Error removing user');

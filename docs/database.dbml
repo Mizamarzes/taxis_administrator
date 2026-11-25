@@ -65,8 +65,9 @@ Table users {
 
 Table roles {
   id int [pk, increment]
-  name varchar(50) [not null, unique] // USER, ADMIN
+  name varchar(50) [not null, unique] // SUPERADMIN, ADMIN, USER y roles creados desde la UI
   description varchar(255) [null]
+  isSystem boolean [not null, default: false] // SUPERADMIN, ADMIN, USER: no se renombran ni eliminan
 
   createdAt timestamp [not null, default: `now()`]
   updatedAt timestamp [not null, default: `now()`]
@@ -78,7 +79,8 @@ Table roles {
 
 Table permissions {
   id int [pk, increment]
-  action varchar(100) [not null, unique] // ej: "users.create"
+  action varchar(100) [not null, unique] // ej: "users.create". Catalogo fijo en permissions.catalog.ts, lo sincroniza el seed
+  description varchar(255) [null]        // etiqueta en espanol para la UI
 
   createdAt timestamp [not null, default: `now()`]
   updatedAt timestamp [not null, default: `now()`]
@@ -95,7 +97,12 @@ Table role_permissions {
 
   createdAt timestamp [not null, default: `now()`]
   updatedAt timestamp [not null, default: `now()`]
+
+  indexes {
+    (role_id, permission_id) [unique] // UQ_role_permissions_role_permission
+  }
 }
+// SUPERADMIN no necesita filas aqui: el PermissionsGuard lo deja pasar siempre.
 
 //////////////////////////////////////////////////////
 // TABLE: DRIVERS (conductores)

@@ -1,3 +1,4 @@
+import { Can } from '../authorization/can.decorator';
 import {
     Body,
     Controller,
@@ -20,8 +21,6 @@ import {
     DriverBalanceDto,
     DriverStatementDto,
 } from './dto/deuda-movement-response.dto';
-import { Auth } from '../auth/decorators/auth.decorator';
-import { Role } from '../common/enums/rol.enum';
 import { ApiResponseInterface } from '../common/interfaces/api-response.interface';
 import { PaginationResponseDto } from '../common/dto/pagination.dto';
 import { ActiveUser } from '../common/decorators/activeUser.decorator';
@@ -33,7 +32,7 @@ export class DeudasController {
     constructor(private readonly deudasService: DeudasService) {}
 
     @Post('create')
-    @Auth(Role.ADMIN)
+    @Can('deudas.create')
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Register a debt, payment or forgiveness movement' })
     @ApiResponse({ status: 201, type: DeudaMovementResponseDto })
@@ -49,7 +48,7 @@ export class DeudasController {
     }
 
     @Get('get-all')
-    @Auth(Role.ADMIN)
+    @Can('deudas.read')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Get all deuda movements with pagination and filters' })
     @ApiResponse({ status: 200, type: [DeudaMovementResponseDto] })
@@ -64,7 +63,7 @@ export class DeudasController {
     }
 
     @Get('balances')
-    @Auth(Role.ADMIN)
+    @Can('deudas.read')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Get the current balance of every driver' })
     @ApiResponse({ status: 200, type: [DriverBalanceDto] })
@@ -77,7 +76,7 @@ export class DeudasController {
     }
 
     @Get('statement/:driverId')
-    @Auth(Role.ADMIN)
+    @Can('deudas.read')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Get the statement of a driver with running balance' })
     @ApiResponse({ status: 200, type: DriverStatementDto })
@@ -92,7 +91,7 @@ export class DeudasController {
     }
 
     @Get('get/:id')
-    @Auth(Role.ADMIN)
+    @Can('deudas.read')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Get a deuda movement by ID' })
     @ApiResponse({ status: 200, type: DeudaMovementResponseDto })
@@ -107,7 +106,7 @@ export class DeudasController {
     }
 
     @Patch('update/:id')
-    @Auth(Role.ADMIN)
+    @Can('deudas.update')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Update a deuda movement by ID' })
     @ApiResponse({ status: 200, type: DeudaMovementResponseDto })
@@ -124,7 +123,7 @@ export class DeudasController {
     }
 
     @Delete('remove/:id')
-    @Auth(Role.ADMIN)
+    @Can('deudas.delete')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Remove a deuda movement by ID' })
     async remove(

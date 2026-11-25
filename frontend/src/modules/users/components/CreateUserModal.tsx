@@ -1,4 +1,6 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { getRoleOptionsService } from "@/modules/roles/services/role.service"
+import type { RoleOption } from "@/modules/roles/types/role.types"
 import {
   Dialog,
   DialogContent,
@@ -36,6 +38,14 @@ const emptyForm: ICreateUserPayload = {
 export function CreateUserModal({ open, onOpenChange, onSuccess }: CreateUserModalProps) {
   const [formData, setFormData] = useState<ICreateUserPayload>(emptyForm)
   const [isLoading, setIsLoading] = useState(false)
+  const [roleOptions, setRoleOptions] = useState<RoleOption[]>([])
+
+  useEffect(() => {
+    if (!open) return
+    getRoleOptionsService()
+      .then((response) => setRoleOptions(response.data))
+      .catch(() => setRoleOptions([]))
+  }, [open])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target
@@ -116,9 +126,11 @@ export function CreateUserModal({ open, onOpenChange, onSuccess }: CreateUserMod
                   <SelectValue placeholder="Seleccionar rol" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="USER">Usuario</SelectItem>
-                  <SelectItem value="ADMIN">Admin</SelectItem>
-                  <SelectItem value="SUPERADMIN">Superadmin</SelectItem>
+                  {roleOptions.map((role) => (
+                    <SelectItem key={role.id} value={role.name}>
+                      {role.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

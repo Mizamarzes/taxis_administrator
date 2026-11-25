@@ -30,9 +30,11 @@ interface ColumnsProps {
   onView: (tarifa: Tarifa) => void
   onEdit: (tarifa: Tarifa) => void
   onDelete: (tarifa: Tarifa) => void
+  canEdit: boolean
+  canDelete: boolean
 }
 
-export const getColumns = ({ onView, onEdit, onDelete }: ColumnsProps): ColumnDef<Tarifa>[] => [
+export const getColumns = ({ onView, onEdit, onDelete, canEdit, canDelete }: ColumnsProps): ColumnDef<Tarifa>[] => [
   {
     accessorKey: "id",
     header: "ID",
@@ -126,17 +128,21 @@ export const getColumns = ({ onView, onEdit, onDelete }: ColumnsProps): ColumnDe
               <Eye className="mr-2 h-4 w-4" />
               Ver detalle
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onEdit(tarifa)}>
-              <Pencil className="mr-2 h-4 w-4" />
-              Editar
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => onDelete(tarifa)}
-              className="text-destructive focus:text-destructive"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Eliminar
-            </DropdownMenuItem>
+            {canEdit && (
+              <DropdownMenuItem onClick={() => onEdit(tarifa)}>
+                <Pencil className="mr-2 h-4 w-4" />
+                Editar
+              </DropdownMenuItem>
+            )}
+            {canDelete && (
+              <DropdownMenuItem
+                onClick={() => onDelete(tarifa)}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Eliminar
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       )

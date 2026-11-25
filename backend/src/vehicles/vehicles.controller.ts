@@ -1,3 +1,4 @@
+import { Can } from '../authorization/can.decorator';
 import {
     Body,
     Controller,
@@ -15,8 +16,6 @@ import { VehiclesService } from './vehicles.service';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
 import { VehicleResponseDto } from './dto/vehicle-response.dto';
-import { Auth } from '../auth/decorators/auth.decorator';
-import { Role } from '../common/enums/rol.enum';
 import { ApiResponseInterface } from '../common/interfaces/api-response.interface';
 import { PaginationDTO, PaginationResponseDto } from '../common/dto/pagination.dto';
 
@@ -26,7 +25,7 @@ export class VehiclesController {
     constructor(private readonly vehiclesService: VehiclesService) {}
 
     @Post('create')
-    @Auth(Role.ADMIN)
+    @Can('vehicles.create')
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Create a new vehicle' })
     @ApiResponse({ status: 201, type: VehicleResponseDto })
@@ -41,7 +40,7 @@ export class VehiclesController {
     }
 
     @Get('get-all')
-    @Auth(Role.ADMIN)
+    @Can('vehicles.read')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Get all vehicles with pagination' })
     @ApiResponse({ status: 200, type: [VehicleResponseDto] })
@@ -56,7 +55,7 @@ export class VehiclesController {
     }
 
     @Get('get/:id')
-    @Auth(Role.ADMIN)
+    @Can('vehicles.read')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Get a vehicle by ID' })
     @ApiResponse({ status: 200, type: VehicleResponseDto })
@@ -69,7 +68,7 @@ export class VehiclesController {
     }
 
     @Patch('update/:id')
-    @Auth(Role.ADMIN)
+    @Can('vehicles.update')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Update a vehicle by ID' })
     @ApiResponse({ status: 200, type: VehicleResponseDto })
@@ -85,7 +84,7 @@ export class VehiclesController {
     }
 
     @Delete('remove/:id')
-    @Auth(Role.ADMIN)
+    @Can('vehicles.delete')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Remove a vehicle by ID' })
     async remove(@Param('id') id: string): Promise<ApiResponseInterface> {

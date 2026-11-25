@@ -20,13 +20,13 @@ export interface ICreateUserPayload {
   name: string
   email: string
   password: string
-  roleName?: RoleName
+  roleName?: string
 }
 
 export interface IUpdateUserPayload {
   name?: string
   password?: string
-  roleName?: RoleName
+  roleName?: string
   isActive?: boolean
 }
 

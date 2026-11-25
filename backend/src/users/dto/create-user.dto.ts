@@ -1,6 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsEmail, IsIn, IsOptional, IsString, MinLength } from 'class-validator';
-import { Role } from '../../common/enums/rol.enum';
+import { IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class CreateUserDto {
     @Transform(({ value }) => value?.trim().toLowerCase())
@@ -18,6 +17,8 @@ export class CreateUserDto {
     name: string;
 
     @IsOptional()
-    @IsIn(Object.values(Role), { message: 'Role must be SUPERADMIN, ADMIN or USER' })
-    roleName?: Role;
+    @Transform(({ value }: { value: string }) => value?.trim().toUpperCase())
+    @IsString()
+    @MinLength(2)
+    roleName?: string;
 }

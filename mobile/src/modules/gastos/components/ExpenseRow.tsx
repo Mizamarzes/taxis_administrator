@@ -13,8 +13,8 @@ interface ExpenseRowProps {
   expense: VehicleExpense
   expanded: boolean
   onToggle: () => void
-  onEdit: () => void
-  onDelete: () => void
+  onEdit?: () => void
+  onDelete?: () => void
 }
 
 const summarizeItems = (expense: VehicleExpense) => {
@@ -90,8 +90,12 @@ export function ExpenseRow({ expense, expanded, onToggle, onEdit, onDelete }: Ex
           </View>
 
           <View style={styles.actions}>
-            <Button title="Editar" icon="create-outline" variant="outline" onPress={onEdit} style={styles.flex} />
-            <Button title="Eliminar" icon="trash-outline" variant="destructive" onPress={onDelete} style={styles.flex} />
+            {onEdit && (
+              <Button title="Editar" icon="create-outline" variant="outline" onPress={onEdit} style={styles.flex} />
+            )}
+            {onDelete && (
+              <Button title="Eliminar" icon="trash-outline" variant="destructive" onPress={onDelete} style={styles.flex} />
+            )}
           </View>
         </View>
       )}

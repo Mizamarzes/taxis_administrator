@@ -1,3 +1,4 @@
+import { Can } from '../authorization/can.decorator';
 import {
     Body,
     Controller,
@@ -20,8 +21,6 @@ import {
     VehicleExpensesStatementDto,
     VehicleExpenseSummaryDto,
 } from './dto/vehicle-expense-response.dto';
-import { Auth } from '../auth/decorators/auth.decorator';
-import { Role } from '../common/enums/rol.enum';
 import { ApiResponseInterface } from '../common/interfaces/api-response.interface';
 import { PaginationResponseDto } from '../common/dto/pagination.dto';
 import { ActiveUser } from '../common/decorators/activeUser.decorator';
@@ -33,7 +32,7 @@ export class GastosController {
     constructor(private readonly gastosService: GastosService) {}
 
     @Post('create')
-    @Auth(Role.ADMIN)
+    @Can('gastos.create')
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Register a vehicle expense with its items' })
     @ApiResponse({ status: 201, type: VehicleExpenseResponseDto })
@@ -49,7 +48,7 @@ export class GastosController {
     }
 
     @Get('get-all')
-    @Auth(Role.ADMIN)
+    @Can('gastos.read')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Get all vehicle expenses with pagination and filters' })
     @ApiResponse({ status: 200, type: [VehicleExpenseResponseDto] })
@@ -64,7 +63,7 @@ export class GastosController {
     }
 
     @Get('summaries')
-    @Auth(Role.ADMIN)
+    @Can('gastos.read')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Get the expense summary of every vehicle' })
     @ApiResponse({ status: 200, type: [VehicleExpenseSummaryDto] })
@@ -77,7 +76,7 @@ export class GastosController {
     }
 
     @Get('vehicle/:vehicleId')
-    @Auth(Role.ADMIN)
+    @Can('gastos.read')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Get the expense history of a vehicle' })
     @ApiResponse({ status: 200, type: VehicleExpensesStatementDto })
@@ -92,7 +91,7 @@ export class GastosController {
     }
 
     @Get('get/:id')
-    @Auth(Role.ADMIN)
+    @Can('gastos.read')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Get a vehicle expense by ID' })
     @ApiResponse({ status: 200, type: VehicleExpenseResponseDto })
@@ -107,7 +106,7 @@ export class GastosController {
     }
 
     @Patch('update/:id')
-    @Auth(Role.ADMIN)
+    @Can('gastos.update')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Update a vehicle expense by ID; items are replaced if sent' })
     @ApiResponse({ status: 200, type: VehicleExpenseResponseDto })
@@ -124,7 +123,7 @@ export class GastosController {
     }
 
     @Delete('remove/:id')
-    @Auth(Role.ADMIN)
+    @Can('gastos.delete')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Remove a vehicle expense by ID' })
     async remove(

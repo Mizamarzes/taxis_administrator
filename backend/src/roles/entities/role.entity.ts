@@ -18,7 +18,10 @@ export class Role {
     name: string;
 
     @Column({ type: 'varchar', length: 255, nullable: true })
-    description: string;
+    description: string | null;
+
+    @Column({ type: 'boolean', default: false })
+    isSystem: boolean;
 
     @OneToMany(() => User, (user) => user.role)
     users: User[];

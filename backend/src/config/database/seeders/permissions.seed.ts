@@ -1,37 +1,23 @@
-import { DataSource } from 'typeorm';
+import { DataSource, In, Not } from 'typeorm';
 import { Permission } from '../../../permissions/entities/permission.entity';
+import {
+    PERMISSION_ACTIONS,
+    permissionDescription,
+} from '../../../permissions/permissions.catalog';
 
 export async function seedPermissions(dataSource: DataSource) {
     const permissionRepository = dataSource.getRepository(Permission);
 
-    const permissions = [
-        // Users permissions
-        { action: 'users.create' },
-        { action: 'users.read' },
-        { action: 'users.update' },
-        { action: 'users.delete' },
+    for (const action of PERMISSION_ACTIONS) {
+        const description = permissionDescription(action);
+        const existing = await permissionRepository.findOne({ where: { action } });
 
-        // Roles permissions
-        { action: 'roles.create' },
-        { action: 'roles.read' },
-        { action: 'roles.update' },
-        { action: 'roles.delete' },
-
-        // Permissions permissions
-        { action: 'permissions.create' },
-        { action: 'permissions.read' },
-        { action: 'permissions.update' },
-        { action: 'permissions.delete' },
-    ];
-
-    for (const permissionData of permissions) {
-        const existingPermission = await permissionRepository.findOne({
-            where: { action: permissionData.action },
-        });
-
-        if (!existingPermission) {
-            const permission = permissionRepository.create(permissionData);
-            await permissionRepository.save(permission);
+        if (!existing) {
+            await permissionRepository.save(permissionRepository.create({ action, description }));
+        } else if (existing.description !== description) {
+            await permissionRepository.update(existing.id, { description });
         }
     }
+
+    await permissionRepository.delete({ action: Not(In(PERMISSION_ACTIONS)) });
 }

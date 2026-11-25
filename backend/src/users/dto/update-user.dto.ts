@@ -1,6 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsIn, IsOptional, IsString, MinLength } from 'class-validator';
-import { Role } from '../../common/enums/rol.enum';
+import { IsBoolean, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class UpdateUserDto {
     @IsOptional()
@@ -16,8 +15,10 @@ export class UpdateUserDto {
     name?: string;
 
     @IsOptional()
-    @IsIn(Object.values(Role), { message: 'Role must be SUPERADMIN, ADMIN or USER' })
-    roleName?: Role;
+    @Transform(({ value }: { value: string }) => value?.trim().toUpperCase())
+    @IsString()
+    @MinLength(2)
+    roleName?: string;
 
     @IsOptional()
     @IsBoolean()

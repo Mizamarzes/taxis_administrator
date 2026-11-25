@@ -1,11 +1,10 @@
+import { Can, Public } from '../authorization/can.decorator';
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { ApiTags } from '@nestjs/swagger';
-import { Role } from '../common/enums/rol.enum';
-import { Auth } from './decorators/auth.decorator';
 import { ActiveUser } from '../common/decorators/activeUser.decorator';
-import type { RequestWithUserInterface } from '../common/interfaces/requestWithUser.interface';
+import type { JwtPayload } from './interfaces/jwt-payload.interface';
 import type { Response } from 'express';
 
 @ApiTags('auth')
@@ -14,24 +13,27 @@ export class AuthController {
     constructor(private readonly authService: AuthService) {}
 
     @Post('login')
+    @Public()
     @HttpCode(HttpStatus.OK)
     async login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) response: Response) {
         return await this.authService.login(loginDto, response);
     }
 
     @Post('login/mobile')
+    @Public()
     @HttpCode(HttpStatus.OK)
     async loginMobile(@Body() loginDto: LoginDto) {
         return await this.authService.loginMobile(loginDto);
     }
 
     @Get('profile')
-    @Auth(Role.USER, Role.ADMIN)
-    async profile(@ActiveUser() user: RequestWithUserInterface) {
+    @Can.Authenticated()
+    async profile(@ActiveUser() user: JwtPayload) {
         return await this.authService.profile(user);
     }
 
     @Post('logout')
+    @Public()
     @HttpCode(HttpStatus.OK)
     logout(@Res({ passthrough: true }) response: Response) {
         return this.authService.logout(response);

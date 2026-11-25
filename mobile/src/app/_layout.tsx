@@ -46,6 +46,8 @@ function RootNavigator() {
         <Stack.Screen name="gastos/[vehicleId]" options={{ title: "Gastos del vehículo" }} />
         <Stack.Screen name="users/form" options={{ presentation: "modal", title: "Usuario" }} />
         <Stack.Screen name="users/[id]" options={{ title: "Usuario" }} />
+        <Stack.Screen name="roles/form" options={{ presentation: "modal", title: "Rol" }} />
+        <Stack.Screen name="roles/[id]" options={{ title: "Rol" }} />
       </Stack.Protected>
     </Stack>
   )

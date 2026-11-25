@@ -9,6 +9,7 @@ export interface AuthUser {
   email: string
   role: AuthUserRole
   isActive: boolean
+  permissions: string[]
 }
 
 export interface MobileLoginResponse {

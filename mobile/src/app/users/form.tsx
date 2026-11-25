@@ -8,15 +8,16 @@ import { Input } from "@/components/ui/Input"
 import { OptionSelector } from "@/components/ui/OptionSelector"
 import { LoadingView } from "@/components/ui/StateView"
 import { useTheme } from "@/theme/useTheme"
-import { isRoleName, ROLE_OPTIONS } from "@/modules/users/constants"
+import { getRoleOptionsService } from "@/modules/roles/services/role.service"
+import type { Option } from "@/components/ui/OptionSelector"
 import { createUserService, getUserByIdService, updateUserService } from "@/modules/users/services/user.service"
-import type { IUpdateUserPayload, RoleName } from "@/modules/users/types/user.types"
+import type { IUpdateUserPayload } from "@/modules/users/types/user.types"
 
 interface FormState {
   name: string
   email: string
   password: string
-  role: RoleName
+  role: string
   isActive: boolean
 }
 
@@ -39,6 +40,13 @@ export default function UserFormScreen() {
     isActive: true,
   })
   const [errors, setErrors] = useState<FormErrors>({})
+  const [roleOptions, setRoleOptions] = useState<Option<string>[]>([])
+
+  useEffect(() => {
+    getRoleOptionsService()
+      .then(({ data }) => setRoleOptions(data.map((role) => ({ value: role.name, label: role.name }))))
+      .catch(() => setRoleOptions([]))
+  }, [])
   const [isLoading, setIsLoading] = useState(isEdit)
   const [isSaving, setIsSaving] = useState(false)
 
@@ -46,7 +54,7 @@ export default function UserFormScreen() {
     if (!id) return
     getUserByIdService(Number(id))
       .then(({ data }) => {
-        const role = isRoleName(data.role?.name) ? data.role.name : "USER"
+        const role = data.role?.name ?? "USER"
         setForm({ name: data.name, email: data.email, password: "", role, isActive: data.isActive })
       })
       .catch((err: Error) => {
@@ -150,7 +158,7 @@ export default function UserFormScreen() {
           <>
             <OptionSelector
               label="Rol"
-              options={ROLE_OPTIONS}
+              options={roleOptions}
               value={form.role}
               onChange={(value) => value && update("role", value)}
               allowDeselect={false}

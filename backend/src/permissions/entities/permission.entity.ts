@@ -16,6 +16,9 @@ export class Permission {
     @Column({ type: 'varchar', length: 100, unique: true })
     action: string;
 
+    @Column({ type: 'varchar', length: 255, nullable: true })
+    description: string | null;
+
     @OneToMany(() => RolePermission, (rolePermission) => rolePermission.permission)
     rolePermissions: RolePermission[];
 

@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from "react"
 import { Alert, FlatList, RefreshControl, StyleSheet, Text, View } from "react-native"
 import { router, Stack, useLocalSearchParams } from "expo-router"
+import { useAuth } from "@/contexts/AuthContext"
 import { Avatar } from "@/components/ui/Avatar"
 import { getToneColor } from "@/components/ui/Badge"
 import { Button } from "@/components/ui/Button"
@@ -15,6 +16,7 @@ import { deleteMovementService, getStatementService } from "@/modules/deudas/ser
 import type { DeudaMovementType, StatementItem } from "@/modules/deudas/types/deuda.types"
 
 export default function DriverStatementScreen() {
+  const { can } = useAuth()
   const theme = useTheme()
   const { driverId } = useLocalSearchParams<{ driverId: string }>()
   const fetcher = useCallback(
@@ -59,11 +61,17 @@ export default function DriverStatementScreen() {
       `${MOVEMENT_TYPES[movement.type].label} · ${formatCurrency(movement.amount)}`,
       formatDateOnly(movement.movementDate),
       [
-        {
-          text: "Editar",
-          onPress: () => router.push({ pathname: "/deudas/form", params: { id: String(movement.id) } }),
-        },
-        { text: "Eliminar", style: "destructive", onPress: () => confirmDelete(movement) },
+        ...(can("deudas.update")
+          ? [
+              {
+                text: "Editar",
+                onPress: () => router.push({ pathname: "/deudas/form", params: { id: String(movement.id) } }),
+              },
+            ]
+          : []),
+        ...(can("deudas.delete")
+          ? [{ text: "Eliminar", style: "destructive" as const, onPress: () => confirmDelete(movement) }]
+          : []),
         { text: "Cancelar", style: "cancel" },
       ],
     )
@@ -131,7 +139,10 @@ export default function DriverStatementScreen() {
               />
             </View>
 
-            <Button title="Agregar deuda" icon="add" onPress={() => openCreate("debt")} />
+            {can("deudas.create") && (
+              <Button title="Agregar deuda" icon="add" onPress={() => openCreate("debt")} />
+            )}
+            {can("deudas.create") && (
             <View style={styles.actions}>
               <Button
                 title="Abono"
@@ -148,6 +159,7 @@ export default function DriverStatementScreen() {
                 style={styles.flex}
               />
             </View>
+            )}
 
             <Text style={[styles.sectionTitle, { color: theme.foreground }]}>
               Movimientos ({movements.length})

@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react"
 import { Alert, ScrollView, StyleSheet, Text, View } from "react-native"
 import { router, Stack, useFocusEffect, useLocalSearchParams } from "expo-router"
+import { useAuth } from "@/contexts/AuthContext"
 import { Badge } from "@/components/ui/Badge"
 import { Button } from "@/components/ui/Button"
 import { Card } from "@/components/ui/Card"
@@ -13,6 +14,7 @@ import { deleteTarifaService, getTarifaByIdService } from "@/modules/tarifas/ser
 import type { Tarifa } from "@/modules/tarifas/types/tarifa.types"
 
 export default function TarifaDetailScreen() {
+  const { can } = useAuth()
   const theme = useTheme()
   const { id } = useLocalSearchParams<{ id: string }>()
   const [tarifa, setTarifa] = useState<Tarifa | null>(null)
@@ -76,13 +78,17 @@ export default function TarifaDetailScreen() {
       </Card>
 
       <View style={styles.actions}>
-        <Button
-          title="Editar"
-          icon="create-outline"
-          variant="outline"
-          onPress={() => router.push({ pathname: "/tarifas/form", params: { id: String(tarifa.id) } })}
-        />
-        <Button title="Eliminar" icon="trash-outline" variant="destructive" loading={isDeleting} onPress={handleDelete} />
+        {can("tarifas.update") && (
+          <Button
+            title="Editar"
+            icon="create-outline"
+            variant="outline"
+            onPress={() => router.push({ pathname: "/tarifas/form", params: { id: String(tarifa.id) } })}
+          />
+        )}
+        {can("tarifas.delete") && (
+          <Button title="Eliminar" icon="trash-outline" variant="destructive" loading={isDeleting} onPress={handleDelete} />
+        )}
       </View>
     </ScrollView>
   )

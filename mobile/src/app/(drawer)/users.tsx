@@ -1,6 +1,6 @@
 import { useCallback } from "react"
 import { router } from "expo-router"
-import { AdminOnly } from "@/components/AdminOnly"
+import { RequirePermission } from "@/components/RequirePermission"
 import { PaginatedScreen } from "@/components/PaginatedScreen"
 import { useAuth } from "@/contexts/AuthContext"
 import { UserCard } from "@/modules/users/components/UserCard"
@@ -8,16 +8,16 @@ import { getUsersService } from "@/modules/users/services/user.service"
 import type { User } from "@/modules/users/types/user.types"
 
 export default function UsersScreen() {
-  const { user: currentUser } = useAuth()
+  const { user: currentUser, can } = useAuth()
   const fetcher = useCallback((page: number) => getUsersService({ page, limit: 15 }), [])
 
   return (
-    <AdminOnly>
+    <RequirePermission permission="users.read">
       <PaginatedScreen<User>
         fetcher={fetcher}
         keyExtractor={(item) => String(item.id)}
         emptyMessage="No hay usuarios registrados."
-        onCreate={() => router.push("/users/form")}
+        onCreate={can("users.create") ? () => router.push("/users/form") : undefined}
         renderItem={(item) => (
           <UserCard
             user={item}
@@ -26,6 +26,6 @@ export default function UsersScreen() {
           />
         )}
       />
-    </AdminOnly>
+    </RequirePermission>
   )
 }

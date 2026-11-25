@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react"
 import { Alert, FlatList, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native"
 import { router, Stack, useLocalSearchParams } from "expo-router"
+import { useAuth } from "@/contexts/AuthContext"
 import { getToneColor } from "@/components/ui/Badge"
 import { Button } from "@/components/ui/Button"
 import { StatCard } from "@/components/ui/StatCard"
@@ -15,6 +16,7 @@ import { deleteExpenseService, getVehicleExpensesService } from "@/modules/gasto
 import type { ExpenseCategory, VehicleExpense } from "@/modules/gastos/types/gasto.types"
 
 export default function VehicleExpensesScreen() {
+  const { can } = useAuth()
   const theme = useTheme()
   const { vehicleId } = useLocalSearchParams<{ vehicleId: string }>()
   const fetcher = useCallback(
@@ -122,6 +124,7 @@ export default function VehicleExpensesScreen() {
               </ScrollView>
             )}
 
+            {can("gastos.create") && (
             <View style={styles.actions}>
               <Button title="Registrar gasto" icon="add" onPress={() => openCreate("spare_part")} style={styles.flex} />
               <Button
@@ -132,6 +135,7 @@ export default function VehicleExpensesScreen() {
                 style={styles.flex}
               />
             </View>
+            )}
 
             <Text style={[styles.sectionTitle, { color: theme.foreground }]}>Historial ({expenses.length})</Text>
           </View>
@@ -142,8 +146,12 @@ export default function VehicleExpensesScreen() {
             expense={item}
             expanded={expandedId === item.id}
             onToggle={() => setExpandedId((current) => (current === item.id ? null : item.id))}
-            onEdit={() => router.push({ pathname: "/gastos/form", params: { id: String(item.id) } })}
-            onDelete={() => confirmDelete(item)}
+            onEdit={
+              can("gastos.update")
+                ? () => router.push({ pathname: "/gastos/form", params: { id: String(item.id) } })
+                : undefined
+            }
+            onDelete={can("gastos.delete") ? () => confirmDelete(item) : undefined}
           />
         )}
       />

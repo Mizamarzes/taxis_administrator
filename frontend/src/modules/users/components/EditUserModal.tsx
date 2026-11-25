@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react"
+import { getRoleOptionsService } from "@/modules/roles/services/role.service"
+import type { RoleOption } from "@/modules/roles/types/role.types"
 import {
   Dialog,
   DialogContent,
@@ -31,6 +33,14 @@ interface EditUserModalProps {
 export function EditUserModal({ open, onOpenChange, user, onSuccess }: EditUserModalProps) {
   const [formData, setFormData] = useState<IUpdateUserPayload>({})
   const [isLoading, setIsLoading] = useState(false)
+  const [roleOptions, setRoleOptions] = useState<RoleOption[]>([])
+
+  useEffect(() => {
+    if (!open) return
+    getRoleOptionsService()
+      .then((response) => setRoleOptions(response.data))
+      .catch(() => setRoleOptions([]))
+  }, [open])
 
   useEffect(() => {
     if (user) {
@@ -102,9 +112,11 @@ export function EditUserModal({ open, onOpenChange, user, onSuccess }: EditUserM
                   <SelectValue placeholder="Seleccionar rol" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="USER">Usuario</SelectItem>
-                  <SelectItem value="ADMIN">Admin</SelectItem>
-                  <SelectItem value="SUPERADMIN">Superadmin</SelectItem>
+                  {roleOptions.map((role) => (
+                    <SelectItem key={role.id} value={role.name}>
+                      {role.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

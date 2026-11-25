@@ -11,7 +11,8 @@ import { Link } from "react-router-dom";
 
 export const AppSideBar = () => {
     const { isMobile, setOpenMobile } = useSidebar();
-    const { logout, user } = useAuth();
+    const { logout, user, can } = useAuth();
+    const primaryNav = APP_SIDEBAR.primaryNav.filter((item) => can(item.permission));
 
     const handleNavClick = () => {
         if (isMobile) {
@@ -40,7 +41,7 @@ export const AppSideBar = () => {
                 <SidebarGroup>
                     <SidebarGroupContent>
                         <SidebarMenu>
-                            {APP_SIDEBAR.primaryNav.map((item) => (
+                            {primaryNav.map((item) => (
                                 <SidebarMenuItem key={item.title}>
                                     <SidebarMenuButton tooltip={item.title} asChild>
                                         {item.url.startsWith('#') ? (

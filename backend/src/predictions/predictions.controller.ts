@@ -1,3 +1,4 @@
+import { Can } from '../authorization/can.decorator';
 import { Controller, Get, HttpCode, HttpStatus, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PredictionsService } from './predictions.service';
@@ -6,8 +7,6 @@ import {
     OilChangePredictionsResponseDto,
     TrainingInfoDto,
 } from './dto/oil-change-prediction.dto';
-import { Auth } from '../auth/decorators/auth.decorator';
-import { Role } from '../common/enums/rol.enum';
 import { ApiResponseInterface } from '../common/interfaces/api-response.interface';
 
 @ApiTags('predictions')
@@ -16,7 +15,7 @@ export class PredictionsController {
     constructor(private readonly predictionsService: PredictionsService) {}
 
     @Get('oil-change')
-    @Auth(Role.ADMIN)
+    @Can('predictions.read')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Predict the next oil change of every vehicle (or one vehicle)' })
     @ApiResponse({ status: 200, type: OilChangePredictionsResponseDto })
@@ -32,7 +31,7 @@ export class PredictionsController {
     }
 
     @Post('oil-change/train')
-    @Auth(Role.ADMIN)
+    @Can('predictions.train')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Retrain the oil change model now' })
     @ApiResponse({ status: 200, type: TrainingInfoDto })

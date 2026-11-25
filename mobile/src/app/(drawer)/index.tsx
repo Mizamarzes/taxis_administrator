@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native"
-import { AdminOnly } from "@/components/AdminOnly"
+import { RequirePermission } from "@/components/RequirePermission"
 import { OptionSelector } from "@/components/ui/OptionSelector"
 import { EmptyView, LoadingView } from "@/components/ui/StateView"
 import { formatCurrency, formatDateOnly, subDays, toDateOnly } from "@/lib/format"
@@ -98,9 +98,9 @@ function DashboardContent() {
 
 export default function DashboardScreen() {
   return (
-    <AdminOnly>
+    <RequirePermission permission="dashboard.read">
       <DashboardContent />
-    </AdminOnly>
+    </RequirePermission>
   )
 }
 

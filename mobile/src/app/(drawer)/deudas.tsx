@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from "react"
 import { FlatList, RefreshControl, StyleSheet, View } from "react-native"
 import { router } from "expo-router"
-import { AdminOnly } from "@/components/AdminOnly"
+import { RequirePermission } from "@/components/RequirePermission"
 import { Input } from "@/components/ui/Input"
 import { OptionSelector } from "@/components/ui/OptionSelector"
 import { StatCard } from "@/components/ui/StatCard"
@@ -99,9 +99,9 @@ function DeudasContent() {
 
 export default function DeudasScreen() {
   return (
-    <AdminOnly>
+    <RequirePermission permission="deudas.read">
       <DeudasContent />
-    </AdminOnly>
+    </RequirePermission>
   )
 }
 

@@ -1,3 +1,4 @@
+import { useAuth } from "@/contexts/AuthContext"
 import Avatar from "react-avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -31,6 +32,7 @@ interface DriverCardProps {
 }
 
 export const DriverCard = ({ driver, onView, onEdit, onDelete }: DriverCardProps) => {
+  const { can } = useAuth()
   const status = statusConfig[driver.status]
 
   return (
@@ -81,21 +83,25 @@ export const DriverCard = ({ driver, onView, onEdit, onDelete }: DriverCardProps
           <EyeIcon className="size-3.5 mr-1.5" />
           Ver
         </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onEdit(driver)}
-        >
-          <PencilIcon className="size-3.5" />
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="text-destructive hover:text-destructive hover:bg-destructive/10"
-          onClick={() => onDelete(driver)}
-        >
-          <TrashIcon className="size-3.5" />
-        </Button>
+        {can("drivers.update") && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onEdit(driver)}
+          >
+            <PencilIcon className="size-3.5" />
+          </Button>
+        )}
+        {can("drivers.delete") && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+            onClick={() => onDelete(driver)}
+          >
+            <TrashIcon className="size-3.5" />
+          </Button>
+        )}
       </CardFooter>
     </Card>
   )

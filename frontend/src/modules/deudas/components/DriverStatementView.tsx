@@ -1,3 +1,4 @@
+import { useAuth } from "@/contexts/AuthContext"
 import { useState, useEffect, useCallback, useMemo } from "react"
 import Avatar from "react-avatar"
 import { Button } from "@/components/ui/button"
@@ -53,6 +54,7 @@ interface DriverStatementViewProps {
 }
 
 export const DriverStatementView = ({ driver, onBack, onChange }: DriverStatementViewProps) => {
+  const { can } = useAuth()
   const [statement, setStatement] = useState<DriverStatement | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [createType, setCreateType] = useState<DeudaMovementType>("debt")
@@ -120,20 +122,22 @@ export const DriverStatementView = ({ driver, onBack, onChange }: DriverStatemen
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <Button onClick={() => openCreate("debt")}>
-            <PlusIcon className="size-4 mr-2" />
-            Agregar deuda
-          </Button>
-          <Button variant="outline" onClick={() => openCreate("payment")}>
-            <HandCoinsIcon className="size-4 mr-2" />
-            Registrar abono
-          </Button>
-          <Button variant="ghost" onClick={() => openCreate("forgiveness")}>
-            <HeartHandshakeIcon className="size-4 mr-2" />
-            Condonar
-          </Button>
-        </div>
+        {can("deudas.create") && (
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={() => openCreate("debt")}>
+              <PlusIcon className="size-4 mr-2" />
+              Agregar deuda
+            </Button>
+            <Button variant="outline" onClick={() => openCreate("payment")}>
+              <HandCoinsIcon className="size-4 mr-2" />
+              Registrar abono
+            </Button>
+            <Button variant="ghost" onClick={() => openCreate("forgiveness")}>
+              <HeartHandshakeIcon className="size-4 mr-2" />
+              Condonar
+            </Button>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -234,25 +238,29 @@ export const DriverStatementView = ({ driver, onBack, onChange }: DriverStatemen
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                              onClick={() => {
-                                setSelectedMovement(movement)
-                                setIsEditOpen(true)
-                              }}
-                            >
-                              <Pencil className="mr-2 h-4 w-4" />
-                              Editar
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => {
-                                setSelectedMovement(movement)
-                                setIsDeleteOpen(true)
-                              }}
-                              className="text-destructive focus:text-destructive"
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Eliminar
-                            </DropdownMenuItem>
+                            {can("deudas.update") && (
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  setSelectedMovement(movement)
+                                  setIsEditOpen(true)
+                                }}
+                              >
+                                <Pencil className="mr-2 h-4 w-4" />
+                                Editar
+                              </DropdownMenuItem>
+                            )}
+                            {can("deudas.delete") && (
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  setSelectedMovement(movement)
+                                  setIsDeleteOpen(true)
+                                }}
+                                className="text-destructive focus:text-destructive"
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Eliminar
+                              </DropdownMenuItem>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>

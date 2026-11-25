@@ -3,7 +3,7 @@ import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
-import { Role } from '../common/enums/rol.enum';
+import { AuthorizationService } from '../authorization/authorization.service';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { Response } from 'express';
 
@@ -12,6 +12,7 @@ export class AuthService {
     constructor(
         private readonly usersService: UsersService,
         private readonly jwtService: JwtService,
+        private readonly authorizationService: AuthorizationService,
     ) {}
 
     private async authenticate(data: LoginDto) {
@@ -33,7 +34,7 @@ export class AuthService {
 
         await this.usersService.updateLastLogin(user.id);
 
-        const payload: JwtPayload = { sub: user.id, email: user.email, role: user.role.name };
+        const payload: JwtPayload = { sub: user.id, email: user.email, roleId: user.roleId };
 
         const token = await this.jwtService.signAsync(payload);
 
@@ -70,14 +71,16 @@ export class AuthService {
         };
     }
 
-    async profile({ email }: { email: string; role: Role }) {
-        const user = await this.usersService.findOneByEmail(email);
+    async profile(payload: JwtPayload) {
+        const user = await this.usersService.findOneByEmail(payload.email);
 
         if (!user) {
             throw new UnauthorizedException('Usuario no encontrado');
         }
 
-        return user;
+        const permissions = await this.authorizationService.permissionsFor(payload);
+
+        return { ...user, permissions };
     }
 
     logout(response: Response) {

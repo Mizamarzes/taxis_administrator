@@ -1,3 +1,4 @@
+import { useAuth } from "@/contexts/AuthContext"
 import { Fragment, useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -63,6 +64,7 @@ const summarizeItems = (expense: VehicleExpense) => {
 }
 
 export const VehicleExpensesView = ({ vehicle, onBack, onChange }: VehicleExpensesViewProps) => {
+  const { can } = useAuth()
   const [statement, setStatement] = useState<VehicleExpensesStatement | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [createCategory, setCreateCategory] = useState<ExpenseCategory>("spare_part")
@@ -133,16 +135,18 @@ export const VehicleExpensesView = ({ vehicle, onBack, onChange }: VehicleExpens
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <Button onClick={() => openCreate("spare_part")}>
-            <PlusIcon className="size-4 mr-2" />
-            Registrar gasto
-          </Button>
-          <Button variant="outline" onClick={() => openCreate("oil_change")}>
-            <DropletIcon className="size-4 mr-2" />
-            Cambio de aceite
-          </Button>
-        </div>
+        {can("gastos.create") && (
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={() => openCreate("spare_part")}>
+              <PlusIcon className="size-4 mr-2" />
+              Registrar gasto
+            </Button>
+            <Button variant="outline" onClick={() => openCreate("oil_change")}>
+              <DropletIcon className="size-4 mr-2" />
+              Cambio de aceite
+            </Button>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -266,25 +270,29 @@ export const VehicleExpensesView = ({ vehicle, onBack, onChange }: VehicleExpens
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem
-                                onClick={() => {
-                                  setSelectedExpense(expense)
-                                  setIsEditOpen(true)
-                                }}
-                              >
-                                <Pencil className="mr-2 h-4 w-4" />
-                                Editar
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => {
-                                  setSelectedExpense(expense)
-                                  setIsDeleteOpen(true)
-                                }}
-                                className="text-destructive focus:text-destructive"
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Eliminar
-                              </DropdownMenuItem>
+                              {can("gastos.update") && (
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    setSelectedExpense(expense)
+                                    setIsEditOpen(true)
+                                  }}
+                                >
+                                  <Pencil className="mr-2 h-4 w-4" />
+                                  Editar
+                                </DropdownMenuItem>
+                              )}
+                              {can("gastos.delete") && (
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    setSelectedExpense(expense)
+                                    setIsDeleteOpen(true)
+                                  }}
+                                  className="text-destructive focus:text-destructive"
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Eliminar
+                                </DropdownMenuItem>
+                              )}
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </TableCell>

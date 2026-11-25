@@ -1,3 +1,4 @@
+import { useAuth } from "@/contexts/AuthContext"
 import { useState, useMemo, useEffect, useCallback } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -14,6 +15,7 @@ import { getVehiclesService } from "./services/vehicle.service"
 const LIMIT = 20
 
 const Vehicles = () => {
+  const { can } = useAuth()
   const [vehicles, setVehicles] = useState<Vehicle[]>([])
   const [search, setSearch] = useState("")
   const [page, setPage] = useState(1)
@@ -74,10 +76,12 @@ const Vehicles = () => {
             className="pl-9"
           />
         </div>
-        <Button onClick={() => setIsCreateOpen(true)}>
-          <PlusIcon className="size-4 mr-2" />
-          Agregar vehículo
-        </Button>
+        {can("vehicles.create") && (
+          <Button onClick={() => setIsCreateOpen(true)}>
+            <PlusIcon className="size-4 mr-2" />
+            Agregar vehículo
+          </Button>
+        )}
       </div>
 
       {filtered.length === 0 ? (

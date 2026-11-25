@@ -5,17 +5,17 @@ import { clearStoredToken, getStoredToken, setStoredToken } from "@/lib/token"
 import { getAuthProfileService, loginService } from "@/modules/auth/services/auth.service"
 import type { AuthUser } from "@/modules/auth/types/auth.types"
 import type { ILogin } from "@/modules/auth/types/login.types"
+import type { PermissionAction } from "@/lib/permissions"
 
 interface AuthContextType {
   isAuthenticated: boolean
   isLoading: boolean
-  isAdmin: boolean
   user: AuthUser | null
   login: (credentials: ILogin) => Promise<void>
   logout: () => Promise<void>
+  can: (permission: PermissionAction) => boolean
+  refreshProfile: () => Promise<void>
 }
-
-const ADMIN_ROLES = ["ADMIN", "SUPERADMIN"]
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
@@ -70,14 +70,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await clearSession()
   }, [clearSession])
 
+  const refreshProfile = useCallback(async () => {
+    try {
+      setUser(await getAuthProfileService())
+    } catch {
+      await clearSession()
+    }
+  }, [clearSession])
+
+  const can = useCallback(
+    (permission: PermissionAction) => user?.permissions?.includes(permission) ?? false,
+    [user],
+  )
+
   const value = useMemo<AuthContextType>(() => ({
     isAuthenticated: user !== null,
     isLoading,
-    isAdmin: user?.role ? ADMIN_ROLES.includes(user.role.name) : false,
     user,
     login,
     logout,
-  }), [user, isLoading, login, logout])
+    can,
+    refreshProfile,
+  }), [user, isLoading, login, logout, can, refreshProfile])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

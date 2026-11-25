@@ -16,7 +16,7 @@ import { deleteUserService, getUserByIdService } from "@/modules/users/services/
 
 export default function UserDetailScreen() {
   const theme = useTheme()
-  const { user: currentUser } = useAuth()
+  const { user: currentUser, can } = useAuth()
   const { id } = useLocalSearchParams<{ id: string }>()
   const fetcher = useCallback(() => getUserByIdService(Number(id)).then((response) => response.data), [id])
   const query = useFocusQuery(fetcher)
@@ -80,16 +80,20 @@ export default function UserDetailScreen() {
       </Card>
 
       <View style={styles.actions}>
-        <Button
-          title="Editar"
-          icon="create-outline"
-          variant="outline"
-          onPress={() => router.push({ pathname: "/users/form", params: { id: String(user.id) } })}
-        />
+        {can("users.update") && (
+          <Button
+            title="Editar"
+            icon="create-outline"
+            variant="outline"
+            onPress={() => router.push({ pathname: "/users/form", params: { id: String(user.id) } })}
+          />
+        )}
         {isSelf ? (
           <Text style={[styles.note, { color: theme.mutedForeground }]}>No puedes eliminar tu propia cuenta.</Text>
         ) : (
-          <Button title="Eliminar" icon="trash-outline" variant="destructive" loading={isDeleting} onPress={handleDelete} />
+          can("users.delete") && (
+            <Button title="Eliminar" icon="trash-outline" variant="destructive" loading={isDeleting} onPress={handleDelete} />
+          )
         )}
       </View>
     </ScrollView>

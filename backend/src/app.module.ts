@@ -14,6 +14,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { DeudasModule } from './deudas/deudas.module';
 import { GastosModule } from './gastos/gastos.module';
 import { PredictionsModule } from './predictions/predictions.module';
+import { AuthorizationModule } from './authorization/authorization.module';
 @Module({
     imports: [
         ConfigModule.forRoot({
@@ -41,6 +42,7 @@ import { PredictionsModule } from './predictions/predictions.module';
             }),
             inject: [ConfigService],
         }),
+        AuthorizationModule,
         UsersModule,
         AuthModule,
         RolesModule,

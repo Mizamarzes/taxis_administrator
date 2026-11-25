@@ -10,7 +10,8 @@ import { Avatar } from "./ui/Avatar"
 export function AppDrawerContent({ state, navigation }: DrawerContentComponentProps) {
   const theme = useTheme()
   const insets = useSafeAreaInsets()
-  const { user, logout } = useAuth()
+  const { user, logout, can } = useAuth()
+  const isVisible = (item: NavItem) => !item.permission || can(item.permission)
   const activeRoute = state.routes[state.index]?.name
 
   const goTo = (name: string) => {
@@ -67,7 +68,7 @@ export function AppDrawerContent({ state, navigation }: DrawerContentComponentPr
       </Pressable>
 
       <ScrollView contentContainerStyle={styles.list}>
-        {PRIMARY_NAV.map(renderItem)}
+        {PRIMARY_NAV.filter(isVisible).map(renderItem)}
         <View style={[styles.divider, { backgroundColor: theme.border }]} />
         {SECONDARY_NAV.map(renderItem)}
       </ScrollView>
