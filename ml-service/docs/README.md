@@ -12,7 +12,7 @@ Catálogo de casos de uso de machine learning para Taxis Administrator, construi
 | # | Caso de uso | Técnica | Tablas | Estado | Valor | Esfuerzo |
 |---|---|---|---|---|---|---|
 | 01 | [Próximo cambio de aceite](01-cambio-de-aceite.md) | Regresión lineal por vehículo | `vehicle_expenses` | ✅ Implementado (v1) | Alto | — |
-| 02 | [Pronóstico de ingresos por tarifas](02-pronostico-de-ingresos.md) | Series de tiempo / regresión | `tarifas`, `vehicles` | Propuesto | Alto | Medio |
+| 02 | [Pronóstico de ingresos por tarifas](02-pronostico-de-ingresos.md) | Series de tiempo / regresión | `tarifas`, `vehicles` | ❌ Descartado: basta una fórmula en SQL (ver 12) | — | — |
 | 03 | [Riesgo de mora de conductores](03-riesgo-de-mora.md) | Clasificación binaria | `deuda_movements`, `tarifas`, `drivers` | Propuesto | Alto | Medio |
 | 04 | [Detección de anomalías](04-deteccion-de-anomalias.md) | No supervisado (Isolation Forest, z-score robusto) | `tarifas`, `vehicle_expenses`, `vehicle_expense_items` | Propuesto | Alto | Bajo |
 | 05 | [Mantenimiento predictivo general](05-mantenimiento-predictivo.md) | Análisis de supervivencia | `vehicle_expenses` | Propuesto | Medio | Medio |
@@ -22,13 +22,14 @@ Catálogo de casos de uso de machine learning para Taxis Administrator, construi
 | 09 | [Clasificación automática de gastos](09-clasificacion-de-gastos.md) | NLP (TF-IDF + regresión logística) | `vehicle_expenses`, `vehicle_expense_items` | Propuesto | Medio | Bajo |
 | 10 | [Asignación conductor ↔ vehículo](10-asignacion-conductor-vehiculo.md) | Sistema de recomendación | `tarifas`, `deuda_movements`, `vehicles` | Propuesto | Medio | Alto |
 | 11 | [Lectura de facturas y documentos (OCR)](11-ocr-documentos.md) | Visión por computador / OCR | `vehicle_documents`, `media_tarifas` | Exploratorio | Medio | Alto |
+| 12 | [¿El conductor va a traer la tarifa hoy?](12-va-a-traer-la-tarifa.md) | Clasificación binaria (regresión logística) | `tarifas`, `deuda_movements`, `vehicles` | 🧪 En notebook | Alto | Bajo |
 
 ## Orden recomendado
 
-1. **04 – Anomalías**: barato, sin etiquetas, mejora la calidad de los datos que usan todos los demás modelos (incluido el de aceite).
-2. **02 – Ingresos**: los datos de `tarifas` son los más abundantes y el dashboard ya los muestra; agregar el pronóstico es natural.
-3. **03 – Riesgo de mora**: impacto directo en caja.
-4. **07 – Rentabilidad**: combina 02 y 06 en una vista de decisión.
+1. **12 – ¿Va a traer la tarifa hoy?**: en curso en `notebooks/12_va_a_pagar_tarifa.ipynb`. Impacto directo en caja y la deuda es una señal clara.
+2. **04 – Anomalías**: barato, sin etiquetas, mejora la calidad de los datos que usan todos los demás modelos (incluido el de aceite).
+3. **03 – Riesgo de mora**: extiende el 12 a 14 días.
+4. **07 – Rentabilidad**: ingresos con la fórmula del 12 y gastos del 06 en una vista de decisión.
 5. El resto según necesidad.
 
 ## Requisitos de datos transversales

@@ -7,6 +7,10 @@ Espacio para explorar datos y probar modelos antes de llevarlos a `app/models/`.
 .venv/bin/jupyter lab
 ```
 
+| Notebook | Caso de uso |
+|---|---|
+| `12_va_a_pagar_tarifa.ipynb` | [12 · ¿Va a traer la tarifa hoy?](../docs/12-va-a-traer-la-tarifa.md) — ¿el conductor traerá la tarifa hoy? Regresión logística con la deuda como pista (ver `datos_pagos.py`) |
+
 Para reutilizar la conexión y las consultas del servicio dentro de un notebook:
 
 ```python
