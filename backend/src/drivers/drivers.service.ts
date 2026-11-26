@@ -8,6 +8,7 @@ import { Driver } from './entities/driver.entity';
 import { mapDriverToResponseDto, mapDriversToResponseDtos } from './mappers/driver.mappers';
 import { PaginationDTO, PaginationResponseDto } from '../common/dto/pagination.dto';
 import { paginate } from '../common/helpers/pagination.helper';
+import { DeudasService } from '../deudas/deudas.service';
 
 @Injectable()
 export class DriversService {
@@ -16,6 +17,7 @@ export class DriversService {
     constructor(
         @InjectRepository(Driver)
         private readonly driversRepository: Repository<Driver>,
+        private readonly deudasService: DeudasService,
     ) {}
 
     async create(dto: CreateDriverDto): Promise<DriverResponseDto> {
@@ -25,7 +27,7 @@ export class DriversService {
                 phone: dto.phone,
                 email: dto.email,
                 address: dto.address,
-                hireDate: dto.hireDate ? new Date(dto.hireDate) : undefined,
+                hireDate: dto.hireDate ?? undefined,
                 photoUrl: dto.photoUrl,
                 status: dto.status,
             });
@@ -104,7 +106,7 @@ export class DriversService {
             if (dto.phone !== undefined) driver.phone = dto.phone;
             if (dto.email !== undefined) driver.email = dto.email;
             if (dto.address !== undefined) driver.address = dto.address;
-            if (dto.hireDate !== undefined) driver.hireDate = new Date(dto.hireDate);
+            if (dto.hireDate !== undefined) driver.hireDate = dto.hireDate;
             if (dto.photoUrl !== undefined) driver.photoUrl = dto.photoUrl;
             if (dto.status !== undefined) driver.status = dto.status;
 
@@ -128,6 +130,13 @@ export class DriversService {
                 throw new NotFoundException(`Driver with ID ${id} not found`);
             }
 
+            const balance = await this.deudasService.getDriverBalance(id);
+            if (balance !== 0) {
+                throw new BadRequestException(
+                    `Driver with ID ${id} cannot be removed: pending balance of ${balance}`,
+                );
+            }
+
             await this.driversRepository.softDelete(id);
             return { message: `Driver with ID ${id} has been removed successfully` };
         } catch (error) {
@@ -135,7 +144,9 @@ export class DriversService {
                 `Error removing driver: ${error instanceof Error ? error.message : String(error)}`,
                 error instanceof Error ? error.stack : undefined,
             );
-            if (error instanceof NotFoundException) throw error;
+            if (error instanceof NotFoundException || error instanceof BadRequestException) {
+                throw error;
+            }
             throw new BadRequestException('Error removing driver');
         }
     }

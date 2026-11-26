@@ -11,6 +11,10 @@ import { TarifasModule } from './tarifas/tarifas.module';
 import { VehiclesModule } from './vehicles/vehicles.module';
 import { SettingsModule } from './settings/settings.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { DeudasModule } from './deudas/deudas.module';
+import { GastosModule } from './gastos/gastos.module';
+import { PredictionsModule } from './predictions/predictions.module';
+import { AuthorizationModule } from './authorization/authorization.module';
 @Module({
     imports: [
         ConfigModule.forRoot({
@@ -30,9 +34,15 @@ import { DashboardModule } from './dashboard/dashboard.module';
                 entities: [__dirname + '/**/*.entity{.ts,.js}'],
                 synchronize: configService.get('app.nodeEnv') === 'development',
                 ssl: { rejectUnauthorized: false },
+                extra: {
+                    max: configService.get<number>('database.poolSize'),
+                    idleTimeoutMillis: 30000,
+                    connectionTimeoutMillis: 10000,
+                },
             }),
             inject: [ConfigService],
         }),
+        AuthorizationModule,
         UsersModule,
         AuthModule,
         RolesModule,
@@ -42,6 +52,9 @@ import { DashboardModule } from './dashboard/dashboard.module';
         VehiclesModule,
         SettingsModule,
         DashboardModule,
+        DeudasModule,
+        GastosModule,
+        PredictionsModule,
     ],
 })
 export class AppModule {}

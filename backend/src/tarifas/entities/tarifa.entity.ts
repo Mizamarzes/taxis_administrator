@@ -23,7 +23,7 @@ export class Tarifa extends BaseEntity {
     paymentMethod!: PaymentMethod;
 
     @Column({ name: 'tarifa_date', type: 'date', nullable: true })
-    tarifaDate!: Date;
+    tarifaDate!: string;
 
     @Column({ name: 'driver_id', type: 'int', nullable: true })
     driverId!: number | null;

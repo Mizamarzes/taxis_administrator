@@ -1,5 +1,6 @@
 import {
     BadRequestException,
+    ForbiddenException,
     Injectable,
     Logger,
     ConflictException,
@@ -12,7 +13,9 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
 import { Role } from '../roles/entities/role.entity';
-import { UserRole } from './entities/userRole.entity';
+import { Role as RoleName, SUPER_ADMIN_ROLE } from '../common/enums/rol.enum';
+import { AuthorizationService } from '../authorization/authorization.service';
+import type { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { UserResponseDto } from './dto/user-response.dto';
 import { mapUsersToUserResponseDtos, mapUserToUserResponseDto } from './mappers/user.mappers';
 import { PaginationDTO, PaginationResponseDto } from '../common/dto/pagination.dto';
@@ -27,11 +30,29 @@ export class UsersService {
         private readonly usersRepository: Repository<User>,
         @InjectRepository(Role)
         private readonly roleRepository: Repository<Role>,
-        @InjectRepository(UserRole)
-        private readonly userRoleRepository: Repository<UserRole>,
+        private readonly authorizationService: AuthorizationService,
     ) {}
 
-    async create(data: CreateUserDto): Promise<UserResponseDto | null> {
+    private async assertCanManageSuperAdmin(actor: JwtPayload, roleName: string | undefined) {
+        if (roleName !== SUPER_ADMIN_ROLE) {
+            return;
+        }
+        if (!(await this.authorizationService.isSuperAdmin(actor))) {
+            throw new ForbiddenException('Solo un SUPERADMIN puede gestionar usuarios SUPERADMIN');
+        }
+    }
+
+    private async findRoleByName(name: string): Promise<Role> {
+        const role = await this.roleRepository.findOne({ where: { name } });
+
+        if (!role) {
+            throw new BadRequestException(`Role ${name} not found`);
+        }
+
+        return role;
+    }
+
+    async create(data: CreateUserDto, actor: JwtPayload): Promise<UserResponseDto | null> {
         try {
             const existingUser = await this.findOneByEmail(data.email);
 
@@ -39,37 +60,27 @@ export class UsersService {
                 throw new ConflictException('Email already exists');
             }
 
+            const role = await this.findRoleByName(data.roleName ?? RoleName.USER);
+            await this.assertCanManageSuperAdmin(actor, role.name);
+
             const passwordEncripted = await bcrypt.hash(data.password, 10);
 
             const user = await this.usersRepository.save({
                 name: data.name,
                 email: data.email,
                 password: passwordEncripted,
+                roleId: role.id,
+                role,
             });
-
-            const roleNames =
-                data.roleNames && data.roleNames.length > 0 ? data.roleNames : ['USER'];
-
-            const roles = await this.roleRepository
-                .createQueryBuilder('role')
-                .where('role.name IN (:...names)', { names: roleNames })
-                .getMany();
-
-            if (roles.length !== roleNames.length) {
-                throw new BadRequestException('One or more roles not found');
-            }
-
-            await this.userRoleRepository.save(
-                roles.map((role) => ({
-                    userId: user.id,
-                    roleId: role.id,
-                })),
-            );
 
             return mapUserToUserResponseDto(user);
         } catch (error) {
             this.logger.error(`Error creating user: ${error.message}`, error.stack);
-            if (error instanceof BadRequestException || error instanceof ConflictException) {
+            if (
+                error instanceof BadRequestException ||
+                error instanceof ConflictException ||
+                error instanceof ForbiddenException
+            ) {
                 throw error;
             }
             throw new BadRequestException('Error creating user');
@@ -80,7 +91,7 @@ export class UsersService {
         try {
             const user = await this.usersRepository.findOne({
                 where: { email },
-                relations: ['userRoles', 'userRoles.role'],
+                relations: ['role'],
             });
 
             if (!user) {
@@ -98,8 +109,7 @@ export class UsersService {
         try {
             const user = await this.usersRepository
                 .createQueryBuilder('user')
-                .leftJoinAndSelect('user.userRoles', 'userRoles')
-                .leftJoinAndSelect('userRoles.role', 'role')
+                .leftJoinAndSelect('user.role', 'role')
                 .addSelect('user.password')
                 .where('user.email = :email', { email })
                 .getOne();
@@ -117,7 +127,7 @@ export class UsersService {
             const skip = (page - 1) * limit;
 
             const [users, totalItems] = await this.usersRepository.findAndCount({
-                relations: ['userRoles', 'userRoles.role'],
+                relations: ['role'],
                 order: { createdAt: 'DESC' },
                 skip,
                 take: limit,
@@ -152,7 +162,7 @@ export class UsersService {
         try {
             const user = await this.usersRepository.findOne({
                 where: { id },
-                relations: ['userRoles', 'userRoles.role'],
+                relations: ['role'],
             });
 
             if (!user) {
@@ -169,16 +179,22 @@ export class UsersService {
         }
     }
 
-    async update(id: number, updateUserDto: UpdateUserDto): Promise<UserResponseDto | null> {
+    async update(
+        id: number,
+        updateUserDto: UpdateUserDto,
+        actor: JwtPayload,
+    ): Promise<UserResponseDto | null> {
         try {
             const existingUser = await this.usersRepository.findOne({
                 where: { id },
-                relations: ['userRoles'],
+                relations: ['role'],
             });
 
             if (!existingUser) {
                 throw new NotFoundException(`User with ID ${id} not found`);
             }
+
+            await this.assertCanManageSuperAdmin(actor, existingUser.role?.name);
 
             if (updateUserDto.name) {
                 existingUser.name = updateUserDto.name;
@@ -192,27 +208,14 @@ export class UsersService {
                 existingUser.isActive = updateUserDto.isActive;
             }
 
-            await this.usersRepository.save(existingUser);
-
-            if (updateUserDto.roleNames && updateUserDto.roleNames.length > 0) {
-                const roles = await this.roleRepository
-                    .createQueryBuilder('role')
-                    .where('role.name IN (:...names)', { names: updateUserDto.roleNames })
-                    .getMany();
-
-                if (roles.length !== updateUserDto.roleNames.length) {
-                    throw new BadRequestException('One or more roles not found');
-                }
-
-                await this.userRoleRepository.delete({ userId: id });
-
-                await this.userRoleRepository.save(
-                    roles.map((role) => ({
-                        userId: id,
-                        roleId: role.id,
-                    })),
-                );
+            if (updateUserDto.roleName) {
+                const role = await this.findRoleByName(updateUserDto.roleName);
+                await this.assertCanManageSuperAdmin(actor, role.name);
+                existingUser.roleId = role.id;
+                existingUser.role = role;
             }
+
+            await this.usersRepository.save(existingUser);
 
             return await this.findOne(id);
         } catch (error) {
@@ -220,7 +223,8 @@ export class UsersService {
             if (
                 error instanceof BadRequestException ||
                 error instanceof NotFoundException ||
-                error instanceof ConflictException
+                error instanceof ConflictException ||
+                error instanceof ForbiddenException
             ) {
                 throw error;
             }
@@ -228,7 +232,7 @@ export class UsersService {
         }
     }
 
-    async remove(id: number): Promise<{ message: string }> {
+    async remove(id: number, actor: JwtPayload): Promise<{ message: string }> {
         try {
             const user = await this.findOne(id);
 
@@ -236,12 +240,14 @@ export class UsersService {
                 throw new NotFoundException(`User with ID ${id} not found`);
             }
 
+            await this.assertCanManageSuperAdmin(actor, user.role?.name);
+
             await this.usersRepository.softDelete(id);
 
             return { message: `User ${user?.name} has been removed successfully` };
         } catch (error) {
             this.logger.error(`Error removing user: ${error.message}`, error.stack);
-            if (error instanceof NotFoundException) {
+            if (error instanceof NotFoundException || error instanceof ForbiddenException) {
                 throw error;
             }
             throw new BadRequestException('Error removing user');

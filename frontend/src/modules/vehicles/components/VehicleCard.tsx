@@ -1,3 +1,4 @@
+import { useAuth } from "@/contexts/AuthContext"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
@@ -44,6 +45,7 @@ interface VehicleCardProps {
 }
 
 export const VehicleCard = ({ vehicle, onView, onEdit, onDelete }: VehicleCardProps) => {
+  const { can } = useAuth()
   const status = statusConfig[vehicle.vehicleStatus]
 
   return (
@@ -106,21 +108,25 @@ export const VehicleCard = ({ vehicle, onView, onEdit, onDelete }: VehicleCardPr
           <EyeIcon className="size-3.5 mr-1.5" />
           Ver
         </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onEdit(vehicle)}
-        >
-          <PencilIcon className="size-3.5" />
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="text-destructive hover:text-destructive hover:bg-destructive/10"
-          onClick={() => onDelete(vehicle)}
-        >
-          <TrashIcon className="size-3.5" />
-        </Button>
+        {can("vehicles.update") && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onEdit(vehicle)}
+          >
+            <PencilIcon className="size-3.5" />
+          </Button>
+        )}
+        {can("vehicles.delete") && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+            onClick={() => onDelete(vehicle)}
+          >
+            <TrashIcon className="size-3.5" />
+          </Button>
+        )}
       </CardFooter>
     </Card>
   )

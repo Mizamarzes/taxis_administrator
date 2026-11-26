@@ -1,83 +1,37 @@
-import { DataSource } from 'typeorm';
+import { DataSource, In } from 'typeorm';
 import { Role } from '../../../roles/entities/role.entity';
 import { Permission } from '../../../permissions/entities/permission.entity';
 import { RolePermission } from '../../../roles/entities/rolePermission.entity';
+import { PERMISSION_ACTIONS, PermissionAction } from '../../../permissions/permissions.catalog';
+
+const ROLE_MANAGEMENT: PermissionAction[] = ['roles.create', 'roles.update', 'roles.delete'];
+
+const DEFAULT_ROLE_PERMISSIONS: Record<string, PermissionAction[]> = {
+    ADMIN: PERMISSION_ACTIONS.filter((action) => !ROLE_MANAGEMENT.includes(action)),
+    USER: [],
+};
 
 export async function seedRolePermissions(dataSource: DataSource) {
     const roleRepository = dataSource.getRepository(Role);
     const permissionRepository = dataSource.getRepository(Permission);
     const rolePermissionRepository = dataSource.getRepository(RolePermission);
 
-    // Obtener roles
-    const superAdmin = await roleRepository.findOne({ where: { name: 'SUPERADMIN' } });
-    const admin = await roleRepository.findOne({ where: { name: 'ADMIN' } });
-    const user = await roleRepository.findOne({ where: { name: 'USER' } });
-
-    // Obtener todos los permisos
-    const allPermissions = await permissionRepository.find();
-
-    // SUPERADMIN: todos los permisos
-    if (superAdmin) {
-        for (const permission of allPermissions) {
-            const exists = await rolePermissionRepository.findOne({
-                where: { roleId: superAdmin.id, permissionId: permission.id },
-            });
-
-            if (!exists) {
-                await rolePermissionRepository.save({
-                    roleId: superAdmin.id,
-                    permissionId: permission.id,
-                });
-            }
+    for (const [roleName, actions] of Object.entries(DEFAULT_ROLE_PERMISSIONS)) {
+        const role = await roleRepository.findOne({ where: { name: roleName } });
+        if (!role || actions.length === 0) {
+            continue;
         }
-    }
 
-    // ADMIN: permisos específicos (excepto eliminar usuarios y roles)
-    if (admin) {
-        const adminPermissionActions = [
-            'users.read',
-            'users.update',
-            'users.create',
-            `users.delete`,
-            'roles.read',
-            'permissions.read',
-        ];
-
-        for (const action of adminPermissionActions) {
-            const permission = await permissionRepository.findOne({ where: { action } });
-            if (permission) {
-                const exists = await rolePermissionRepository.findOne({
-                    where: { roleId: admin.id, permissionId: permission.id },
-                });
-
-                if (!exists) {
-                    await rolePermissionRepository.save({
-                        roleId: admin.id,
-                        permissionId: permission.id,
-                    });
-                }
-            }
+        const alreadyConfigured = await rolePermissionRepository.count({
+            where: { roleId: role.id },
+        });
+        if (alreadyConfigured > 0) {
+            continue;
         }
-    }
 
-    // USER: solo lectura básica
-    if (user) {
-        const userPermissionActions = ['users.read', 'roles.read', 'permissions.read'];
-
-        for (const action of userPermissionActions) {
-            const permission = await permissionRepository.findOne({ where: { action } });
-            if (permission) {
-                const exists = await rolePermissionRepository.findOne({
-                    where: { roleId: user.id, permissionId: permission.id },
-                });
-
-                if (!exists) {
-                    await rolePermissionRepository.save({
-                        roleId: user.id,
-                        permissionId: permission.id,
-                    });
-                }
-            }
-        }
+        const permissions = await permissionRepository.find({ where: { action: In(actions) } });
+        await rolePermissionRepository.save(
+            permissions.map((permission) => ({ roleId: role.id, permissionId: permission.id })),
+        );
     }
 }

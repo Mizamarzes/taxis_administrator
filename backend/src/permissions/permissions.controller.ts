@@ -1,36 +1,23 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Can } from '../authorization/can.decorator';
+import type { ApiResponseInterface } from '../common/interfaces/api-response.interface';
+import type { PermissionGroup } from './permissions.catalog';
 import { PermissionsService } from './permissions.service';
-import { CreatePermissionDto } from './dto/create-permission.dto';
-import { UpdatePermissionDto } from './dto/update-permission.dto';
-import { ApiTags } from '@nestjs/swagger';
 
 @ApiTags('permissions')
 @Controller('permissions')
 export class PermissionsController {
     constructor(private readonly permissionsService: PermissionsService) {}
 
-    @Post()
-    create(@Body() createPermissionDto: CreatePermissionDto) {
-        return this.permissionsService.create(createPermissionDto);
-    }
-
-    @Get()
-    findAll() {
-        return this.permissionsService.findAll();
-    }
-
-    @Get(':id')
-    findOne(@Param('id') id: string) {
-        return this.permissionsService.findOne(+id);
-    }
-
-    @Patch(':id')
-    update(@Param('id') id: string, @Body() updatePermissionDto: UpdatePermissionDto) {
-        return this.permissionsService.update(+id, updatePermissionDto);
-    }
-
-    @Delete(':id')
-    remove(@Param('id') id: string) {
-        return this.permissionsService.remove(+id);
+    @Get('get-all')
+    @Can('roles.read')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Get the permission catalog grouped by resource' })
+    findAll(): ApiResponseInterface<PermissionGroup[]> {
+        return {
+            message: 'Permissions retrieved successfully',
+            data: this.permissionsService.findAll(),
+        };
     }
 }

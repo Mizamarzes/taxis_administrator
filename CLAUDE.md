@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Taxis Administrator** is a full-stack taxi fleet management system built with NestJS (backend) and React + Vite (frontend). The application provides administrative capabilities for managing drivers, vehicles, users with role-based access control (USER, ADMIN), tarifas (rates), and a dashboard with analytics.
+**Taxis Administrator** is a full-stack taxi fleet management system built with NestJS (backend) and React + Vite (frontend). The application provides administrative capabilities for managing drivers, vehicles, users with permission-based access control (roles with permissions editable from the Roles module), tarifas (rates), and a dashboard with analytics.
 
 ## Tech Stack
 
@@ -22,6 +22,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Tailwind CSS v4 for styling
 - Axios for HTTP requests (configured with auth interceptors)
 - Radix UI components for UI primitives
+
+**Mobile (`mobile/`):**
+- Expo SDK 58 + React Native + TypeScript
+- Expo Router (file-based routing in `src/app/`)
+- Auth via `POST /api/auth/login/mobile` (token in body), stored with `expo-secure-store`, sent as Bearer header
+- Styling with `StyleSheet` and theme palette in `src/theme/`
+- Use `npx expo install <pkg>` to add dependencies (SDK-compatible versions)
+
+**ML Service (`ml-service/`):**
+- Python 3.11+ with FastAPI + scikit-learn + pandas, SQLAlchemy (read-only queries to the same PostgreSQL)
+- Internal only: NestJS `predictions` module proxies `/api/predictions/*` with the `X-Internal-Key` header (`ML_SERVICE_URL` / `ML_SERVICE_KEY` in both `.env` files, same key)
+- Models are saved in `ml-service/artifacts/` (joblib) and retrained daily and when the input data changes
+- See `ml-service/README.md` for how to add a new model
 
 ## Directory Structure
 
@@ -149,6 +162,25 @@ npm run preview
 npm run lint
 ```
 
+### Mobile
+```bash
+cd mobile
+
+npm start
+npm run android
+npm run typecheck
+npx expo-doctor
+```
+### ML Service
+```bash
+cd ml-service
+
+.venv/bin/uvicorn app.main:app --reload --port 8000
+.venv/bin/python -m pytest
+```
+
+Set `EXPO_PUBLIC_API_URL` in `mobile/.env` (use the PC's LAN IP on physical devices, `10.0.2.2` on Android emulator).
+
 ## API Documentation
 
 - **Swagger UI:** http://localhost:3000/docs (auto-generated when backend runs)
@@ -156,6 +188,7 @@ npm run lint
 
 Key endpoints:
 - POST `/api/auth/login` - Login with email/password
+- POST `/api/auth/login/mobile` - Login for mobile app (returns token in body)
 - GET `/api/auth/profile` - Get authenticated user's profile
 - GET/POST/PATCH/DELETE `/api/users` - User CRUD (admin-only)
 - `/api/drivers`, `/api/vehicles`, `/api/tarifas` - Resource management
@@ -165,8 +198,18 @@ Key endpoints:
 1. Frontend: User logs in via `/api/auth/login` (email + password)
 2. Backend: Returns JWT token
 3. Frontend: AuthContext stores token; Axios interceptor adds `Authorization: Bearer <token>` to all requests
-4. Backend: JwtGuard validates token and extracts user from request
-5. Frontend: ProtectedRoute checks auth status; redirects to /login if needed
+4. Backend: global `AuthGuard` validates the JWT (`{ sub, email, roleId }`) and sets `request.user`
+5. Backend: global `PermissionsGuard` checks the route's `@Can(...)` against the role's permissions (cached 60 s); routes without `@Can`, `@Can.Authenticated()` or `@Public()` are denied
+6. `GET /api/auth/profile` returns the user with `permissions: string[]`; frontend and mobile use `can(permission)` from `AuthContext`
+7. Frontend: ProtectedRoute checks auth status; `PermissionRoute` and the sidebar filter by permission
+
+## Authorization
+
+- Permission catalog: `backend/src/permissions/permissions.catalog.ts` (`recurso.accion`). Adding a permission = add it there; the seed syncs the `permissions` table on startup
+- `backend/src/authorization/`: `@Can()`, `@Can.Authenticated()`, `@Public()`, `PermissionsGuard`, `AuthorizationService.can/authorize` for checks inside services
+- SUPERADMIN bypasses every check; only a SUPERADMIN can create, edit or delete SUPERADMIN users
+- Roles API: `/api/roles/*` (create roles, `PUT /api/roles/:id/permissions`), catalog at `GET /api/permissions/get-all`
+- Production schema changes: `backend/scripts/migrate-permissions.sql` (synchronize is off outside development)
 
 ## Database
 
@@ -182,7 +225,7 @@ Key endpoints:
 - Entities define database schema (in `entities/` folders)
 - Services contain business logic
 - Controllers handle HTTP requests (decorated with `@Controller`, `@Get`, `@Post`, etc.)
-- Guards (e.g., JwtGuard, RoleGuard) protect endpoints
+- Global guards (`AuthGuard`, `PermissionsGuard`) protect every endpoint; declare access with `@Can('recurso.accion')`
 - Decorators for extracting auth user: `@ActiveUser()` from `common/decorators/activeUser.decorator.ts`
 
 **Frontend:**
@@ -201,10 +244,10 @@ Key endpoints:
 4. Add route in `routes/AppRouter.tsx`
 5. Wire up navigation in `components/AppSideBar.tsx`
 
-**Adding authentication to a route:**
-- Backend: Apply `@UseGuards(JwtGuard)` to controller method
-- For role-based access: use `@UseGuards(JwtGuard, RoleGuard)` and specify role via decorator
-- Frontend: Wrap route with `<ProtectedRoute />` in AppRouter
+**Adding authorization to a route:**
+- Backend: add `@Can('recurso.accion')` (from `authorization/can.decorator.ts`); use `@Can.Authenticated()` for any signed-in user and `@Public()` for open routes
+- New permission: add it to `permissions/permissions.catalog.ts` and assign it to roles from the Roles view
+- Frontend/mobile: hide UI with `can('recurso.accion')` from `useAuth()`; web routes use `<PermissionRoute permission="...">`
 
 **Database migrations:**
 - TypeORM synchronization is automatic in development

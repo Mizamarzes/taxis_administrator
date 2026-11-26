@@ -18,8 +18,8 @@ export class UserResponseDto {
     @ApiProperty({ example: 'john@example.com' })
     email: string;
 
-    @ApiProperty({ type: [RoleResponseDto] })
-    roles: RoleResponseDto[];
+    @ApiProperty({ type: RoleResponseDto, nullable: true })
+    role: RoleResponseDto | null;
 
     @ApiProperty({ example: true })
     isActive: boolean;

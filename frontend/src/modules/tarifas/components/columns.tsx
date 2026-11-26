@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { MoreVertical, Pencil, Trash2, Eye } from "lucide-react"
+import { formatDateOnly } from "@/lib/utils"
 
 const paymentMethodConfig: Record<PaymentMethod, { label: string; className: string }> = {
   cash: {
@@ -29,9 +30,11 @@ interface ColumnsProps {
   onView: (tarifa: Tarifa) => void
   onEdit: (tarifa: Tarifa) => void
   onDelete: (tarifa: Tarifa) => void
+  canEdit: boolean
+  canDelete: boolean
 }
 
-export const getColumns = ({ onView, onEdit, onDelete }: ColumnsProps): ColumnDef<Tarifa>[] => [
+export const getColumns = ({ onView, onEdit, onDelete, canEdit, canDelete }: ColumnsProps): ColumnDef<Tarifa>[] => [
   {
     accessorKey: "id",
     header: "ID",
@@ -81,12 +84,7 @@ export const getColumns = ({ onView, onEdit, onDelete }: ColumnsProps): ColumnDe
     cell: ({ row }) => {
       const val = row.getValue("tarifaDate") as string | null
       if (!val) return <span className="text-muted-foreground">—</span>
-      const date = new Date(val)
-      return date.toLocaleDateString("es-CO", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      })
+      return formatDateOnly(val)
     },
   },
   {
@@ -130,17 +128,21 @@ export const getColumns = ({ onView, onEdit, onDelete }: ColumnsProps): ColumnDe
               <Eye className="mr-2 h-4 w-4" />
               Ver detalle
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onEdit(tarifa)}>
-              <Pencil className="mr-2 h-4 w-4" />
-              Editar
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => onDelete(tarifa)}
-              className="text-destructive focus:text-destructive"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Eliminar
-            </DropdownMenuItem>
+            {canEdit && (
+              <DropdownMenuItem onClick={() => onEdit(tarifa)}>
+                <Pencil className="mr-2 h-4 w-4" />
+                Editar
+              </DropdownMenuItem>
+            )}
+            {canDelete && (
+              <DropdownMenuItem
+                onClick={() => onDelete(tarifa)}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Eliminar
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       )

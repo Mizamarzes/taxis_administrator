@@ -40,7 +40,7 @@ export class TarifaResponseDto {
     paymentMethod!: PaymentMethod | null;
 
     @ApiPropertyOptional({ example: '2026-04-23' })
-    tarifaDate!: Date | null;
+    tarifaDate!: string | null;
 
     @ApiPropertyOptional({ example: 1 })
     driverId!: number | null;

@@ -1,6 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
-import { UserRole } from './userRole.entity';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { BaseEntity } from '../../common/entities/base.entity';
+import { Role } from '../../roles/entities/role.entity';
 
 @Entity('users')
 export class User extends BaseEntity {
@@ -16,8 +16,12 @@ export class User extends BaseEntity {
     @Column({ type: 'varchar', length: 255, select: false })
     password: string;
 
-    @OneToMany(() => UserRole, (userRole) => userRole.user)
-    userRoles: UserRole[];
+    @Column({ name: 'role_id', type: 'int' })
+    roleId: number;
+
+    @ManyToOne(() => Role, (role) => role.users, { nullable: false, onDelete: 'RESTRICT' })
+    @JoinColumn({ name: 'role_id' })
+    role: Role;
 
     @Column({ default: true })
     isActive: boolean;

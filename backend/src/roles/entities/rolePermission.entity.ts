@@ -6,11 +6,13 @@ import {
     JoinColumn,
     CreateDateColumn,
     UpdateDateColumn,
+    Unique,
 } from 'typeorm';
 import { Role } from './role.entity';
 import { Permission } from '../../permissions/entities/permission.entity';
 
 @Entity('role_permissions')
+@Unique('UQ_role_permissions_role_permission', ['roleId', 'permissionId'])
 export class RolePermission {
     @PrimaryGeneratedColumn()
     id: number;

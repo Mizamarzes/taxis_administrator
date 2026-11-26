@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react"
+import { getRoleOptionsService } from "@/modules/roles/services/role.service"
+import type { RoleOption } from "@/modules/roles/types/role.types"
 import {
   Dialog,
   DialogContent,
@@ -31,12 +33,20 @@ interface EditUserModalProps {
 export function EditUserModal({ open, onOpenChange, user, onSuccess }: EditUserModalProps) {
   const [formData, setFormData] = useState<IUpdateUserPayload>({})
   const [isLoading, setIsLoading] = useState(false)
+  const [roleOptions, setRoleOptions] = useState<RoleOption[]>([])
+
+  useEffect(() => {
+    if (!open) return
+    getRoleOptionsService()
+      .then((response) => setRoleOptions(response.data))
+      .catch(() => setRoleOptions([]))
+  }, [open])
 
   useEffect(() => {
     if (user) {
       setFormData({
         name: user.name,
-        roleNames: user.roles.map((r) => r.name),
+        roleName: user.role?.name,
         isActive: user.isActive,
       })
     }
@@ -53,7 +63,7 @@ export function EditUserModal({ open, onOpenChange, user, onSuccess }: EditUserM
     setIsLoading(true)
     const payload: IUpdateUserPayload = {}
     if (formData.name?.trim()) payload.name = formData.name.trim()
-    if (formData.roleNames?.length) payload.roleNames = formData.roleNames
+    if (formData.roleName) payload.roleName = formData.roleName
     if (formData.isActive !== undefined) payload.isActive = formData.isActive
     if (formData.password?.trim()) payload.password = formData.password.trim()
     try {
@@ -93,18 +103,20 @@ export function EditUserModal({ open, onOpenChange, user, onSuccess }: EditUserM
             <div className="grid gap-2">
               <Label>Rol</Label>
               <Select
-                value={formData.roleNames?.[0] ?? "USER"}
+                value={formData.roleName ?? "USER"}
                 onValueChange={(val) =>
-                  setFormData((prev) => ({ ...prev, roleNames: [val] }))
+                  setFormData((prev) => ({ ...prev, roleName: val }))
                 }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccionar rol" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="USER">Usuario</SelectItem>
-                  <SelectItem value="ADMIN">Admin</SelectItem>
-                  <SelectItem value="SUPERADMIN">Superadmin</SelectItem>
+                  {roleOptions.map((role) => (
+                    <SelectItem key={role.id} value={role.name}>
+                      {role.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

@@ -13,6 +13,7 @@ import {
   FileTextIcon,
   WalletIcon,
 } from "lucide-react"
+import { formatDateOnly } from "@/lib/utils"
 import type { PaymentMethod, Tarifa } from "../types/tarifa.types"
 
 const paymentMethodConfig: Record<PaymentMethod, { label: string; className: string }> = {
@@ -36,14 +37,8 @@ interface TarifaDetailModalProps {
   tarifa: Tarifa | null
 }
 
-const formatDate = (value: string | null): string => {
-  if (!value) return "—"
-  return new Date(value).toLocaleDateString("es-CO", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  })
-}
+const formatDate = (value: string | null): string =>
+  formatDateOnly(value, { year: "numeric", month: "long", day: "numeric" })
 
 function DetailRow({
   icon,

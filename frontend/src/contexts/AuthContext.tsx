@@ -1,7 +1,8 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import { logoutService } from '@/modules/auth/services/login.service';
 import api from '@/lib/axios';
+import type { PermissionAction } from '@/lib/permissions';
 
 interface AuthUserRole {
   id: number;
@@ -12,8 +13,9 @@ interface AuthUser {
   id: number;
   name: string;
   email: string;
-  roles: AuthUserRole[];
+  role: AuthUserRole;
   isActive: boolean;
+  permissions: string[];
 }
 
 interface AuthContextType {
@@ -22,6 +24,8 @@ interface AuthContextType {
   user: AuthUser | null;
   login: () => void;
   logout: () => void;
+  can: (permission: PermissionAction) => boolean;
+  refreshProfile: () => Promise<void>;
 }
 
 interface ProfileEnvelope {
@@ -69,8 +73,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const refreshProfile = useCallback(async () => {
+    try {
+      const response = await api.get<ProfileEnvelope>('auth/profile');
+      setUser(response.data.data);
+    } catch {
+      setUser(null);
+    }
+  }, []);
+
+  const can = useCallback(
+    (permission: PermissionAction) => user?.permissions?.includes(permission) ?? false,
+    [user],
+  );
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, isLoading, user, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, isLoading, user, login, logout, can, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );

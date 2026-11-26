@@ -1,3 +1,4 @@
+import { Can } from '../authorization/can.decorator';
 import {
     Body,
     Controller,
@@ -15,8 +16,6 @@ import { DriversService } from './drivers.service';
 import { CreateDriverDto } from './dto/create-driver.dto';
 import { UpdateDriverDto } from './dto/update-driver.dto';
 import { DriverResponseDto } from './dto/driver-response.dto';
-import { Auth } from '../auth/decorators/auth.decorator';
-import { Role } from '../common/enums/rol.enum';
 import { ApiResponseInterface } from '../common/interfaces/api-response.interface';
 import { PaginationDTO, PaginationResponseDto } from '../common/dto/pagination.dto';
 
@@ -26,7 +25,7 @@ export class DriversController {
     constructor(private readonly driversService: DriversService) {}
 
     @Post('create')
-    @Auth(Role.ADMIN)
+    @Can('drivers.create')
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Create a new driver' })
     @ApiResponse({ status: 201, type: DriverResponseDto })
@@ -42,7 +41,7 @@ export class DriversController {
     }
 
     @Get('get-all')
-    @Auth(Role.ADMIN)
+    @Can('drivers.read')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Get all drivers with pagination' })
     @ApiResponse({ status: 200, type: [DriverResponseDto] })
@@ -57,7 +56,7 @@ export class DriversController {
     }
 
     @Get('get/:id')
-    @Auth(Role.ADMIN)
+    @Can('drivers.read')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Get a driver by ID' })
     @ApiResponse({ status: 200, type: DriverResponseDto })
@@ -70,7 +69,7 @@ export class DriversController {
     }
 
     @Patch('update/:id')
-    @Auth(Role.ADMIN)
+    @Can('drivers.update')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Update a driver by ID' })
     @ApiResponse({ status: 200, type: DriverResponseDto })
@@ -86,7 +85,7 @@ export class DriversController {
     }
 
     @Delete('remove/:id')
-    @Auth(Role.ADMIN)
+    @Can('drivers.delete')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Remove a driver by ID' })
     async remove(@Param('id') id: string): Promise<ApiResponseInterface> {

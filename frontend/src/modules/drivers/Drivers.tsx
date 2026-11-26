@@ -1,3 +1,4 @@
+import { useAuth } from "@/contexts/AuthContext"
 import { useState, useMemo, useEffect, useCallback } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -13,6 +14,7 @@ import { getDriversService } from "./services/driver.service"
 const LIMIT = 20
 
 const Drivers = () => {
+  const { can } = useAuth()
   const [drivers, setDrivers] = useState<Driver[]>([])
   const [search, setSearch] = useState("")
   const [page, setPage] = useState(1)
@@ -74,10 +76,12 @@ const Drivers = () => {
             className="pl-9"
           />
         </div>
-        <Button onClick={() => setIsCreateOpen(true)}>
-          <UserPlusIcon className="size-4 mr-2" />
-          Agregar conductor
-        </Button>
+        {can("drivers.create") && (
+          <Button onClick={() => setIsCreateOpen(true)}>
+            <UserPlusIcon className="size-4 mr-2" />
+            Agregar conductor
+          </Button>
+        )}
       </div>
 
       {filtered.length === 0 ? (

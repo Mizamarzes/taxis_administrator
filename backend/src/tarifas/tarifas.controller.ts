@@ -1,3 +1,4 @@
+import { Can } from '../authorization/can.decorator';
 import {
     Body,
     Controller,
@@ -16,8 +17,6 @@ import { CreateTarifaDto } from './dto/create-tarifa.dto';
 import { UpdateTarifaDto } from './dto/update-tarifa.dto';
 import { TarifaResponseDto } from './dto/tarifa-response.dto';
 import { TarifasFilterDto } from './dto/tarifas-filter.dto';
-import { Auth } from '../auth/decorators/auth.decorator';
-import { Role } from '../common/enums/rol.enum';
 import { ApiResponseInterface } from '../common/interfaces/api-response.interface';
 import { PaginationResponseDto } from '../common/dto/pagination.dto';
 import { ActiveUser } from '../common/decorators/activeUser.decorator';
@@ -29,7 +28,7 @@ export class TarifasController {
     constructor(private readonly tarifasService: TarifasService) {}
 
     @Post('create')
-    @Auth(Role.ADMIN)
+    @Can('tarifas.create')
     @HttpCode(HttpStatus.CREATED)
     @ApiOperation({ summary: 'Create a new tarifa' })
     @ApiResponse({ status: 201, type: TarifaResponseDto })
@@ -45,7 +44,7 @@ export class TarifasController {
     }
 
     @Get('get-all')
-    @Auth(Role.ADMIN)
+    @Can('tarifas.read')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Get all tarifas with pagination and filters' })
     @ApiResponse({ status: 200, type: [TarifaResponseDto] })
@@ -60,7 +59,7 @@ export class TarifasController {
     }
 
     @Get('get/:id')
-    @Auth(Role.ADMIN)
+    @Can('tarifas.read')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Get a tarifa by ID' })
     @ApiResponse({ status: 200, type: TarifaResponseDto })
@@ -73,7 +72,7 @@ export class TarifasController {
     }
 
     @Patch('update/:id')
-    @Auth(Role.ADMIN)
+    @Can('tarifas.update')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Update a tarifa by ID' })
     @ApiResponse({ status: 200, type: TarifaResponseDto })
@@ -90,7 +89,7 @@ export class TarifasController {
     }
 
     @Delete('remove/:id')
-    @Auth(Role.ADMIN)
+    @Can('tarifas.delete')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Remove a tarifa by ID' })
     async remove(

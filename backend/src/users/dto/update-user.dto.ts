@@ -1,13 +1,5 @@
 import { Transform } from 'class-transformer';
-import {
-    ArrayMinSize,
-    IsArray,
-    IsBoolean,
-    IsIn,
-    IsOptional,
-    IsString,
-    MinLength,
-} from 'class-validator';
+import { IsBoolean, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class UpdateUserDto {
     @IsOptional()
@@ -23,14 +15,10 @@ export class UpdateUserDto {
     name?: string;
 
     @IsOptional()
-    @IsArray()
-    @ArrayMinSize(1, { message: 'At least one role is required' })
-    @IsString({ each: true })
-    @IsIn(['SUPERADMIN', 'ADMIN', 'USER'], {
-        each: true,
-        message: 'Role must be SUPERADMIN, ADMIN or USER',
-    })
-    roleNames?: string[];
+    @Transform(({ value }: { value: string }) => value?.trim().toUpperCase())
+    @IsString()
+    @MinLength(2)
+    roleName?: string;
 
     @IsOptional()
     @IsBoolean()

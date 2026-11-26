@@ -3,7 +3,7 @@ import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
-import { Role } from '../common/enums/rol.enum';
+import { AuthorizationService } from '../authorization/authorization.service';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { Response } from 'express';
 
@@ -12,32 +12,37 @@ export class AuthService {
     constructor(
         private readonly usersService: UsersService,
         private readonly jwtService: JwtService,
+        private readonly authorizationService: AuthorizationService,
     ) {}
 
-    async login(data: LoginDto, response: Response) {
+    private async authenticate(data: LoginDto) {
         const user = await this.usersService.findOneByEmailForAuth(data.email);
 
         if (!user) {
-            throw new UnauthorizedException('Invalid credentials');
+            throw new UnauthorizedException('Correo o contraseña incorrectos');
         }
 
         if (!user.isActive) {
-            throw new UnauthorizedException('Account is inactive');
+            throw new UnauthorizedException('La cuenta está inactiva');
         }
 
         const isPasswordValid = await bcrypt.compare(data.password, user.password);
 
         if (!isPasswordValid) {
-            throw new UnauthorizedException('Invalid credentials');
+            throw new UnauthorizedException('Correo o contraseña incorrectos');
         }
 
         await this.usersService.updateLastLogin(user.id);
 
-        const roles = user.userRoles.map((ur) => ur.role.name);
-
-        const payload: JwtPayload = { sub: user.id, email: user.email, roles: roles };
+        const payload: JwtPayload = { sub: user.id, email: user.email, roleId: user.roleId };
 
         const token = await this.jwtService.signAsync(payload);
+
+        return { user, token };
+    }
+
+    async login(data: LoginDto, response: Response) {
+        const { user, token } = await this.authenticate(data);
 
         const isProduction = process.env.NODE_ENV === 'production';
 
@@ -54,14 +59,28 @@ export class AuthService {
         };
     }
 
-    async profile({ email }: { email: string; roles: Role[] }) {
-        const user = await this.usersService.findOneByEmail(email);
+    async loginMobile(data: LoginDto) {
+        const { user, token } = await this.authenticate(data);
+
+        return {
+            message: 'Login successful',
+            data: {
+                accessToken: token,
+                email: user.email,
+            },
+        };
+    }
+
+    async profile(payload: JwtPayload) {
+        const user = await this.usersService.findOneByEmail(payload.email);
 
         if (!user) {
-            throw new UnauthorizedException('User not found');
+            throw new UnauthorizedException('Usuario no encontrado');
         }
 
-        return user;
+        const permissions = await this.authorizationService.permissionsFor(payload);
+
+        return { ...user, permissions };
     }
 
     logout(response: Response) {

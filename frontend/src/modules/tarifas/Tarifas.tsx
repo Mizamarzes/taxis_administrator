@@ -12,10 +12,12 @@ import type { Tarifa } from "./types/tarifa.types"
 import { getTarifasService } from "./services/tarifa.service"
 import { Button } from "@/components/ui/button"
 import { PlusIcon } from "lucide-react"
+import { useAuth } from "@/contexts/AuthContext"
 
 const LIMIT = 20
 
 const Tarifas = () => {
+    const { can } = useAuth()
     const [tarifas, setTarifas] = useState<Tarifa[]>([])
     const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined)
     const [search, setSearch] = useState("")
@@ -77,10 +79,20 @@ const Tarifas = () => {
         setIsDeleteModalOpen(true)
     }
 
+    const canEdit = can("tarifas.update")
+    const canDelete = can("tarifas.delete")
+
     const columns = useMemo(
-        () => getColumns({ onView: handleView, onEdit: handleEdit, onDelete: handleDelete }),
+        () =>
+            getColumns({
+                onView: handleView,
+                onEdit: handleEdit,
+                onDelete: handleDelete,
+                canEdit,
+                canDelete,
+            }),
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        []
+        [canEdit, canDelete]
     )
 
     return (
@@ -97,10 +109,12 @@ const Tarifas = () => {
                 toolbarRight={
                     <div className="flex items-center gap-2">
                         <DateRangeFilter value={dateRange} onChange={setDateRange} />
-                        <Button onClick={() => setIsCreateModalOpen(true)}>
-                            <PlusIcon className="size-4 mr-2" />
-                            Nueva tarifa
-                        </Button>
+                        {can("tarifas.create") && (
+                            <Button onClick={() => setIsCreateModalOpen(true)}>
+                                <PlusIcon className="size-4 mr-2" />
+                                Nueva tarifa
+                            </Button>
+                        )}
                     </div>
                 }
             />

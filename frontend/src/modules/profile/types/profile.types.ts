@@ -7,7 +7,7 @@ export interface Profile {
   id: number
   name: string
   email: string
-  roles: ProfileRole[]
+  role: ProfileRole
   isActive: boolean
   lastLogin: string | null
   createdAt: string

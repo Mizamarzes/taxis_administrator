@@ -1,4 +1,6 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { getRoleOptionsService } from "@/modules/roles/services/role.service"
+import type { RoleOption } from "@/modules/roles/types/role.types"
 import {
   Dialog,
   DialogContent,
@@ -30,12 +32,20 @@ const emptyForm: ICreateUserPayload = {
   name: "",
   email: "",
   password: "",
-  roleNames: ["USER"],
+  roleName: "USER",
 }
 
 export function CreateUserModal({ open, onOpenChange, onSuccess }: CreateUserModalProps) {
   const [formData, setFormData] = useState<ICreateUserPayload>(emptyForm)
   const [isLoading, setIsLoading] = useState(false)
+  const [roleOptions, setRoleOptions] = useState<RoleOption[]>([])
+
+  useEffect(() => {
+    if (!open) return
+    getRoleOptionsService()
+      .then((response) => setRoleOptions(response.data))
+      .catch(() => setRoleOptions([]))
+  }, [open])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target
@@ -107,18 +117,20 @@ export function CreateUserModal({ open, onOpenChange, onSuccess }: CreateUserMod
             <div className="grid gap-2">
               <Label>Rol</Label>
               <Select
-                value={formData.roleNames?.[0] ?? "USER"}
+                value={formData.roleName ?? "USER"}
                 onValueChange={(val) =>
-                  setFormData((prev) => ({ ...prev, roleNames: [val] }))
+                  setFormData((prev) => ({ ...prev, roleName: val }))
                 }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccionar rol" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="USER">Usuario</SelectItem>
-                  <SelectItem value="ADMIN">Admin</SelectItem>
-                  <SelectItem value="SUPERADMIN">Superadmin</SelectItem>
+                  {roleOptions.map((role) => (
+                    <SelectItem key={role.id} value={role.name}>
+                      {role.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

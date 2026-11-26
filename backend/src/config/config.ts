@@ -10,6 +10,7 @@ export const config = () => {
             username: process.env.DB_USERNAME || 'user',
             password: process.env.DB_PASSWORD || 'password',
             database: process.env.DB_NAME || 'taxis_db',
+            poolSize: process.env.DB_POOL_SIZE || 5,
         },
         cookies: {
             secret: process.env.COOKIE_SECRET || 'default_cookie_secret',
@@ -22,6 +23,11 @@ export const config = () => {
         },
         app: {
             nodeEnv: process.env.NODE_ENV || 'development',
+        },
+        ml: {
+            url: process.env.ML_SERVICE_URL || 'http://localhost:8000',
+            key: process.env.ML_SERVICE_KEY || '',
+            timeoutMs: Number(process.env.ML_SERVICE_TIMEOUT_MS) || 10000,
         },
     };
 };

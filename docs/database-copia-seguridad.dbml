@@ -1,0 +1,247 @@
+//////////////////////////////////////////////////////
+// TAXIS ADMINISTRATOR - ESQUEMA REAL (PostgreSQL)
+// Base de datos: taxis_administrator
+// Generado desde la BD el 2026-10-16
+//////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////
+// ENUMS
+//////////////////////////////////////////////////////
+
+Enum drivers_status_enum {
+  active
+  inactive
+  suspended
+}
+
+Enum vehicles_vehicle_status_enum {
+  active
+  inactive
+  in_maintenance
+  out_of_service
+}
+
+Enum tarifas_payment_method_enum {
+  cash
+  credit_card
+  debit_card
+  nequi
+  daviplata
+}
+
+Enum media_tarifas_media_type_enum {
+  image
+  document
+  spreadsheet
+  other
+}
+
+//////////////////////////////////////////////////////
+// TABLE: USERS (usuarios del panel administrativo)
+//////////////////////////////////////////////////////
+
+Table users {
+  id int [pk, increment]
+  name varchar(100) [not null]
+  email varchar(100) [not null, unique]
+  password varchar(255) [not null] // hash bcrypt, select:false en la entidad
+  isActive boolean [not null, default: true]
+  lastLogin timestamp [null]
+
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null, default: `now()`]
+  deletedAt timestamp [null] // soft delete
+  createdBy int [null]
+  updatedBy int [null]
+  deletedBy int [null]
+}
+
+//////////////////////////////////////////////////////
+// TABLE: ROLES
+//////////////////////////////////////////////////////
+
+Table roles {
+  id int [pk, increment]
+  name varchar(50) [not null, unique] // USER, ADMIN
+  description varchar(255) [null]
+
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null, default: `now()`]
+}
+
+//////////////////////////////////////////////////////
+// TABLE: PERMISSIONS
+//////////////////////////////////////////////////////
+
+Table permissions {
+  id int [pk, increment]
+  action varchar(100) [not null, unique] // ej: "users.create"
+
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null, default: `now()`]
+}
+
+//////////////////////////////////////////////////////
+// TABLE: USER_ROLES (N a N users <-> roles)
+//////////////////////////////////////////////////////
+
+Table user_roles {
+  id int [pk, increment]
+  user_id int [not null, ref: > users.id] // ON DELETE CASCADE
+  role_id int [not null, ref: > roles.id] // ON DELETE CASCADE
+
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null, default: `now()`]
+}
+
+//////////////////////////////////////////////////////
+// TABLE: ROLE_PERMISSIONS (N a N roles <-> permissions)
+//////////////////////////////////////////////////////
+
+Table role_permissions {
+  id int [pk, increment]
+  role_id int [not null, ref: > roles.id]             // ON DELETE CASCADE
+  permission_id int [not null, ref: > permissions.id] // ON DELETE CASCADE
+
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null, default: `now()`]
+}
+
+//////////////////////////////////////////////////////
+// TABLE: DRIVERS (conductores)
+//////////////////////////////////////////////////////
+
+Table drivers {
+  id int [pk, increment]
+  name varchar(100) [not null]
+  status drivers_status_enum [not null, default: 'active']
+  hire_date date [null]
+  photo_url text [null]
+  phone varchar(50) [null]
+  email varchar(100) [null]
+  address varchar(255) [null]
+
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null, default: `now()`]
+  deletedAt timestamp [null] // soft delete
+  createdBy int [null]
+  updatedBy int [null]
+  deletedBy int [null]
+}
+
+//////////////////////////////////////////////////////
+// TABLE: VEHICLES (vehiculos)
+// Relacion 1 a 1 con drivers (driver_id es UNIQUE)
+//////////////////////////////////////////////////////
+
+Table vehicles {
+  id int [pk, increment]
+  plate varchar(20) [not null, unique]
+  driver_id int [null, unique, ref: - drivers.id] // ON DELETE SET NULL
+  vehicle_status vehicles_vehicle_status_enum [not null, default: 'active']
+  driving_restriction_day int [null] // dia de pico y placa (1-7)
+  photo_url text [null]
+
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null, default: `now()`]
+  deletedAt timestamp [null] // soft delete
+  createdBy int [null]
+  updatedBy int [null]
+  deletedBy int [null]
+}
+
+//////////////////////////////////////////////////////
+// TABLE: VEHICLE_DOCUMENTS (SOAT, tecnomecanica, etc.)
+//////////////////////////////////////////////////////
+
+Table vehicle_documents {
+  id int [pk, increment]
+  vehicle_id int [not null, ref: > vehicles.id] // ON DELETE CASCADE
+  document_type_id int [null] // sin FK en BD: no existe tabla document_types
+  issue_date date [null]
+  expiry_date date [null]
+  file_url text [null]
+
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null, default: `now()`]
+  createdBy int [null]
+  updatedBy int [null]
+  deletedBy int [null]
+}
+
+//////////////////////////////////////////////////////
+// TABLE: TARIFAS (pago/registro diario del conductor)
+//////////////////////////////////////////////////////
+
+Table tarifas {
+  id int [pk, increment]
+  amount decimal(10,2) [not null]
+  description text [null]
+  payment_method tarifas_payment_method_enum [null]
+  tarifa_date date [null]
+  driver_id int [null]  // sin FK en BD (ver Ref logicos abajo)
+  vehicle_id int [null] // sin FK en BD (ver Ref logicos abajo)
+
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null, default: `now()`]
+  deletedAt timestamp [null] // soft delete
+  createdBy int [null]
+  updatedBy int [null]
+  deletedBy int [null]
+}
+
+//////////////////////////////////////////////////////
+// TABLE: MEDIA_TARIFAS (comprobantes de la tarifa)
+//////////////////////////////////////////////////////
+
+Table media_tarifas {
+  id int [pk, increment]
+  tarifa_id int [not null, ref: > tarifas.id] // ON DELETE CASCADE
+  title varchar(255) [not null]
+  description text [null]
+  file_url text [not null]
+  media_type media_tarifas_media_type_enum [not null, default: 'other']
+
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null, default: `now()`]
+  deletedAt timestamp [null] // soft delete
+  createdBy int [null]
+  updatedBy int [null]
+  deletedBy int [null]
+}
+
+//////////////////////////////////////////////////////
+// TABLE: VEHICLE_BRANDS
+// Existe en la BD pero no tiene entidad TypeORM (tabla huerfana)
+//////////////////////////////////////////////////////
+
+Table vehicle_brands {
+  id int [pk, increment]
+  name varchar(255) [not null, unique]
+
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null, default: `now()`]
+}
+
+//////////////////////////////////////////////////////
+// TABLE: VEHICLE_MODELS
+// Existe en la BD pero no tiene entidad TypeORM (tabla huerfana)
+//////////////////////////////////////////////////////
+
+Table vehicle_models {
+  id int [pk, increment]
+  name varchar(255) [not null]
+  brand_id int [not null, ref: > vehicle_brands.id] // ON DELETE RESTRICT
+
+  createdAt timestamp [not null, default: `now()`]
+  updatedAt timestamp [not null, default: `now()`]
+}
+
+//////////////////////////////////////////////////////
+// REFS LOGICOS (NO existen como FOREIGN KEY en PostgreSQL)
+// La entidad Tarifa guarda driver_id / vehicle_id como int simple.
+// Se dibujan aqui para documentar la intencion del modelo.
+//////////////////////////////////////////////////////
+
+Ref: tarifas.driver_id > drivers.id
+Ref: tarifas.vehicle_id > vehicles.id

@@ -28,10 +28,7 @@ const formatDate = (value: string | null) => {
   })
 }
 
-const formatRoles = (roles: ProfileType["roles"]) => {
-  if (!roles || roles.length === 0) return "Sin rol"
-  return roles.map((role) => role.name).join(", ")
-}
+const formatRole = (role: ProfileType["role"] | null) => role?.name ?? "Sin rol"
 
 const InfoRow = ({
   icon: Icon,
@@ -85,7 +82,7 @@ const Profile = () => {
     )
   }
 
-  const roleLabel = formatRoles(profile.roles)
+  const roleLabel = formatRole(profile.role)
 
   return (
     <div className="w-full max-w-4xl space-y-6">

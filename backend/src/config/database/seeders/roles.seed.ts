@@ -16,8 +16,9 @@ export async function seedRoles(dataSource: DataSource) {
         });
 
         if (!existingRole) {
-            const role = roleRepository.create(roleData);
-            await roleRepository.save(role);
+            await roleRepository.save(roleRepository.create({ ...roleData, isSystem: true }));
+        } else if (!existingRole.isSystem) {
+            await roleRepository.update(existingRole.id, { isSystem: true });
         }
     }
 }

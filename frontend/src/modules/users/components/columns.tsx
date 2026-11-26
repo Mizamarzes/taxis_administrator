@@ -28,9 +28,11 @@ const roleConfig: Record<string, { label: string; className: string }> = {
 interface ColumnsProps {
   onEdit: (user: User) => void
   onDelete: (user: User) => void
+  canEdit: boolean
+  canDelete: boolean
 }
 
-export const getColumns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<User>[] => [
+export const getColumns = ({ onEdit, onDelete, canEdit, canDelete }: ColumnsProps): ColumnDef<User>[] => [
   {
     accessorKey: "id",
     header: "ID",
@@ -55,25 +57,19 @@ export const getColumns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<User>[
     ),
   },
   {
-    accessorKey: "roles",
-    header: "Roles",
+    accessorKey: "role",
+    header: "Rol",
     cell: ({ row }) => {
-      const roles = row.getValue("roles") as User["roles"]
-      if (!roles?.length) return <span className="text-muted-foreground text-sm">—</span>
+      const role = row.getValue("role") as User["role"] | null
+      if (!role) return <span className="text-muted-foreground text-sm">—</span>
+      const config = roleConfig[role.name] ?? {
+        label: role.name,
+        className: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
+      }
       return (
-        <div className="flex flex-wrap gap-1">
-          {roles.map((role) => {
-            const config = roleConfig[role.name] ?? {
-              label: role.name,
-              className: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
-            }
-            return (
-              <Badge key={role.id} variant="outline" className={`text-xs font-medium ${config.className}`}>
-                {config.label}
-              </Badge>
-            )
-          })}
-        </div>
+        <Badge variant="outline" className={`text-xs font-medium ${config.className}`}>
+          {config.label}
+        </Badge>
       )
     },
   },
@@ -134,6 +130,7 @@ export const getColumns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<User>[
     header: "Acciones",
     cell: ({ row }) => {
       const user = row.original
+      if (!canEdit && !canDelete) return null
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -143,17 +140,21 @@ export const getColumns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<User>[
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => onEdit(user)}>
-              <Pencil className="mr-2 h-4 w-4" />
-              Editar
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => onDelete(user)}
-              className="text-destructive focus:text-destructive"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Eliminar
-            </DropdownMenuItem>
+            {canEdit && (
+              <DropdownMenuItem onClick={() => onEdit(user)}>
+                <Pencil className="mr-2 h-4 w-4" />
+                Editar
+              </DropdownMenuItem>
+            )}
+            {canDelete && (
+              <DropdownMenuItem
+                onClick={() => onDelete(user)}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Eliminar
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       )
