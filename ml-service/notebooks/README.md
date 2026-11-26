@@ -13,8 +13,8 @@ Para reutilizar la conexión y las consultas del servicio dentro de un notebook:
 import sys
 sys.path.append("..")
 
-from app.db.session import get_engine
-from app.db.queries import load_odometer_readings
+from app.config.database import get_engine
+from app.repositories.oil_change_repository import load_odometer_readings
 from app.features.odometer import clean_readings
 from app.models import oil_change
 

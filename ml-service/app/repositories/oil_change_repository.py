@@ -1,5 +1,7 @@
 import pandas as pd
-from sqlalchemy import Engine, text
+from sqlalchemy import Engine
+
+from app.repositories.base import read_only_query
 
 ODOMETER_READINGS_SQL = """
     SELECT e.vehicle_id   AS vehicle_id,
@@ -32,16 +34,9 @@ OIL_TARGETS_SQL = """
 """
 
 
-def _read_only_query(engine: Engine, sql: str, params: dict | None = None) -> pd.DataFrame:
-    with engine.connect() as connection:
-        connection.execute(text("SET TRANSACTION READ ONLY"))
-        result = connection.execute(text(sql), params or {})
-        return pd.DataFrame(result.fetchall(), columns=list(result.keys()))
-
-
 def load_odometer_readings(engine: Engine) -> pd.DataFrame:
-    return _read_only_query(engine, ODOMETER_READINGS_SQL)
+    return read_only_query(engine, ODOMETER_READINGS_SQL)
 
 
 def load_oil_targets(engine: Engine, vehicle_id: int | None = None) -> pd.DataFrame:
-    return _read_only_query(engine, OIL_TARGETS_SQL, {"vehicle_id": vehicle_id})
+    return read_only_query(engine, OIL_TARGETS_SQL, {"vehicle_id": vehicle_id})

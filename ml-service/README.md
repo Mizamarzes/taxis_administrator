@@ -63,7 +63,7 @@ Documentación interactiva: http://localhost:8000/docs
 | GET | `/oil-change/predictions?vehicleId=` | `X-Internal-Key` | Predicción del próximo cambio de aceite |
 | POST | `/oil-change/train` | `X-Internal-Key` | Reentrena el modelo ahora |
 
-Expuestos al cliente por NestJS como `GET /api/predictions/oil-change` y `POST /api/predictions/oil-change/train` (rol ADMIN).
+Expuestos al cliente por NestJS como `GET /api/predictions/oil-change` y `POST /api/predictions/oil-change/train` (permisos `predictions.read` y `predictions.train`).
 
 ## Modelo: próximo cambio de aceite (v1)
 
@@ -87,13 +87,14 @@ El modelo se guarda en `artifacts/oil_change.joblib`. Se reentrena al iniciar si
 ```
 app/
   main.py              # FastAPI, ciclo de vida, scheduler
-  core/                # Configuración y seguridad (clave interna)
-  db/                  # Conexión y consultas SQL de solo lectura
+  config/              # settings.py (.env) y database.py (engine)
+  guards/              # Validación de la clave interna (X-Internal-Key)
+  repositories/        # Consultas SQL de solo lectura → DataFrame
   features/            # Preparación de datos (pandas)
   models/              # Entrenamiento / predicción y almacenamiento de artefactos
   services/            # Orquestación datos → modelo → respuesta
   schemas/             # Respuestas (pydantic, camelCase)
-  api/routes/          # Endpoints
+  routes/              # Endpoints e inyección de dependencias
   jobs/                # Reentrenamiento programado
 notebooks/             # Exploración y experimentos
 artifacts/             # Modelos entrenados (no se versionan)
@@ -104,8 +105,8 @@ tests/                 # pytest
 ## Agregar un modelo nuevo
 
 1. Explora en `notebooks/`.
-2. Consulta los datos en `app/db/queries.py` (siempre con `_read_only_query`).
+2. Crea `app/repositories/<nombre>_repository.py` con las consultas (siempre con `read_only_query` de `app/repositories/base.py`).
 3. Implementa `train()` / `predict()` en `app/models/<nombre>.py`, con pruebas en `tests/`.
-4. Crea el servicio en `app/services/`, los esquemas en `app/schemas/` y el router en `app/api/routes/`.
+4. Crea el servicio en `app/services/`, los esquemas en `app/schemas/` y el router en `app/routes/`.
 5. Regístralo en `app/main.py` (y en `app/jobs/scheduler.py` si se reentrena).
 6. En NestJS, agrega el método en `PredictionsService` y el endpoint en `PredictionsController`.

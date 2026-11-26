@@ -6,7 +6,7 @@ from typing import Any
 import pandas as pd
 from sqlalchemy import Engine
 
-from app.db.queries import load_odometer_readings, load_oil_targets
+from app.repositories.oil_change_repository import load_odometer_readings, load_oil_targets
 from app.models import oil_change
 from app.models.store import ModelStore
 

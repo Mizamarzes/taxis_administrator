@@ -3,7 +3,7 @@ from typing import Annotated
 
 from fastapi import Depends, Header, HTTPException, status
 
-from app.core.config import Settings, get_settings
+from app.config.settings import Settings, get_settings
 
 
 def verify_internal_key(

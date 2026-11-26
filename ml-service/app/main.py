@@ -4,11 +4,11 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.concurrency import run_in_threadpool
 
-from app.api.routes import health, oil_change
-from app.core.config import get_settings
-from app.db.session import get_engine
+from app.config.database import get_engine
+from app.config.settings import get_settings
 from app.jobs.scheduler import start_scheduler
 from app.models.store import ModelStore
+from app.routes import health, oil_change
 from app.services.oil_change_service import OilChangeService
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")

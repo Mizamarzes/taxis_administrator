@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
-from app.api.dependencies import get_oil_change_service
+from app.routes.dependencies import get_oil_change_service
 from app.services.oil_change_service import OilChangeService
 
 router = APIRouter(tags=["health"])

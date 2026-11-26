@@ -3,9 +3,9 @@ from datetime import date, datetime, timezone
 import pytest
 from fastapi.testclient import TestClient
 
-from app.api.dependencies import get_oil_change_service
-from app.core.config import Settings, get_settings
+from app.config.settings import Settings, get_settings
 from app.main import app
+from app.routes.dependencies import get_oil_change_service
 
 TRAINING = {
     "name": "oil_change",

@@ -3,7 +3,7 @@ import logging
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 
-from app.core.config import Settings
+from app.config.settings import Settings
 from app.services.oil_change_service import OilChangeService
 
 logger = logging.getLogger(__name__)
